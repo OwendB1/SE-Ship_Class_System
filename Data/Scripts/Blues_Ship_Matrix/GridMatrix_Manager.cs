@@ -92,29 +92,28 @@ namespace Blues_Ship_Matrix
 		{
 			base.UpdateBeforeSimulation();
 			if(MySettingsSynced.Value!=null && !IsDedicated){MySettings=MySettingsSynced.Value;}
-			ticks+=1;
-			MyAPIGateway.Parallel.Start(delegate{
-				if(IsServer)
-				{
+			if(IsServer)
+			{
+				MyAPIGateway.Parallel.Start(delegate{
 					//Only Send Config If you are the server
+					ticks+=1;
 					if(ticks > 240) {ticks=0;MySettingsSynced.ValidateAndSet(MySettings);}
-
 					foreach(IMyCubeGrid CoreGrid in GridList.ToList())
 					{
 						if((CoreGrid as MyCubeGrid).BlocksCount<4){continue;}
 						IEnumerable<IMyBeacon> Beacons = CoreGrid.GetFatBlocks<IMyBeacon>();
 						List<IMyBeacon> BeaconsList=Beacons.ToList();
 						try{
-						long GridOwner=GetOwner(CoreGrid as MyCubeGrid);
-						var OwnerFaction=MyAPIGateway.Session.Factions.TryGetPlayerFaction(GridOwner);
-						if(OwnerFaction!=null)
-						{
-							if(!String.IsNullOrEmpty(OwnerFaction.Tag))
+							long GridOwner=GetOwner(CoreGrid as MyCubeGrid);
+							var OwnerFaction=MyAPIGateway.Session.Factions.TryGetPlayerFaction(GridOwner);
+							if(OwnerFaction!=null)
 							{
-								if(MySettings.IgnoredFactions.Contains(OwnerFaction.Tag)){continue;}
-								MyLog.Default.WriteLine($"BlueShipMatrix: Ignored Faction - {OwnerFaction.Tag}");
+								if(!String.IsNullOrEmpty(OwnerFaction.Tag))
+								{
+									if(MySettings.IgnoredFactions.Contains(OwnerFaction.Tag)){continue;}
+									MyLog.Default.WriteLine($"BlueShipMatrix: Ignored Faction - {OwnerFaction.Tag}");
+								}
 							}
-						}
 						}catch (Exception e){MyLog.Default.WriteLine($"BlueShipMatrix: Error @Skip-Ignored-Factions - {e.Message}");}
 						if(BeaconsList.Count<1){
 							IEnumerable<IMyFunctionalBlock> BlocksOnGrid = CoreGrid.GetFatBlocks<IMyFunctionalBlock>();
@@ -123,13 +122,10 @@ namespace Blues_Ship_Matrix
 								if(Block==null){continue;}
 								if(Block.Enabled){Block.Enabled = false;}	
 							}
-							continue;
-						}
-						else{
-
 						}
 					}
-				}
+				});
+			}
 				/*if(IsDedicated)
 				{
 					foreach(IMyCubeGrid CoreGrid in GridList.ToList())
@@ -140,7 +136,6 @@ namespace Blues_Ship_Matrix
 						CoreBeacon.RefreshCustomInfo();
 					}
 				}*/
-			});
 
 		}			
 

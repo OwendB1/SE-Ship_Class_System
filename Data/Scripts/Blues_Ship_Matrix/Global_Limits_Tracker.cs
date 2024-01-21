@@ -154,61 +154,58 @@ namespace Blues_Ship_Matrix
 		}
 		
 		
-		public static string CheckAndPenalizeBlockLimits(IMyBeacon CoreBeacon,MyGridLimit CoreGridClass )
+		public static string CheckAndPenalizeBlockLimits(IMyBeacon coreBeacon, MyGridLimit coreGridClass)
 		{
-			//BlockLimits
-			string limitsMessage="\nBlock Limits:";
-			IEnumerable<IMyFunctionalBlock> BlocksOnGrid = CoreBeacon.CubeGrid.GetFatBlocks<IMyFunctionalBlock>();
-			int BlockCount=0;
-			string unit="";
-			foreach (MyBlockLimit BlockLimit in CoreGridClass.BlockLimits.ToList())
+			StringBuilder limitsMessage = new StringBuilder("\nBlock Limits:");
+
+			var blocksOnGrid = coreBeacon.CubeGrid.GetFatBlocks<IMyFunctionalBlock>();
+
+			foreach (var blockLimit in coreGridClass.BlockLimits.Where(l => l != null))
 			{
-				if(BlockLimit==null){continue;}
-				BlockCount = 0;
-				foreach(IMyFunctionalBlock Block in BlocksOnGrid.ToList())
+				int blockCount = 0;
+				string unit = GetUnitForBlockLimit(blockLimit);
+
+				foreach (var block in blocksOnGrid.Where(b => b != null))
 				{
-					if(Block==null){continue;}
-					foreach(MyBlockId BlockId in BlockLimit.BlockIds.ToList())
-					{
-						if (Convert.ToString(Block.BlockDefinition.TypeId).Replace("MyObjectBuilder_","")==BlockId.TypeId && Convert.ToString(Block.BlockDefinition.SubtypeId)==BlockId.SubtypeId)
-						{
-							BlockCount += BlockId.CountWeight;
-						}
-							
-					}
+					blockCount += blockLimit.BlockIds
+						.Where(blockId => Convert.ToString(block.BlockDefinition.TypeId).Replace("MyObjectBuilder_", "") == blockId.TypeId &&
+										Convert.ToString(block.BlockDefinition.SubtypeId) == blockId.SubtypeId)
+						.Sum(blockId => blockId.CountWeight);
 				}
-				if(BlockLimit.Name == "Shield"){
-					unit = " Kpts";
-				}else if(BlockLimit.Name == "Weapons"){
-					unit=" weapon(s)";
-				}else{
-					unit=" block(s)";
-				}
-				if(BlockCount>BlockLimit.MaxCount)
+
+				if (blockCount > blockLimit.MaxCount)
 				{
-					foreach (IMyFunctionalBlock Block in BlocksOnGrid.ToList())
-					{
-						if(Block==null){continue;}
-						foreach(MyBlockId BlockId in BlockLimit.BlockIds.ToList())
-						{
-							if (Convert.ToString(Block.BlockDefinition.TypeId).Replace("MyObjectBuilder_","")==BlockId.TypeId && Convert.ToString(Block.BlockDefinition.SubtypeId)==BlockId.SubtypeId)
-							{
-								if(Block is IMyBeacon){continue;}
-								if(Block.Enabled)Block.Enabled = false;
-							}
-						}
-					}
-					
-					limitsMessage="\nX "+BlockLimit.Warning+"\n >Please remove "+(BlockCount-BlockLimit.MaxCount)+unit+"\n"+limitsMessage+"\n  X ";
-				}else{
-					limitsMessage+="\n  > ";
+					DisableExcessBlocks(blocksOnGrid, blockLimit);
+					limitsMessage.AppendLine($"\nX {blockLimit.Warning}\n >Please remove {blockCount - blockLimit.MaxCount}{unit}\nX ");
 				}
-				limitsMessage+=BlockLimit.Name+":"+Convert.ToString(BlockCount)+"/"+Convert.ToString(BlockLimit.MaxCount)+unit;
-				
-				
+				else
+				{
+					limitsMessage.AppendLine($"\n  >{blockLimit.Name}:{blockCount}/{blockLimit.MaxCount}{unit}");
+				}
 			}
-			return limitsMessage;
-		}		
+
+			return limitsMessage.ToString();
+		}
+
+		private static string GetUnitForBlockLimit(MyBlockLimit blockLimit)
+		{
+			return blockLimit.Name == "Shield" ? " Kpts" : blockLimit.Name == "Weapons" ? " weapon(s)" : " block(s)";
+		}
+
+		private static void DisableExcessBlocks(IEnumerable<IMyFunctionalBlock> blocksOnGrid, MyBlockLimit blockLimit)
+		{
+			foreach (var block in blocksOnGrid.Where(b => b != null))
+			{
+				foreach (var blockId in blockLimit.BlockIds.Where(bid =>
+					Convert.ToString(block.BlockDefinition.TypeId).Replace("MyObjectBuilder_", "") == bid.TypeId &&
+					Convert.ToString(block.BlockDefinition.SubtypeId) == bid.SubtypeId))
+				{
+					if (block is IMyBeacon) continue;
+					if (block.Enabled) block.Enabled = false;
+				}
+			}
+		}
+		
 		public static void Penalize(IMyBeacon CoreBeacon)
 		{
 				IEnumerable<IMyFunctionalBlock> BlocksOnGrid = CoreBeacon.CubeGrid.GetFatBlocks<IMyFunctionalBlock>();
