@@ -111,7 +111,7 @@ namespace Blues_Ship_Matrix
 								if(!String.IsNullOrEmpty(OwnerFaction.Tag))
 								{
 									if(MySettings.IgnoredFactions.Contains(OwnerFaction.Tag)){continue;}
-									MyLog.Default.WriteLine($"BlueShipMatrix: Ignored Faction - {OwnerFaction.Tag}");
+									//MyLog.Default.WriteLine($"BlueShipMatrix: Ignored Faction - {OwnerFaction.Tag}");
 								}
 							}
 						}catch (Exception e){MyLog.Default.WriteLine($"BlueShipMatrix: Error @Skip-Ignored-Factions - {e.Message}");}

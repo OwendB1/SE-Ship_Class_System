@@ -68,7 +68,40 @@ namespace Blues_Ship_Matrix
 
         public override void UpdateAfterSimulation()
         {
-            ticks += 1;
+            
+            IEnumerable<IMyBeacon> Beacons = CoreGrid.GetFatBlocks<IMyBeacon>();
+			List<IMyBeacon> BeaconsList=Beacons.ToList();
+            while(BeaconsList.Count>1)
+            {
+                if(BeaconsList.Count>0)
+                {
+                    if (BeaconsList.First()?.GameLogic?.GetAs<ShipCore>() != null){break;}
+                    else{BeaconsList.Remove(BeaconsList.First());}
+                }
+            }
+            if(BeaconsList.Count>0)
+            {
+                if(CoreBeacon.EntityId!=BeaconsList.First().EntityId)
+                {
+                    Info="This Beacon is not the primary beacon!";
+                    CoreBeacon.RefreshCustomInfo();
+                    return;
+                }
+            }
+            var OwnerFaction=MyAPIGateway.Session.Factions.TryGetPlayerFaction(CoreBeacon.OwnerId);
+            if(OwnerFaction!=null)
+            {
+                if(!String.IsNullOrEmpty(OwnerFaction.Tag))
+                {
+                    if(Manager.MySettings.IgnoredFactions.Contains(OwnerFaction.Tag))
+                    {
+                        Info=$"Your Faction: {OwnerFaction.Tag} Is ignored by the ShipClass System";
+                        CoreBeacon.RefreshCustomInfo();
+                        return;
+                    }
+                    //MyLog.Default.WriteLine($"BlueShipMatrix: Ignored Faction - {OwnerFaction.Tag}");
+                }
+            }
             MyGridLimit NewGridClass = Globals.GetClass(CoreGrid);
             if (NewGridClass != null && NewGridClass != CoreGridClass)
             {
@@ -83,44 +116,44 @@ namespace Blues_Ship_Matrix
             {
                 CustomControls.AddControls(ModContext);
             }
+            MyAPIGateway.Parallel.Start(delegate{
+                ticks += 1;
+                bool Penalize = false;
+                Warning = "\n<<< Class Limits Info: >>>\nClass Name:" + CoreGridClass.Name;
+                string PerStatWarning = "";
+                string PerBlockWarning = "";
 
-            bool Penalize = false;
-            Warning = "\n<<< Class Limits Info: >>>\nClass Name:" + CoreGridClass.Name;
-            string PerStatWarning = "";
-            string PerBlockWarning = "";
-
-            if (ticks % 3 == 0)
-            {
-                if (CoreGridClass.ForceBroadCast)
+                if (ticks % 3 == 0)
                 {
-                    if (!CoreBeacon.Enabled) { CoreBeacon.Enabled = true; }
-                    if (CoreBeacon.Radius <= CoreGridClass.ForceBroadCastRange) { CoreBeacon.Radius = CoreGridClass.ForceBroadCastRange; }
+                    if (CoreGridClass.ForceBroadCast)
+                    {
+                        if (!CoreBeacon.Enabled) { CoreBeacon.Enabled = true; }
+                        if (CoreBeacon.Radius <= CoreGridClass.ForceBroadCastRange) { CoreBeacon.Radius = CoreGridClass.ForceBroadCastRange; }
+                    }
                 }
-            }
 
-            if (ticks % 6 == 0)
-            {
-                try
+                if (ticks % 6 == 0)
                 {
-                    DoubleReturn GridStatLimit = Globals.CheckGridStatLimits(CoreBeacon, CoreGridClass);
-                    if (GridStatLimit.Penalty) { Penalize = GridStatLimit.Penalty; }
-                    PerStatWarning += GridStatLimit.Warning;
-                }
-                catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @GridStats - {e.Message}"); }
-            }
-
-            if (ticks % 12 == 0)
-            {
-                ticks = 0;
-                try
-                {
-                    DoubleReturn ClassLimit = Globals.CheckClassLimits(CoreBeacon, CoreGridClass);
-                    if (ClassLimit.Penalty) { Penalize = ClassLimit.Penalty; Warning += ClassLimit.Warning; }
-                }
-                catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @ClassLimits - {e.Message}"); }
-                MyAPIGateway.Parallel.Start(delegate{
+                    try
+                    {
+                        DoubleReturn GridStatLimit = Globals.CheckGridStatLimits(CoreBeacon, CoreGridClass);
+                        if (GridStatLimit.Penalty) { Penalize = GridStatLimit.Penalty; }
+                        PerStatWarning += GridStatLimit.Warning;
+                    }
+                    catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @GridStats - {e.Message}"); }
                     try { PerBlockWarning += Globals.CheckAndPenalizeBlockLimits(CoreBeacon, CoreGridClass); }
                     catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @BlockLimits - {e.Message}"); }
+                }
+
+                if (ticks % 12 == 0)
+                {
+                    ticks = 0;
+                    try
+                    {
+                        DoubleReturn ClassLimit = Globals.CheckClassLimits(CoreBeacon, CoreGridClass);
+                        if (ClassLimit.Penalty) { Penalize = ClassLimit.Penalty; Warning += ClassLimit.Warning; }
+                    }
+                    catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @ClassLimits - {e.Message}"); }
 
                     if (Manager.GetOwner(CoreGrid as MyCubeGrid) != CoreBeacon.OwnerId) { Warning = "Warning: Beacon Owner Does NOT Own Grid\n" + Warning; }
 
@@ -149,14 +182,14 @@ namespace Blues_Ship_Matrix
 
                     Info = Warning;
                     CoreBeacon.RefreshCustomInfo();
-                });
-            }
+                }
 
-            try
-            {
-                if (Penalize && IsServer) { Globals.Penalize(CoreBeacon); }
-            }
-            catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @Penalize - {e.Message}"); }
+                try
+                {
+                    if (Penalize && IsServer) { Globals.Penalize(CoreBeacon); }
+                }
+                catch (Exception e) { MyLog.Default.WriteLine($"BlueShipMatrix: Error @Penalize - {e.Message}"); }
+            });
         }
 
         public string LoadCustomData()
