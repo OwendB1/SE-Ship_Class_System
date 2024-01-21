@@ -123,6 +123,8 @@ namespace Blues_Ship_Matrix
                 }
                 if(ShipCore.CoreGridClass!=null){
                     if(NewGridClass.Name==ShipCore.CoreGridClass.Name){return;}
+                    if(NewGridClass.isStatic!=ShipCore.CoreGridClass.isStatic){return;}
+                    if(NewGridClass.CubeSize!=ShipCore.CoreGridClass.CubeSize){return;}
                     if(ShipCore.CoreGrid.CustomName.Contains(ShipCore.CoreGridClass.Name)){ShipCore.CoreGrid.CustomName=ShipCore.CoreGrid.CustomName.Replace(ShipCore.CoreGridClass.Name,NewGridClass.Name);}
                     else{ShipCore.CoreGrid.CustomName+=": "+NewGridClass.Name;}
                     if(ShipCore.CoreBeacon.HudText.Contains(ShipCore.CoreGridClass.Name)){ShipCore.CoreBeacon.HudText=ShipCore.CoreBeacon.HudText.Replace(ShipCore.CoreGridClass.Name,NewGridClass.Name);}

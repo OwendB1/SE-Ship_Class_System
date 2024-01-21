@@ -175,7 +175,7 @@ namespace Blues_Ship_Matrix
 
 				if (blockCount > blockLimit.MaxCount)
 				{
-					DisableExcessBlocks(blocksOnGrid, blockLimit);
+					if(Manager.IsServer){DisableExcessBlocks(blocksOnGrid, blockLimit);}
 					limitsMessage.AppendLine($"\nX {blockLimit.Warning}\n >Please remove {blockCount - blockLimit.MaxCount}{unit}\nX ");
 				}
 				else

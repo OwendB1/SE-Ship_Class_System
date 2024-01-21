@@ -32,44 +32,41 @@ namespace Blues_Ship_Matrix
 {
     public static class Modify
     {
-		public static float ShouldRececiveModifiers(float bonus,IMyCubeGrid CoreGrid, MyGridLimit CoreGridClass)
+		public static float ShouldRececiveModifiers(float bonus, IMyCubeGrid CoreGrid, MyGridLimit CoreGridClass)
 		{
-			if(bonus<=1.0f){return(1f);}
-			float Numerator = 0.0f;
-			float Denominator = 0.0f;
+			if (bonus <= 1.0f)
+			{
+				return 1f;
+			}
 
-			if(CoreGridClass.MaxBlocks>0f)
+			List<float> ratios = new List<float>();
+
+			Action<float, float> addRatio = (value, maxLimit) =>
 			{
-				float MaxBlockRatio=((CoreGrid as MyCubeGrid).BlocksCount)/CoreGridClass.MaxBlocks;
-				if(MaxBlockRatio<0.5f)
+				float ratio = value / maxLimit;
+				if (ratio < 0.5f)
 				{
-					Numerator+=MaxBlockRatio;
-					Denominator+=1.0f;
+					ratios.Add(ratio);
 				}
-			}
-			if(CoreGridClass.MaxMass>0f)
+			};
+
+			addRatio((CoreGrid as MyCubeGrid).BlocksCount, CoreGridClass.MaxBlocks);
+			addRatio(Convert.ToSingle((CoreGrid as MyCubeGrid).GetCurrentMass()), Convert.ToSingle(CoreGridClass.MaxMass));
+			addRatio((CoreGrid as MyCubeGrid).BlocksPCU, CoreGridClass.MaxPCU);
+
+			if (ratios.Count == 0)
 			{
-				float MaxMassRatio=Convert.ToSingle(((CoreGrid as MyCubeGrid).GetCurrentMass())/CoreGridClass.MaxMass);
-				if(MaxMassRatio<0.5f)
-				{
-					Numerator+=MaxMassRatio;
-					Denominator+=1.0f;
-				}
+				return bonus;
 			}
-			if(CoreGridClass.MaxPCU>0f)
-			{
-				float MaxPCURatio=((CoreGrid as MyCubeGrid).BlocksPCU)/CoreGridClass.MaxPCU;
-				if(MaxPCURatio<0.5f)
-				{
-					Numerator+=MaxPCURatio;
-					Denominator+=1.0f;
-				}
-			}
-			if(Numerator==0||Denominator==0){return(bonus);}
-			float GiveBonus=(Numerator/Denominator)*bonus;
-			
-			return(GiveBonus);
+
+			float averageRatio = ratios.Sum() / ratios.Count;
+			float giveBonus = averageRatio * bonus;
+
+			// Ensure the returned value is greater than 1.0
+			return giveBonus > 1.0f ? giveBonus : 1.0f;
 		}
+
+
 		//Manuverability
 		public static  string Thrusters(IMyCubeGrid CoreGrid, MyGridLimit CoreGridClass)
 		{
