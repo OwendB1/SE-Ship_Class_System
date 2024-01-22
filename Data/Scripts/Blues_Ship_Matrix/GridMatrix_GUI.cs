@@ -67,11 +67,23 @@ namespace Blues_Ship_Matrix
         {
             if (block?.GameLogic?.GetAs<ShipCore>() != null)
             {
-                try{
-                    var GridOwner=Manager.GetOwner(block.CubeGrid as MyCubeGrid);
-                    if(GridOwner==block.OwnerId){return (true);}
-                }catch{}
+                try
+                {
+                    var gridOwner = Manager.GetOwner(block.CubeGrid as MyCubeGrid);
+                    var ownerFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(block.OwnerId);
+
+                    if (gridOwner == block.OwnerId && !Manager.MySettings.IgnoredFactions.Contains(ownerFaction.Tag))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions or log them if necessary
+                    // For example: Console.WriteLine($"Error in SetVisible: {ex.Message}");
+                }
             }
+
             return false;
         }
 
