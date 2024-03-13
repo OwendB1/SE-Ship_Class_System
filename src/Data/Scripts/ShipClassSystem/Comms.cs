@@ -2,7 +2,7 @@
 using ProtoBuf;
 using Sandbox.ModAPI;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal class Comms
     {
