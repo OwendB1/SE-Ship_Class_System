@@ -1,0 +1,7 @@
+﻿"workshopitem"
+{
+	"appid" "244850"
+	"publishedfileid" "3143402478"
+	"contentfolder" "C:\\Users\Paul\\source\\repos\\BluesShipClassSystem\\src"
+	"previewfile" "C:\\Users\Paul\\source\\repos\\BluesShipClassSystem\\src\\thumb.jpg"
+}

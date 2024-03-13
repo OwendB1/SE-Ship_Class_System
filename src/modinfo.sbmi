@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <MyObjectBuilder_ModInfo xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <SteamIDOwner>76561198978820534</SteamIDOwner>
+  <SteamIDOwner>76561197971183246</SteamIDOwner>
   <WorkshopId>0</WorkshopId>
   <WorkshopIds>
     <WorkshopId>
-      <Id>3120391222</Id>
+      <Id>3143402478</Id>
       <ServiceName>Steam</ServiceName>
     </WorkshopId>
   </WorkshopIds>
