@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# SE Binaries
+GameBinaries/
+
 # User-specific files
 *.rsuser
 *.suo
