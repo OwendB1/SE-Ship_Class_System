@@ -1,12 +1,9 @@
-﻿using ProtoBuf;
+﻿using System;
+using System.Collections.Generic;
+using ProtoBuf;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using VRage.Game;
 using VRage.Game.ModAPI;
 
 //TODO better unknown config handling
@@ -15,25 +12,43 @@ namespace RedVsBlueClassSystem
 {
     public class ModConfig
     {
-        private static bool ForceRegenerateConfig = false;
-        private static readonly string VariableId = nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
+        private static readonly bool ForceRegenerateConfig = false;
+
+        private static readonly string
+            VariableId =
+                nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
+
+        private GridClass _DefaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
 
         private GridClass[] _GridClasses;
-        private GridClass _DefaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-        private Dictionary<long, GridClass> _GridClassesById = new Dictionary<long, GridClass>();
-
-        public bool IncludeAIFactions = false;
+        private readonly Dictionary<long, GridClass> _GridClassesById = new Dictionary<long, GridClass>();
         public string[] IgnoreFactionTags = new string[0];
 
-        public GridClass[] GridClasses { get { return _GridClasses; } set { _GridClasses = value; UpdateGridClassesDictionary(); } }
-        public GridClass DefaultGridClass { get { return _DefaultGridClass; } set { _DefaultGridClass = value; UpdateGridClassesDictionary(); } }
-        
+        public bool IncludeAIFactions = false;
+
+        public GridClass[] GridClasses
+        {
+            get { return _GridClasses; }
+            set
+            {
+                _GridClasses = value;
+                UpdateGridClassesDictionary();
+            }
+        }
+
+        public GridClass DefaultGridClass
+        {
+            get { return _DefaultGridClass; }
+            set
+            {
+                _DefaultGridClass = value;
+                UpdateGridClassesDictionary();
+            }
+        }
+
         public GridClass GetGridClassById(long gridClassId)
         {
-            if(_GridClassesById.ContainsKey(gridClassId))
-            {
-                return _GridClassesById[gridClassId];
-            }
+            if (_GridClassesById.ContainsKey(gridClassId)) return _GridClassesById[gridClassId];
 
             Utils.Log($"Unknown grid class {gridClassId}, using default grid class");
 
@@ -49,29 +64,19 @@ namespace RedVsBlueClassSystem
         {
             _GridClassesById.Clear();
 
-            if(_DefaultGridClass != null)
-            {
+            if (_DefaultGridClass != null)
                 _GridClassesById[0] = DefaultGridClass;
-            } else
-            {
+            else
                 _GridClassesById[0] = DefaultGridClassConfig.DefaultGridClassDefinition;
-            }
-            
-            if(_GridClasses != null)
-            {
+
+            if (_GridClasses != null)
                 foreach (var gridClass in _GridClasses)
-                {
                     _GridClassesById[gridClass.Id] = gridClass;
-                }
-            }
         }
 
         public static ModConfig LoadOrGetDefaultConfig(string filename)
         {
-            if(ForceRegenerateConfig)
-            {
-                return DefaultGridClassConfig.DefaultModConfig;
-            }
+            if (ForceRegenerateConfig) return DefaultGridClassConfig.DefaultModConfig;
 
             return LoadConfig(filename) ?? DefaultGridClassConfig.DefaultModConfig;
         }
@@ -84,34 +89,25 @@ namespace RedVsBlueClassSystem
 
             //If this is the server, initially try loading from world storage
             if (Constants.IsServer)
-            {
                 if (MyAPIGateway.Utilities.FileExistsInWorldStorage(filename, typeof(ModConfig)))
                 {
                     Utils.Log($"Loading config {filename} from world storage");
-                    TextReader Reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(filename, typeof(ModConfig));
+                    var Reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(filename, typeof(ModConfig));
                     fileContent = Reader.ReadToEnd();
                     Reader.Close();
 
                     if (string.IsNullOrEmpty(fileContent))
-                    {
                         Utils.Log($"Loadied config {filename} from world storage was empty");
-                    }
                     else
-                    {
                         Utils.Log($"Loaded config {filename} from world storage size = {fileContent.Length}");
-                    }
                 }
-            }
 
             //If we do not have any data (either not the server, or no config file present on the server)
             //then try loading from the sandbox.sbc
             if (fileContent == null)
             {
                 Utils.Log($"Loading config {filename} from sandbox data");
-                if (!MyAPIGateway.Utilities.GetVariable<string>(GetVariableName(filename), out fileContent))
-                {
-                    return null;
-                }
+                if (!MyAPIGateway.Utilities.GetVariable(GetVariableName(filename), out fileContent)) return null;
             }
 
             //We didn't find any saved config, so return null
@@ -124,7 +120,7 @@ namespace RedVsBlueClassSystem
             //Otherwise, attempt to parse the saved config data
             try
             {
-                ModConfig loadedConfig = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(fileContent);
+                var loadedConfig = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(fileContent);
 
                 if (loadedConfig == null)
                 {
@@ -150,7 +146,7 @@ namespace RedVsBlueClassSystem
             {
                 try
                 {
-                    TextWriter writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
+                    var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
                     writer.Write(MyAPIGateway.Utilities.SerializeToXML(config));
                     writer.Close();
                 }
@@ -171,62 +167,63 @@ namespace RedVsBlueClassSystem
 
     public class GridClass
     {
-        public int Id;
-        public string Name;
-        public bool SmallGridStatic = false;
-        public bool SmallGridMobile = false;
-        public bool LargeGridStatic = false;
-        public bool LargeGridMobile = false;
-        public int MaxBlocks = -1;
-        public int MinBlocks = -1;
-        public int MaxPCU = -1;
-        public float MaxMass = -1;
+        public BlockLimit[] BlockLimits;
         public bool ForceBroadCast = false;
         public float ForceBroadCastRange = 0;
+        public int Id;
+        public bool LargeGridMobile = false;
+        public bool LargeGridStatic = false;
+        public int MaxBlocks = -1;
+        public float MaxMass = -1;
+        public int MaxPCU = -1;
         public int MaxPerFaction = -1;
         public int MaxPerPlayer = -1;
+        public int MinBlocks = -1;
         public GridModifiers Modifiers = new GridModifiers();
-        public BlockLimit[] BlockLimits;
+        public string Name;
+        public bool SmallGridMobile = false;
+        public bool SmallGridStatic = false;
 
         public bool IsGridEligible(IMyCubeGrid grid)
         {
             return grid.IsStatic
-                ? grid.GridSizeEnum == VRage.Game.MyCubeSize.Large
+                ? grid.GridSizeEnum == MyCubeSize.Large
                     ? LargeGridStatic
                     : SmallGridStatic
-                : grid.GridSizeEnum == VRage.Game.MyCubeSize.Large
+                : grid.GridSizeEnum == MyCubeSize.Large
                     ? LargeGridMobile
                     : SmallGridMobile;
         }
 
-        public DetailedGridClassCheckResult CheckGrid(IMyCubeGrid grid) {
-            var concreteGrid = (grid as MyCubeGrid);
+        public DetailedGridClassCheckResult CheckGrid(IMyCubeGrid grid)
+        {
+            var concreteGrid = grid as MyCubeGrid;
 
-            GridCheckResult<int> MaxBlocksResult = new GridCheckResult<int>(
-                MaxBlocks > 0, 
-                MaxBlocks > 0 ? concreteGrid.BlocksCount <= MaxBlocks : true, 
-                concreteGrid.BlocksCount, 
+            var MaxBlocksResult = new GridCheckResult<int>(
+                MaxBlocks > 0,
+                MaxBlocks > 0 ? concreteGrid.BlocksCount <= MaxBlocks : true,
+                concreteGrid.BlocksCount,
                 MaxBlocks
             );
 
-            GridCheckResult<int> MinBlocksResult = new GridCheckResult<int>(
-                MinBlocks > 0, 
-                MinBlocks > 0 ? concreteGrid.BlocksCount >= MinBlocks : true, 
-                concreteGrid.BlocksCount, 
+            var MinBlocksResult = new GridCheckResult<int>(
+                MinBlocks > 0,
+                MinBlocks > 0 ? concreteGrid.BlocksCount >= MinBlocks : true,
+                concreteGrid.BlocksCount,
                 MinBlocks
             );
 
-            GridCheckResult<int> MaxPCUResult = new GridCheckResult<int>(
-                MaxPCU > 0, 
-                MaxPCU > 0 ? concreteGrid.BlocksPCU <= MaxPCU : true, 
-                concreteGrid.BlocksPCU, 
+            var MaxPCUResult = new GridCheckResult<int>(
+                MaxPCU > 0,
+                MaxPCU > 0 ? concreteGrid.BlocksPCU <= MaxPCU : true,
+                concreteGrid.BlocksPCU,
                 MaxPCU
             );
 
-            GridCheckResult<float> MaxMassResult = new GridCheckResult<float>(
-                MaxMass > 0, 
-                MaxMass > 0 ? concreteGrid.Mass <= MaxMass : true, 
-                concreteGrid.Mass, 
+            var MaxMassResult = new GridCheckResult<float>(
+                MaxMass > 0,
+                MaxMass > 0 ? concreteGrid.Mass <= MaxMass : true,
+                concreteGrid.Mass,
                 MaxMass
             );
 
@@ -237,18 +234,15 @@ namespace RedVsBlueClassSystem
                 //Init the result objects
                 BlockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
 
-                for (int i = 0; i < BlockLimits.Length; i++)
-                {
-                    BlockLimitResults[i] = new BlockLimitCheckResult() { Max = BlockLimits[i].MaxCount };
-                }
+                for (var i = 0; i < BlockLimits.Length; i++)
+                    BlockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
 
                 //Get all blocks to check
-                IEnumerable<IMyFunctionalBlock> BlocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
+                var BlocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
 
                 //Check all blocks against the limits
                 foreach (var block in BlocksOnGrid)
-                {
-                    for (int i = 0; i < BlockLimits.Length; i++)
+                    for (var i = 0; i < BlockLimits.Length; i++)
                     {
                         float weightedCount;
 
@@ -258,13 +252,10 @@ namespace RedVsBlueClassSystem
                             BlockLimitResults[i].Score += weightedCount;
                         }
                     }
-                }
 
                 //Check if the limits were exceeded & decide if test was passed
-                for(int i = 0; i < BlockLimitResults.Length; i++)
-                {
+                for (var i = 0; i < BlockLimitResults.Length; i++)
                     BlockLimitResults[i].Passed = BlockLimitResults[i].Score <= BlockLimitResults[i].Max;
-                }
             }
             else
             {
@@ -284,19 +275,20 @@ namespace RedVsBlueClassSystem
 
     public class GridModifiers
     {
-        public float ThrusterForce = 1;
-        public float ThrusterEfficiency = 1;
-        public float GyroForce = 1;
+        public float AssemblerSpeed = 1;
+        public float DrillHarvestMutiplier = 1;
         public float GyroEfficiency = 1;
+        public float GyroForce = 1;
+        public float PowerProducersOutput = 1;
         public float RefineEfficiency = 1;
         public float RefineSpeed = 1;
-        public float AssemblerSpeed = 1;
-        public float PowerProducersOutput = 1;
-        public float DrillHarvestMutiplier = 1;
+        public float ThrusterEfficiency = 1;
+        public float ThrusterForce = 1;
 
         public override string ToString()
         {
-            return $"<GridModifiers ThrusterForce={ThrusterForce} ThrusterEfficiency={ThrusterEfficiency} GyroForce={GyroForce} GyroEfficiency={GyroEfficiency} RefineEfficiency={RefineEfficiency} RefineSpeed={RefineSpeed} AssemblerSpeed={AssemblerSpeed} PowerProducersOutput={PowerProducersOutput} DrillHarvestMutiplier={DrillHarvestMutiplier} />";
+            return
+                $"<GridModifiers ThrusterForce={ThrusterForce} ThrusterEfficiency={ThrusterEfficiency} GyroForce={GyroForce} GyroEfficiency={GyroEfficiency} RefineEfficiency={RefineEfficiency} RefineSpeed={RefineSpeed} AssemblerSpeed={AssemblerSpeed} PowerProducersOutput={PowerProducersOutput} DrillHarvestMutiplier={DrillHarvestMutiplier} />";
         }
 
         public IEnumerable<ModifierNameValue> GetModifierValues()
@@ -313,7 +305,8 @@ namespace RedVsBlueClassSystem
         }
     }
 
-    public struct ModifierNameValue {
+    public struct ModifierNameValue
+    {
         public string Name;
         public float Value;
 
@@ -327,54 +320,54 @@ namespace RedVsBlueClassSystem
     [ProtoContract]
     public class BlockLimit
     {
-        [ProtoMember(1)]
-        public string Name;
-        [ProtoMember(2)]
-        public BlockType[] BlockTypes;
-        [ProtoMember(4)]
-        public float MaxCount;
+        [ProtoMember(2)] public BlockType[] BlockTypes;
+
+        [ProtoMember(4)] public float MaxCount;
+
+        [ProtoMember(1)] public string Name;
 
         public bool IsLimitedBlock(IMyFunctionalBlock block, out float blockCountWeight)
         {
             blockCountWeight = 0;
-            
+
             foreach (var blockType in BlockTypes)
-            {
-                if(blockType.IsBlockOfType(block))
+                if (blockType.IsBlockOfType(block))
                 {
                     blockCountWeight = blockType.CountWeight;
 
                     return true;
                 }
-            }
 
             return false;
         }
     }
 
-    
 
     [ProtoContract]
     public class BlockType
     {
-        [ProtoMember(1)]
-        public string TypeId;
-        [ProtoMember(2)]
-        public string SubtypeId;
-        [ProtoMember(3)]
-        public float CountWeight;
-        
-        public BlockType() { }
+        [ProtoMember(3)] public float CountWeight;
+
+        [ProtoMember(2)] public string SubtypeId;
+
+        [ProtoMember(1)] public string TypeId;
+
+        public BlockType()
+        {
+        }
 
         public BlockType(string typeId, string subtypeId = "", float countWeight = 1)
         {
             TypeId = typeId;
             SubtypeId = subtypeId;
             CountWeight = countWeight;
-        } 
+        }
+
         public bool IsBlockOfType(IMyFunctionalBlock block)
         {
-            return Utils.GetBlockId(block) == TypeId && (String.IsNullOrEmpty(SubtypeId) || Convert.ToString(block.BlockDefinition.SubtypeId) == SubtypeId);
+            return Utils.GetBlockId(block) == TypeId && (string.IsNullOrEmpty(SubtypeId) ||
+                                                         Convert.ToString(block.BlockDefinition.SubtypeId) ==
+                                                         SubtypeId);
         }
     }
 }

@@ -1,11 +1,7 @@
-﻿using Sandbox.Game;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using System;
+﻿using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Network;
 
 namespace RedVsBlueClassSystem
@@ -13,21 +9,22 @@ namespace RedVsBlueClassSystem
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class ModSessionManager : MySessionComponentBase, IMyEventProxy
     {
-        private static ModSessionManager _Instance;
-        public static ModSessionManager Instance { get { return _Instance; } }
-
-
-        public ModConfig Config;
         internal Comms _Comms;
 
 
-        private MyEntity lastControlledEntity = null;
+        public ModConfig Config;
+
+
+        private MyEntity lastControlledEntity;
+        public static ModSessionManager Instance { get; private set; }
+
+        internal static Comms Comms => Instance._Comms;
 
         public override void Init(MyObjectBuilder_SessionComponent SessionComponent)
         {
             base.Init(SessionComponent);
 
-            _Instance = this;
+            Instance = this;
 
             Utils.Log("Init");
 
@@ -35,10 +32,8 @@ namespace RedVsBlueClassSystem
             Config = ModConfig.LoadOrGetDefaultConfig(Constants.ConfigFilename);
 
             if (Constants.IsServer)
-            {
                 //Save whatever config you're using
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
-            }
         }
 
         public override void UpdateAfterSimulation()
@@ -51,22 +46,19 @@ namespace RedVsBlueClassSystem
             {
                 var gridsToCheck = CubeGridLogic.GetGridsToBeChecked(Settings.MAX_GRID_PROCESSED_PER_TICK);
 
-                foreach (var gridLogic in gridsToCheck)
-                {
-                    gridLogic.CheckGridLimits();
-                }
+                foreach (var gridLogic in gridsToCheck) gridLogic.CheckGridLimits();
             }
 
-            if(Constants.IsClient)
+            if (Constants.IsClient)
             {
                 // Existing code for controlled entities and predictions
-                MyEntity controlledEntity = Utils.GetControlledGrid();
-                MyEntity cockpitEntity = Utils.GetControlledCockpit(controlledEntity);
+                var controlledEntity = Utils.GetControlledGrid();
+                var cockpitEntity = Utils.GetControlledCockpit(controlledEntity);
 
                 if (controlledEntity != null && !controlledEntity.Equals(lastControlledEntity))
                 {
                     lastControlledEntity = controlledEntity;
-                    MyCubeGrid controlled = controlledEntity as MyCubeGrid;
+                    var controlled = controlledEntity as MyCubeGrid;
 
                     if (controlled != null)
                     {
@@ -77,15 +69,12 @@ namespace RedVsBlueClassSystem
                             var gridClass = cubeGridLogic.GridClass;
 
                             if (gridClass != null)
-                            {
-                                Utils.ShowNotification($"Class \"{gridClass.Name}\" not valid for grid \"{controlled.DisplayName}\"");
-                            }
+                                Utils.ShowNotification(
+                                    $"Class \"{gridClass.Name}\" not valid for grid \"{controlled.DisplayName}\"");
                             else
-                            {
                                 Utils.ShowNotification($"Unknown class assigned to grid \"{controlled.DisplayName}\"");
-                            }
                         }
-                        else if(cubeGridLogic == null)
+                        else if (cubeGridLogic == null)
                         {
                             Utils.Log($"Grid missing CubeGridLogic: \"{controlled.DisplayName}\"", 1);
                         }
@@ -108,7 +97,6 @@ namespace RedVsBlueClassSystem
             return Instance.Config.GridClasses ?? new GridClass[0];
         }
 
-        internal static Comms Comms { get { return Instance._Comms;  } }
         internal static bool IsValidGridClass(long gridClassId)
         {
             return Instance.Config.IsValidGridClassId(gridClassId);
