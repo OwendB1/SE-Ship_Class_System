@@ -1,11 +1,7 @@
-﻿using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -32,23 +28,15 @@ namespace RedVsBlueClassSystem
 
         public static void WriteToClient(string msg)
         {
-            if (Constants.IsClient)
-            {
-                MyAPIGateway.Utilities.ShowMessage("[RvBCS]: ", msg);
-            }
+            if (Constants.IsClient) MyAPIGateway.Utilities.ShowMessage("[RvBCS]: ", msg);
         }
 
         public static void Log(string msg, int logPriority = 0)
         {
-            if (logPriority >= Settings.LOG_LEVEL)
-            {
-                MyLog.Default.WriteLine($"[RvBCS]: {msg}");
-            }
+            if (logPriority >= Settings.LOG_LEVEL) MyLog.Default.WriteLine($"[RvBCS]: {msg}");
 
-            if(logPriority >= Settings.CLIENT_OUTPUT_LOG_LEVEL)
-            {
+            if (logPriority >= Settings.CLIENT_OUTPUT_LOG_LEVEL)
                 MyAPIGateway.Utilities.ShowMessage($"[RvBCS={logPriority}]: ", msg);
-            }
         }
 
         public static void LogException(Exception e)
@@ -58,13 +46,13 @@ namespace RedVsBlueClassSystem
 
         public static void SaveConfig<T>(string variableId, string filename, T data)
         {
-            string saveText = MyAPIGateway.Utilities.SerializeToXML(data);
+            var saveText = MyAPIGateway.Utilities.SerializeToXML(data);
 
             MyAPIGateway.Utilities.SetVariable(variableId, saveText);
 
-            Log($"Saving config file to: {filename}", 0);
+            Log($"Saving config file to: {filename}");
 
-            using (TextWriter file = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(string)))
+            using (var file = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(string)))
             {
                 file.Write(saveText);
             }
@@ -104,21 +92,13 @@ namespace RedVsBlueClassSystem
         {
             try
             {
-                if (MyAPIGateway.Session == null || MyAPIGateway.Session.Player == null)
-                {
-                    return null;
-                }
+                if (MyAPIGateway.Session == null || MyAPIGateway.Session.Player == null) return null;
 
                 var controlledEntity = MyAPIGateway.Session.Player.Controller?.ControlledEntity?.Entity;
-                if (controlledEntity == null)
-                {
-                    return null;
-                }
+                if (controlledEntity == null) return null;
 
                 if (controlledEntity is IMyCockpit || controlledEntity is IMyRemoteControl)
-                {
                     return (controlledEntity as IMyCubeBlock).CubeGrid as MyEntity;
-                }
             }
             catch (Exception e)
             {
@@ -141,11 +121,10 @@ namespace RedVsBlueClassSystem
             {
                 var cockpit = block as MyCockpit; // Convert the block to MyCockpit
                 if (cockpit != null)
-                {
-                    if (cockpit.WorldMatrix != null)  // Add null check here
+                    if (cockpit.WorldMatrix != null) // Add null check here
                         return cockpit;
-                }
             }
+
             return null;
         }
 
