@@ -1,7 +1,7 @@
 ﻿using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class CubeGridModifiers
     {

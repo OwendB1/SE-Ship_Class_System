@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal static class DefaultGridClassConfig
     {

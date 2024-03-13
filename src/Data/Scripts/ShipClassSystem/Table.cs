@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VRage.Game.GUI.TextPanel;
 using VRageMath;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal class Table
     {

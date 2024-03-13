@@ -7,7 +7,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class BeaconGUI
     {

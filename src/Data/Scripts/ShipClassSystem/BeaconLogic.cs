@@ -7,7 +7,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Beacon), false, "SmallBlockBeacon", "LargeBlockBeacon",
         "SmallBlockBeaconReskin", "LargeBlockBeaconReskin")]

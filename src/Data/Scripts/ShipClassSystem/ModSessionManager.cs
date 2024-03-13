@@ -4,7 +4,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Network;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class ModSessionManager : MySessionComponentBase, IMyEventProxy

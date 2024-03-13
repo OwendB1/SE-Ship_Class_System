@@ -6,11 +6,10 @@ using VRage.Game;
 using VRage.Game.GUI.TextPanel;
 using VRage.Utils;
 using VRageMath;
-using IngameTextSurface = Sandbox.ModAPI.Ingame.IMyTextSurface;
 using IngameCubeBlock = VRage.Game.ModAPI.Ingame.IMyCubeBlock;
 using IngameIMyEntity = VRage.Game.ModAPI.Ingame.IMyEntity;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MyTextSurfaceScript("GridStatusLCDScript", "Grid class status")]
     internal class GridStatusLCDScript : MyTSSCommon
@@ -19,8 +18,6 @@ namespace RedVsBlueClassSystem
 
         private static readonly int
             ScrollPauseUpdates = 18; //how many updates to say paused at the start and end when scrolling
-
-        private readonly IMyTerminalBlock TerminalBlock;
 
         private readonly Table AppliedModifiersTable = new Table
         {
@@ -52,6 +49,8 @@ namespace RedVsBlueClassSystem
                 new Column { Name = "Success" }
             }
         };
+
+        private readonly IMyTerminalBlock TerminalBlock;
 
         private int ScrollTime;
 

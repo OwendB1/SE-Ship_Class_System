@@ -1,7 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class Constants
     {

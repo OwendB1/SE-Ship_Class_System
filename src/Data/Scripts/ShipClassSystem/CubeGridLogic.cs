@@ -13,7 +13,7 @@ using VRage.Network;
 using VRage.ObjectBuilders;
 using VRage.Sync;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_CubeGrid), false)]
     public class CubeGridLogic : MyGameLogicComponent, IMyEventProxy
@@ -25,6 +25,10 @@ namespace RedVsBlueClassSystem
         private static readonly GridsPerFactionClassManager gridsPerFactionClassManager =
             new GridsPerFactionClassManager(ModSessionManager.Instance.Config);
 
+        private readonly MySync<GridCheckResults, SyncDirection.FromServer> GridCheckResultsSync = null;
+
+        private readonly MySync<long, SyncDirection.FromServer> GridClassSync = null;
+
         private DetailedGridClassCheckResult _detailedGridClassCheckResult;
 
         private bool _isClientGridClassCheckDirty = true;
@@ -34,9 +38,6 @@ namespace RedVsBlueClassSystem
         private IMyFaction _OwningFaction;
 
         private IMyCubeGrid Grid;
-        private readonly MySync<GridCheckResults, SyncDirection.FromServer> GridCheckResultsSync = null;
-
-        private readonly MySync<long, SyncDirection.FromServer> GridClassSync = null;
 
         private bool IsGridOwnerDirty = true;
 

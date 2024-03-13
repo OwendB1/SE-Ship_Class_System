@@ -8,7 +8,7 @@ using VRage.Game.ModAPI;
 
 //TODO better unknown config handling
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class ModConfig
     {
@@ -18,10 +18,11 @@ namespace RedVsBlueClassSystem
             VariableId =
                 nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
 
+        private readonly Dictionary<long, GridClass> _GridClassesById = new Dictionary<long, GridClass>();
+
         private GridClass _DefaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
 
         private GridClass[] _GridClasses;
-        private readonly Dictionary<long, GridClass> _GridClassesById = new Dictionary<long, GridClass>();
         public string[] IgnoreFactionTags = new string[0];
 
         public bool IncludeAIFactions = false;

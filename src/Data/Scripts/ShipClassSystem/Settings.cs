@@ -1,4 +1,4 @@
-﻿namespace RedVsBlueClassSystem
+﻿namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class Settings
     {

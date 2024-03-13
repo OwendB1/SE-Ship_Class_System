@@ -8,7 +8,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class Utils
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ProtoBuf;
 using Sandbox.ModAPI;
 
-namespace RedVsBlueClassSystem
+namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class GridsPerFactionClassManager
     {
