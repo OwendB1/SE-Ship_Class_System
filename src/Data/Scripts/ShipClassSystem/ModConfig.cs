@@ -195,10 +195,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var concreteGrid = grid as MyCubeGrid;
 
-            Debug.Assert(concreteGrid != null, nameof(concreteGrid) + " != null");
+            if (concreteGrid == null) return null;
             var maxBlocksResult = new GridCheckResult<int>(
                 MaxBlocks > 0,
-                MaxBlocks <= 0 || concreteGrid.BlocksCount <= MaxBlocks,
+                MaxBlocks <= 0 || concreteGrid?.BlocksCount <= MaxBlocks,
                 concreteGrid.BlocksCount,
                 MaxBlocks
             );
