@@ -13,15 +13,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         "SmallBlockBeaconReskin", "LargeBlockBeaconReskin")]
     public class BeaconLogic : MyGameLogicComponent
     {
-        private IMyBeacon Beacon;
-        private CubeGridLogic GridLogic => Beacon?.GetGridLogic();
+        private IMyBeacon _beacon;
+        private CubeGridLogic GridLogic => _beacon?.GetGridLogic();
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
             base.Init(objectBuilder);
 
-            Beacon = (IMyBeacon)Entity;
+            _beacon = (IMyBeacon)Entity;
 
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
         }
@@ -30,10 +30,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             base.UpdateOnceBeforeFrame();
 
-            if (Beacon.CubeGrid?.Physics == null)
+            if (_beacon.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
 
-            Beacon.AppendingCustomInfo += AppendingCustomInfo;
+            _beacon.AppendingCustomInfo += AppendingCustomInfo;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
         }
 
@@ -50,12 +50,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 //TODO only if correct grid/block?
                 //"one way is to hook MyAPIGateway.TerminalControls.CustomControlGetter and store the block or entityId of that, and that is your last selected block (gets triggered per selected block including for multiple selected)"
 
-                if (MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel)
-                {
-                    //TODO only run this if grid check results actually change
-                    Beacon.RefreshCustomInfo();
-                    Beacon.SetDetailedInfoDirty();
-                }
+                if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
+                //TODO only run this if grid check results actually change
+                _beacon.RefreshCustomInfo();
+                _beacon.SetDetailedInfoDirty();
             }
             catch (Exception e)
             {
@@ -70,12 +68,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (gridClass == null) return;
 
-            if (gridClass.ForceBroadCast)
-            {
-                Beacon.Enabled = true;
-                Beacon.Radius = gridClass.ForceBroadCastRange;
-                Beacon.HudText = $"{Beacon.CubeGrid.DisplayName} : {gridClass.Name}";
-            }
+            if (!gridClass.ForceBroadCast) return;
+            _beacon.Enabled = true;
+            _beacon.Radius = gridClass.ForceBroadCastRange;
+            _beacon.HudText = $"{_beacon.CubeGrid.DisplayName} : {gridClass.Name}";
 
             /*if(primaryOwnerId != -1)
             {
@@ -129,32 +125,30 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, BlockLimitCheckResult result)
+        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, BlockLimitCheckResult result)
         {
             sb.Append($"{blockLimit.Name}: {result.Score}/{result.Max}{(result.Passed ? "\n" : " (fail)\n")}");
         }
 
-        private void FormatMaxCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> result)
+        private static void FormatMaxCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> result)
         {
             if (result.Active)
                 sb.Append($"{name}: {result.Value}/{result.Limit}{(result.Passed ? "\n" : " (fail)\n")}");
         }
 
-        private void FormatRangeCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> min,
+        private static void FormatRangeCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> min,
             GridCheckResult<T> max)
         {
-            if (min.Active || max.Active)
-            {
-                var value = min.Active ? min.Value : max.Value;
-                var passed = min.Passed && max.Passed;
-                var range = min.Active && max.Active
-                    ? $"{min.Limit} - {max.Limit}"
-                    : min.Active
-                        ? $">= {min.Limit}"
-                        : $"<= {max.Limit}";
+            if (!min.Active && !max.Active) return;
+            var value = min.Active ? min.Value : max.Value;
+            var passed = min.Passed && max.Passed;
+            var range = min.Active && max.Active
+                ? $"{min.Limit} - {max.Limit}"
+                : min.Active
+                    ? $">= {min.Limit}"
+                    : $"<= {max.Limit}";
 
-                sb.Append($"{name}: {value}/{range}{(passed ? "\n" : " (fail)\n")}");
-            }
+            sb.Append($"{name}: {value}/{range}{(passed ? "\n" : " (fail)\n")}");
         }
     }
 }

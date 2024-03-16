@@ -345,7 +345,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             GyroForce = 0,
             GyroEfficiency = 0,
             AssemblerSpeed = 0,
-            DrillHarvestMutiplier = 0,
+            DrillHarvestMultiplier = 0,
             PowerProducersOutput = 1,
             RefineEfficiency = 0,
             RefineSpeed = 0
@@ -384,7 +384,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         ThrusterEfficiency = 2f,
                         GyroForce = 2f,
                         GyroEfficiency = 2f,
-                        DrillHarvestMutiplier = 0,
+                        DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1
                     },
                     BlockLimits = new[]
@@ -423,7 +423,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         GyroForce = 1,
                         GyroEfficiency = 1,
                         AssemblerSpeed = 1,
-                        DrillHarvestMutiplier = 3,
+                        DrillHarvestMultiplier = 3,
                         PowerProducersOutput = 1,
                         RefineEfficiency = 1,
                         RefineSpeed = 1
@@ -469,7 +469,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         GyroForce = 1,
                         GyroEfficiency = 1,
                         AssemblerSpeed = 1,
-                        DrillHarvestMutiplier = 3,
+                        DrillHarvestMultiplier = 3,
                         PowerProducersOutput = 1,
                         RefineEfficiency = 1,
                         RefineSpeed = 1
@@ -515,7 +515,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         GyroForce = 1,
                         GyroEfficiency = 1,
                         AssemblerSpeed = 0,
-                        DrillHarvestMutiplier = 0,
+                        DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         RefineEfficiency = 0,
                         RefineSpeed = 0
@@ -560,7 +560,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         GyroForce = 1,
                         GyroEfficiency = 1,
                         AssemblerSpeed = 0,
-                        DrillHarvestMutiplier = 0,
+                        DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         RefineEfficiency = 0,
                         RefineSpeed = 0
@@ -605,7 +605,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 1,
                         RefineSpeed = 1,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 1,
+                        DrillHarvestMultiplier = 1,
                         AssemblerSpeed = 1
                     },
                     BlockLimits = new[]
@@ -646,7 +646,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 0,
+                        DrillHarvestMultiplier = 0,
                         AssemblerSpeed = 0
                     },
                     BlockLimits = new[]
@@ -693,7 +693,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 3,
                         RefineSpeed = 1,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 1,
+                        DrillHarvestMultiplier = 1,
                         AssemblerSpeed = 40
                     },
                     BlockLimits = new[]
@@ -734,7 +734,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 3,
                         RefineSpeed = 30,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 1,
+                        DrillHarvestMultiplier = 1,
                         AssemblerSpeed = 2
                     },
                     BlockLimits = new[]
@@ -763,7 +763,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     Id = 100,
                     Name = "Faction base",
                     MaxBlocks = 30000,
-                    MinBlocks = 2000,
                     MaxPerFaction = 1,
                     LargeGridStatic = true,
                     ForceBroadCast = true,
@@ -777,7 +776,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 3,
                         RefineSpeed = 10,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 1,
+                        DrillHarvestMultiplier = 1,
                         AssemblerSpeed = 10
                     },
                     BlockLimits = new[]
@@ -816,7 +815,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         GyroForce = 2,
                         GyroEfficiency = 2,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 0
+                        DrillHarvestMultiplier = 0
                     },
                     BlockLimits = new[]
                     {
@@ -862,7 +861,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 1,
                         RefineSpeed = 1,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 0
+                        DrillHarvestMultiplier = 0
                     },
                     BlockLimits = new[]
                     {
@@ -901,7 +900,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     Id = 300,
                     Name = "Destroyer",
                     MaxBlocks = 4000,
-                    MinBlocks = 2000,
                     MaxPerFaction = 3,
                     LargeGridMobile = true,
                     ForceBroadCast = true,
@@ -915,7 +913,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 1,
                         RefineSpeed = 1,
                         PowerProducersOutput = 1.2f,
-                        DrillHarvestMutiplier = 0
+                        DrillHarvestMultiplier = 0
                     },
                     BlockLimits = new[]
                     {
@@ -946,7 +944,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     Id = 400,
                     Name = "Battleship",
                     MaxBlocks = 8000,
-                    MinBlocks = 5000,
                     MaxPerFaction = 2,
                     LargeGridMobile = true,
                     ForceBroadCast = true,
@@ -960,7 +957,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         PowerProducersOutput = 1.5f,
-                        DrillHarvestMutiplier = 0
+                        DrillHarvestMultiplier = 0
                     },
                     BlockLimits = new[]
                     {
@@ -991,7 +988,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     Id = 500,
                     Name = "Capital",
                     MaxBlocks = 10000,
-                    MinBlocks = 6000,
                     MaxPerFaction = 1,
                     LargeGridMobile = true,
                     ForceBroadCast = true,
@@ -1005,7 +1001,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineEfficiency = 1,
                         RefineSpeed = 1,
                         PowerProducersOutput = 1,
-                        DrillHarvestMutiplier = 0,
+                        DrillHarvestMultiplier = 0,
                         AssemblerSpeed = 1
                     },
                     BlockLimits = new[]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.Game;
@@ -46,9 +47,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var controls = new List<IMyTerminalControl>();
             MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
 
-            foreach (var control in controls)
-                if (ControlsToHideIfForceBroadcast.Contains(control.Id))
-                    control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfClassNotForceBroadcast);
+            foreach (var control in controls.Where(control => ControlsToHideIfForceBroadcast.Contains(control.Id)))
+                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfClassNotForceBroadcast);
         }
 
         private static bool VisibleIfClassNotForceBroadcast(IMyTerminalBlock block)
@@ -74,34 +74,26 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static void SetComboboxContentLargeStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            foreach (var gridLimit in ModSessionManager.GetAllGridClasses())
-                if (gridLimit.LargeGridStatic)
-                    list.Add(new MyTerminalControlComboBoxItem
-                        { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridStatic 
+                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentLargeGrid(List<MyTerminalControlComboBoxItem> list)
         {
-            foreach (var gridLimit in ModSessionManager.GetAllGridClasses())
-                if (gridLimit.LargeGridMobile)
-                    list.Add(new MyTerminalControlComboBoxItem
-                        { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridMobile 
+                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentSmallStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            foreach (var gridLimit in ModSessionManager.GetAllGridClasses())
-                if (gridLimit.SmallGridStatic)
-                    list.Add(new MyTerminalControlComboBoxItem
-                        { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGridStatic 
+                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentSmallMobile(List<MyTerminalControlComboBoxItem> list)
         {
-            foreach (var gridLimit in ModSessionManager.GetAllGridClasses())
-                if (gridLimit.SmallGridMobile)
-                    list.Add(new MyTerminalControlComboBoxItem
-                        { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGridMobile 
+                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static long GetGridClass(IMyTerminalBlock block)
@@ -169,8 +161,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (block?.CubeGrid == null)
                 return false;
 
-            var originalCondition = OriginalFunc == null ? true : OriginalFunc.Invoke(block);
-            var customCondition = CustomFunc == null ? true : CustomFunc.Invoke(block);
+            var originalCondition = OriginalFunc?.Invoke(block) ?? true;
+            var customCondition = CustomFunc?.Invoke(block) ?? true;
 
             if (CheckOR)
                 return originalCondition || customCondition;

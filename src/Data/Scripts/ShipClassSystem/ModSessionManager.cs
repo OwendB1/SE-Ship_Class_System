@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -9,16 +10,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class ModSessionManager : MySessionComponentBase, IMyEventProxy
     {
-        internal Comms _Comms;
-
+        private Comms _comms;
 
         public ModConfig Config;
 
-
-        private MyEntity lastControlledEntity;
+        private MyEntity _lastControlledEntity;
         public static ModSessionManager Instance { get; private set; }
 
-        internal static Comms Comms => Instance._Comms;
+        internal static Comms Comms => Instance._comms;
 
         public override void Init(MyObjectBuilder_SessionComponent SessionComponent)
         {
@@ -28,7 +27,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             Utils.Log("Init");
 
-            _Comms = new Comms(Settings.COMMS_MESSAGE_ID);
+            _comms = new Comms(Settings.COMMS_MESSAGE_ID);
             Config = ModConfig.LoadOrGetDefaultConfig(Constants.ConfigFilename);
 
             if (Constants.IsServer)
@@ -49,41 +48,36 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 foreach (var gridLogic in gridsToCheck) gridLogic.CheckGridLimits();
             }
 
-            if (Constants.IsClient)
+            if (!Constants.IsClient) return;
+            // Existing code for controlled entities and predictions
+            var controlledEntity = Utils.GetControlledGrid();
+            var cockpitEntity = Utils.GetControlledCockpit(controlledEntity);
+
+            if (controlledEntity != null && !controlledEntity.Equals(_lastControlledEntity))
             {
-                // Existing code for controlled entities and predictions
-                var controlledEntity = Utils.GetControlledGrid();
-                var cockpitEntity = Utils.GetControlledCockpit(controlledEntity);
+                _lastControlledEntity = controlledEntity;
+                var controlled = controlledEntity as MyCubeGrid;
 
-                if (controlledEntity != null && !controlledEntity.Equals(lastControlledEntity))
+                if (controlled == null) return;
+                var cubeGridLogic = controlled.GetGridLogic();
+
+                if (cubeGridLogic != null && !cubeGridLogic.GridMeetsGridClassRestrictions)
                 {
-                    lastControlledEntity = controlledEntity;
-                    var controlled = controlledEntity as MyCubeGrid;
+                    var gridClass = cubeGridLogic.GridClass;
 
-                    if (controlled != null)
-                    {
-                        var cubeGridLogic = controlled.GetGridLogic();
-
-                        if (cubeGridLogic != null && !cubeGridLogic.GridMeetsGridClassRestrictions)
-                        {
-                            var gridClass = cubeGridLogic.GridClass;
-
-                            if (gridClass != null)
-                                Utils.ShowNotification(
-                                    $"Class \"{gridClass.Name}\" not valid for grid \"{controlled.DisplayName}\"");
-                            else
-                                Utils.ShowNotification($"Unknown class assigned to grid \"{controlled.DisplayName}\"");
-                        }
-                        else if (cubeGridLogic == null)
-                        {
-                            Utils.Log($"Grid missing CubeGridLogic: \"{controlled.DisplayName}\"", 1);
-                        }
-                    }
+                    Utils.ShowNotification(
+                        gridClass != null
+                            ? $"Class \"{gridClass.Name}\" not valid for grid \"{controlled.DisplayName}\""
+                            : $"Unknown class assigned to grid \"{controlled.DisplayName}\"");
                 }
-                else if (controlledEntity == null)
+                else if (cubeGridLogic == null)
                 {
-                    lastControlledEntity = null;
+                    Utils.Log($"Grid missing CubeGridLogic: \"{controlled.DisplayName}\"", 1);
                 }
+            }
+            else if (controlledEntity == null)
+            {
+                _lastControlledEntity = null;
             }
         }
 
@@ -94,7 +88,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static GridClass[] GetAllGridClasses()
         {
-            return Instance.Config.GridClasses ?? new GridClass[0];
+            return Instance.Config.GridClasses ?? Array.Empty<GridClass>();
         }
 
         internal static bool IsValidGridClass(long gridClassId)

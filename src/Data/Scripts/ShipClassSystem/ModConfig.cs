@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using ProtoBuf;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -15,41 +16,41 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static readonly bool ForceRegenerateConfig = false;
 
         private static readonly string
-            VariableId =
-                nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
+            VariableId = nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
 
-        private readonly Dictionary<long, GridClass> _GridClassesById = new Dictionary<long, GridClass>();
+        private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
 
-        private GridClass _DefaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
 
-        private GridClass[] _GridClasses;
-        public string[] IgnoreFactionTags = new string[0];
+        private GridClass[] _gridClasses;
+        public string[] IgnoreFactionTags = Array.Empty<string>();
 
-        public bool IncludeAIFactions = false;
+        public bool IncludeAiFactions = false;
 
         public GridClass[] GridClasses
         {
-            get { return _GridClasses; }
+            get { return _gridClasses; }
             set
             {
-                _GridClasses = value;
+                _gridClasses = value;
                 UpdateGridClassesDictionary();
             }
         }
 
         public GridClass DefaultGridClass
         {
-            get { return _DefaultGridClass; }
+            get { return _defaultGridClass; }
             set
             {
-                _DefaultGridClass = value;
+                _defaultGridClass = value;
                 UpdateGridClassesDictionary();
             }
         }
 
         public GridClass GetGridClassById(long gridClassId)
         {
-            if (_GridClassesById.ContainsKey(gridClassId)) return _GridClassesById[gridClassId];
+            GridClass id;
+            if (_gridClassesById.TryGetValue(gridClassId, out id)) return id;
 
             Utils.Log($"Unknown grid class {gridClassId}, using default grid class");
 
@@ -58,21 +59,21 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public bool IsValidGridClassId(long gridClassId)
         {
-            return _GridClassesById.ContainsKey(gridClassId);
+            return _gridClassesById.ContainsKey(gridClassId);
         }
 
         private void UpdateGridClassesDictionary()
         {
-            _GridClassesById.Clear();
+            _gridClassesById.Clear();
 
-            if (_DefaultGridClass != null)
-                _GridClassesById[0] = DefaultGridClass;
+            if (_defaultGridClass != null)
+                _gridClassesById[0] = DefaultGridClass;
             else
-                _GridClassesById[0] = DefaultGridClassConfig.DefaultGridClassDefinition;
+                _gridClassesById[0] = DefaultGridClassConfig.DefaultGridClassDefinition;
 
-            if (_GridClasses != null)
-                foreach (var gridClass in _GridClasses)
-                    _GridClassesById[gridClass.Id] = gridClass;
+            if (_gridClasses == null) return;
+            foreach (var gridClass in _gridClasses)
+                _gridClassesById[gridClass.Id] = gridClass;
         }
 
         public static ModConfig LoadOrGetDefaultConfig(string filename)
@@ -97,10 +98,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     fileContent = Reader.ReadToEnd();
                     Reader.Close();
 
-                    if (string.IsNullOrEmpty(fileContent))
-                        Utils.Log($"Loadied config {filename} from world storage was empty");
-                    else
-                        Utils.Log($"Loaded config {filename} from world storage size = {fileContent.Length}");
+                    Utils.Log(string.IsNullOrEmpty(fileContent)
+                        ? $"Loaded config {filename} from world storage was empty"
+                        : $"Loaded config {filename} from world storage size = {fileContent.Length}");
                 }
 
             //If we do not have any data (either not the server, or no config file present on the server)
@@ -123,14 +123,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 var loadedConfig = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(fileContent);
 
-                if (loadedConfig == null)
-                {
-                    Utils.Log($"Failed to load ModConfig from {filename}", 2);
+                if (loadedConfig != null) return loadedConfig;
+                Utils.Log($"Failed to load ModConfig from {filename}", 2);
 
-                    return null;
-                }
+                return null;
 
-                return loadedConfig;
             }
             catch (Exception e)
             {
@@ -143,21 +140,19 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static void SaveConfig(ModConfig config, string filename)
         {
-            if (Constants.IsServer)
+            if (!Constants.IsServer) return;
+            try
             {
-                try
-                {
-                    var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
-                    writer.Write(MyAPIGateway.Utilities.SerializeToXML(config));
-                    writer.Close();
-                }
-                catch (Exception e)
-                {
-                    Utils.Log($"Failed to save ModConfig file {filename}, reason {e.Message}", 3);
-                }
-
-                Utils.SaveConfig(GetVariableName(filename), filename, config);
+                var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
+                writer.Write(MyAPIGateway.Utilities.SerializeToXML(config));
+                writer.Close();
             }
+            catch (Exception e)
+            {
+                Utils.Log($"Failed to save ModConfig file {filename}, reason {e.Message}", 3);
+            }
+
+            Utils.SaveConfig(GetVariableName(filename), filename, config);
         }
 
         private static string GetVariableName(string filename)
@@ -200,63 +195,62 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var concreteGrid = grid as MyCubeGrid;
 
-            var MaxBlocksResult = new GridCheckResult<int>(
+            Debug.Assert(concreteGrid != null, nameof(concreteGrid) + " != null");
+            var maxBlocksResult = new GridCheckResult<int>(
                 MaxBlocks > 0,
-                MaxBlocks > 0 ? concreteGrid.BlocksCount <= MaxBlocks : true,
+                MaxBlocks <= 0 || concreteGrid.BlocksCount <= MaxBlocks,
                 concreteGrid.BlocksCount,
                 MaxBlocks
             );
 
-            var MinBlocksResult = new GridCheckResult<int>(
+            var minBlocksResult = new GridCheckResult<int>(
                 MinBlocks > 0,
-                MinBlocks > 0 ? concreteGrid.BlocksCount >= MinBlocks : true,
+                MinBlocks <= 0 || concreteGrid.BlocksCount >= MinBlocks,
                 concreteGrid.BlocksCount,
                 MinBlocks
             );
 
-            var MaxPCUResult = new GridCheckResult<int>(
+            var maxPCUResult = new GridCheckResult<int>(
                 MaxPCU > 0,
-                MaxPCU > 0 ? concreteGrid.BlocksPCU <= MaxPCU : true,
+                MaxPCU <= 0 || concreteGrid.BlocksPCU <= MaxPCU,
                 concreteGrid.BlocksPCU,
                 MaxPCU
             );
 
-            var MaxMassResult = new GridCheckResult<float>(
+            var maxMassResult = new GridCheckResult<float>(
                 MaxMass > 0,
-                MaxMass > 0 ? concreteGrid.Mass <= MaxMass : true,
+                !(MaxMass > 0) || concreteGrid.Mass <= MaxMass,
                 concreteGrid.Mass,
                 MaxMass
             );
 
-            BlockLimitCheckResult[] BlockLimitResults = null;
+            BlockLimitCheckResult[] blockLimitResults = null;
 
             if (BlockLimits != null)
             {
                 //Init the result objects
-                BlockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
+                blockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
 
                 for (var i = 0; i < BlockLimits.Length; i++)
-                    BlockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
+                    blockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
 
                 //Get all blocks to check
-                var BlocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
+                var blocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
 
                 //Check all blocks against the limits
-                foreach (var block in BlocksOnGrid)
+                foreach (var block in blocksOnGrid)
                     for (var i = 0; i < BlockLimits.Length; i++)
                     {
                         float weightedCount;
 
-                        if (BlockLimits[i].IsLimitedBlock(block, out weightedCount))
-                        {
-                            BlockLimitResults[i].Blocks++;
-                            BlockLimitResults[i].Score += weightedCount;
-                        }
+                        if (!BlockLimits[i].IsLimitedBlock(block, out weightedCount)) continue;
+                        blockLimitResults[i].Blocks++;
+                        blockLimitResults[i].Score += weightedCount;
                     }
 
                 //Check if the limits were exceeded & decide if test was passed
-                for (var i = 0; i < BlockLimitResults.Length; i++)
-                    BlockLimitResults[i].Passed = BlockLimitResults[i].Score <= BlockLimitResults[i].Max;
+                for (var i = 0; i < blockLimitResults.Length; i++)
+                    blockLimitResults[i].Passed = blockLimitResults[i].Score <= blockLimitResults[i].Max;
             }
             else
             {
@@ -265,11 +259,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             return new DetailedGridClassCheckResult(
                 IsGridEligible(grid),
-                MaxBlocksResult,
-                MinBlocksResult,
-                MaxPCUResult,
-                MaxMassResult,
-                BlockLimitResults
+                maxBlocksResult,
+                minBlocksResult,
+                maxPCUResult,
+                maxMassResult,
+                blockLimitResults
             );
         }
     }
@@ -277,7 +271,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class GridModifiers
     {
         public float AssemblerSpeed = 1;
-        public float DrillHarvestMutiplier = 1;
+        public float DrillHarvestMultiplier = 1;
         public float GyroEfficiency = 1;
         public float GyroForce = 1;
         public float PowerProducersOutput = 1;
@@ -289,7 +283,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public override string ToString()
         {
             return
-                $"<GridModifiers ThrusterForce={ThrusterForce} ThrusterEfficiency={ThrusterEfficiency} GyroForce={GyroForce} GyroEfficiency={GyroEfficiency} RefineEfficiency={RefineEfficiency} RefineSpeed={RefineSpeed} AssemblerSpeed={AssemblerSpeed} PowerProducersOutput={PowerProducersOutput} DrillHarvestMutiplier={DrillHarvestMutiplier} />";
+                $"<GridModifiers ThrusterForce={ThrusterForce} ThrusterEfficiency={ThrusterEfficiency} GyroForce={GyroForce} GyroEfficiency={GyroEfficiency} RefineEfficiency={RefineEfficiency} RefineSpeed={RefineSpeed} AssemblerSpeed={AssemblerSpeed} PowerProducersOutput={PowerProducersOutput} DrillHarvestMutiplier={DrillHarvestMultiplier} />";
         }
 
         public IEnumerable<ModifierNameValue> GetModifierValues()
@@ -302,7 +296,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             yield return new ModifierNameValue("Refinery speed", RefineSpeed);
             yield return new ModifierNameValue("Assembler speed", AssemblerSpeed);
             yield return new ModifierNameValue("Power output", PowerProducersOutput);
-            yield return new ModifierNameValue("Drill harvest", DrillHarvestMutiplier);
+            yield return new ModifierNameValue("Drill harvest", DrillHarvestMultiplier);
         }
     }
 

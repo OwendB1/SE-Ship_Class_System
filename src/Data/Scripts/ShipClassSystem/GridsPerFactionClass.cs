@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ProtoBuf;
 using Sandbox.ModAPI;
 
@@ -7,32 +8,32 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class GridsPerFactionClassManager
     {
-        private readonly ModConfig Config;
-        private readonly GridsPerFactionClass PerFaction = new GridsPerFactionClass();
+        private readonly ModConfig _config;
+        private readonly GridsPerFactionClass _perFaction = new GridsPerFactionClass();
 
         public GridsPerFactionClassManager(ModConfig config)
         {
-            Config = config;
+            _config = config;
         }
 
         public bool IsGridWithinFactionLimits(CubeGridLogic gridLogic)
         {
             if (!IsApplicableGrid(gridLogic)) return true;
 
-            var factionId = gridLogic.OwningFaction == null ? -1 : gridLogic.OwningFaction.FactionId;
+            var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
 
-            if (!Config.IsValidGridClassId(gridClassId))
+            if (!_config.IsValidGridClassId(gridClassId))
             {
                 Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {gridClassId}", 2);
 
                 return false;
             }
 
-            if (PerFaction.ContainsKey(factionId) && PerFaction[factionId].ContainsKey(gridClassId))
+            if (_perFaction.ContainsKey(factionId) && _perFaction[factionId].ContainsKey(gridClassId))
             {
-                var numAllowedGrids = Config.GetGridClassById(gridClassId).MaxPerFaction;
-                var idx = PerFaction[factionId][gridClassId].IndexOf(gridLogic.Entity.EntityId);
+                var numAllowedGrids = _config.GetGridClassById(gridClassId).MaxPerFaction;
+                var idx = _perFaction[factionId][gridClassId].IndexOf(gridLogic.Entity.EntityId);
 
                 if (idx == -1)
                     Utils.Log(
@@ -53,22 +54,19 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             Utils.Log("GridsPerFactionClass::AddCubeGrid: start");
             if (!IsApplicableGrid(gridLogic)) return;
-            Utils.Log("1");
-            var factionId = gridLogic.OwningFaction == null ? -1 : gridLogic.OwningFaction.FactionId;
+            var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
             Dictionary<long, List<long>> perGridClass;
-            Utils.Log("2");
-            if (!PerFaction.ContainsKey(factionId))
+            if (!_perFaction.ContainsKey(factionId))
             {
                 perGridClass = GetDefaultFactionGridsSet();
-                PerFaction[factionId] = perGridClass;
+                _perFaction[factionId] = perGridClass;
             }
             else
             {
-                perGridClass = PerFaction[factionId];
+                perGridClass = _perFaction[factionId];
             }
 
-            Utils.Log("3");
             if (!perGridClass.ContainsKey(gridClassId))
             {
                 Utils.Log(
@@ -77,47 +75,41 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 perGridClass[gridClassId] = new List<long>();
             }
 
-            Utils.Log("4");
             if (!perGridClass[gridClassId].Contains(gridLogic.Entity.EntityId))
                 perGridClass[gridClassId].Add(gridLogic.Entity.EntityId);
-            Utils.Log("5");
         }
 
         public Dictionary<long, List<long>> GetFactionGridsByClass(long factionId)
         {
-            if (PerFaction.ContainsKey(factionId)) return PerFaction[factionId];
-
-            return null;
+            Dictionary<long, List<long>> value;
+            return _perFaction.TryGetValue(factionId, out value) ? value : null;
         }
 
         public void Reset()
         {
-            foreach (var factionClassesEntry in PerFaction)
-            foreach (var gridsEntry in factionClassesEntry.Value)
+            foreach (var gridsEntry in _perFaction.SelectMany(factionClassesEntry => factionClassesEntry.Value))
                 gridsEntry.Value.Clear();
         }
 
         public bool IsApplicableGrid(CubeGridLogic gridLogic)
         {
-            if (!Config.IncludeAIFactions && gridLogic.OwningFaction != null &&
+            if (!_config.IncludeAiFactions && gridLogic.OwningFaction != null &&
                 gridLogic.OwningFaction.IsEveryoneNpc()) return false;
 
-            if (Config.IgnoreFactionTags != null && gridLogic.OwningFaction != null &&
-                Config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag)) return false;
-
-            return true;
+            return _config.IgnoreFactionTags == null || gridLogic.OwningFaction == null ||
+                   !_config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag);
         }
 
         public byte[] GetDataBytes()
         {
-            return MyAPIGateway.Utilities.SerializeToBinary(PerFaction);
+            return MyAPIGateway.Utilities.SerializeToBinary(_perFaction);
         }
 
         private Dictionary<long, List<long>> GetDefaultFactionGridsSet()
         {
             var set = new Dictionary<long, List<long>>();
 
-            foreach (var gridClass in Config.GridClasses) set[gridClass.Id] = new List<long>();
+            foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 
             return set;
         }

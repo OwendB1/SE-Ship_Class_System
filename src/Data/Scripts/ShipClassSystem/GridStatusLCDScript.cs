@@ -19,7 +19,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static readonly int
             ScrollPauseUpdates = 18; //how many updates to say paused at the start and end when scrolling
 
-        private readonly Table AppliedModifiersTable = new Table
+        private readonly Table _appliedModifiersTable = new Table
         {
             Columns = new List<Column>
             {
@@ -28,7 +28,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         };
 
-        private readonly Table GridResultsTable = new Table
+        private readonly Table _gridResultsTable = new Table
         {
             Columns = new List<Column>
             {
@@ -40,7 +40,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         };
 
-        private readonly Table HeaderTable = new Table
+        private readonly Table _headerTable = new Table
         {
             Columns = new List<Column>
             {
@@ -50,16 +50,16 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         };
 
-        private readonly IMyTerminalBlock TerminalBlock;
+        private readonly IMyTerminalBlock _terminalBlock;
 
-        private int ScrollTime;
+        private int _scrollTime;
 
         public GridStatusLCDScript(IMyTextSurface surface, IngameCubeBlock block, Vector2 size) : base(surface, block,
             size)
         {
-            TerminalBlock =
+            _terminalBlock =
                 (IMyTerminalBlock)block; // internal stored m_block is the ingame interface which has no events, so can't unhook later on, therefore this field is required.
-            TerminalBlock.OnMarkForClose +=
+            _terminalBlock.OnMarkForClose +=
                 BlockMarkedForClose; // required if you're gonna make use of Dispose() as it won't get called when block is removed or grid is cut/unloaded.
 
             // Called when script is created.
@@ -68,12 +68,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override ScriptUpdate NeedsUpdate => ScriptUpdate.Update10; // frequency that Run() is called.
 
-        private CubeGridLogic GridLogic => TerminalBlock?.GetGridLogic();
+        private CubeGridLogic GridLogic => _terminalBlock?.GetGridLogic();
 
         public override void Dispose()
         {
             base.Dispose(); // do not remove
-            TerminalBlock.OnMarkForClose -= BlockMarkedForClose;
+            _terminalBlock.OnMarkForClose -= BlockMarkedForClose;
 
             // Called when script is removed for any reason, so that you can clean up stuff if you need to.
         }
@@ -113,10 +113,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var padding = new Vector2(10, 10);
             var cellGap = new Vector2(12, 5);
             var screenInnerWidth = Surface.SurfaceSize.X - padding.X * 2;
-            var SuccessColor = Color.Green;
-            var FailColor = Color.Red;
-            var baseScale = 1.25f;
-            var titleScale = baseScale;
+            var successColor = Color.Green;
+            var failColor = Color.Red;
+            const float baseScale = 1.25f;
             var bodyScale = baseScale * 13 / TextUtils.CharWidth;
 
             var frame = Surface.DrawFrame();
@@ -126,39 +125,39 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             AddBackground(frame, Color.White.Alpha(0.05f));
 
             // the colors in the terminal are Surface.ScriptBackgroundColor and Surface.ScriptForegroundColor, the other ones without Script in name are for text/image mode.
-            var gridClass = TerminalBlock.GetGridLogic().GridClass;
+            var gridClass = _terminalBlock.GetGridLogic().GridClass;
 
             if (gridClass == null) return;
 
-            var checkGridResult = TerminalBlock.GetGridLogic().DetailedGridClassCheckResult;
-            GridResultsTable.Clear();
+            var checkGridResult = _terminalBlock.GetGridLogic().DetailedGridClassCheckResult;
+            _gridResultsTable.Clear();
 
             Vector2 currentPosition;
             var spritesToRender = new List<MySprite>();
 
             //Render the header
-            HeaderTable.Clear();
+            _headerTable.Clear();
 
-            HeaderTable.Rows.Add(new Row
+            _headerTable.Rows.Add(new Row
             {
                 new Cell("Class:"),
-                new Cell(gridClass.Name, checkGridResult.Passed ? SuccessColor : FailColor),
-                checkGridResult.Passed ? new Cell() : new Cell("X", FailColor)
+                new Cell(gridClass.Name, checkGridResult.Passed ? successColor : failColor),
+                checkGridResult.Passed ? new Cell() : new Cell("X", failColor)
             });
 
-            HeaderTable.RenderToSprites(spritesToRender, screenTopLeft + padding, screenInnerWidth, new Vector2(15, 0),
-                out currentPosition, titleScale);
+            _headerTable.RenderToSprites(spritesToRender, screenTopLeft + padding, screenInnerWidth, new Vector2(15, 0),
+                out currentPosition, baseScale);
 
             //Render the results checklist
 
             if (!checkGridResult.ValidGridType)
-                GridResultsTable.Rows.Add(new Row
+                _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("Grid type:"),
                     new Cell(null),
                     new Cell(null),
-                    new Cell("Invalid", FailColor),
-                    new Cell("X", FailColor)
+                    new Cell("Invalid", failColor),
+                    new Cell("X", failColor)
                 });
 
             if (checkGridResult.MaxBlocks.Active || checkGridResult.MinBlocks.Active)
@@ -170,36 +169,36 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         ? $"<= {checkGridResult.MaxBlocks.Limit}"
                         : $">= {checkGridResult.MinBlocks.Limit}";
 
-                GridResultsTable.Rows.Add(new Row
+                _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("Blocks: "),
                     new Cell(checkGridResult.MaxBlocks.Value.ToString()),
                     new Cell("/"),
-                    new Cell(target, passed ? SuccessColor : FailColor),
-                    passed ? new Cell() : new Cell("X", FailColor)
+                    new Cell(target, passed ? successColor : failColor),
+                    passed ? new Cell() : new Cell("X", failColor)
                 });
             }
 
             if (checkGridResult.MaxMass.Active)
-                GridResultsTable.Rows.Add(new Row
+                _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("Mass: "),
                     new Cell(checkGridResult.MaxMass.Value.ToString()),
                     new Cell("/"),
                     new Cell(checkGridResult.MaxMass.Limit.ToString(),
-                        checkGridResult.MaxMass.Passed ? SuccessColor : FailColor),
-                    checkGridResult.MaxMass.Passed ? new Cell() : new Cell("X", FailColor)
+                        checkGridResult.MaxMass.Passed ? successColor : failColor),
+                    checkGridResult.MaxMass.Passed ? new Cell() : new Cell("X", failColor)
                 });
 
             if (checkGridResult.MaxPCU.Active)
-                GridResultsTable.Rows.Add(new Row
+                _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("PCU: "),
                     new Cell(checkGridResult.MaxPCU.Value.ToString()),
                     new Cell("/"),
                     new Cell(checkGridResult.MaxPCU.Limit.ToString(),
-                        checkGridResult.MaxPCU.Passed ? SuccessColor : FailColor),
-                    checkGridResult.MaxPCU.Passed ? new Cell() : new Cell("X", FailColor)
+                        checkGridResult.MaxPCU.Passed ? successColor : failColor),
+                    checkGridResult.MaxPCU.Passed ? new Cell() : new Cell("X", failColor)
                 });
 
             if (gridClass.BlockLimits != null)
@@ -208,46 +207,46 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     var blockLimit = gridClass.BlockLimits[i];
                     var checkResults = checkGridResult.BlockLimits[i];
 
-                    GridResultsTable.Rows.Add(new Row
+                    _gridResultsTable.Rows.Add(new Row
                     {
                         new Cell($"{blockLimit.Name}:"),
                         new Cell(checkResults.Score.ToString()),
                         new Cell("/"),
-                        new Cell(checkResults.Max.ToString(), checkResults.Passed ? SuccessColor : FailColor),
-                        checkResults.Passed ? new Cell() : new Cell("X", FailColor)
+                        new Cell(checkResults.Max.ToString(), checkResults.Passed ? successColor : failColor),
+                        checkResults.Passed ? new Cell() : new Cell("X", failColor)
                     });
                 }
 
             var gridResultsTableTopLeft = currentPosition + new Vector2(0, 5);
 
-            GridResultsTable.RenderToSprites(spritesToRender, gridResultsTableTopLeft, screenInnerWidth, cellGap,
+            _gridResultsTable.RenderToSprites(spritesToRender, gridResultsTableTopLeft, screenInnerWidth, cellGap,
                 out currentPosition, bodyScale);
 
             //Applied modifiers
             spritesToRender.Add(CreateLine("Applied modfiers", currentPosition + new Vector2(0, 5), out currentPosition,
-                titleScale));
+                baseScale));
 
-            AppliedModifiersTable.Clear();
+            _appliedModifiersTable.Clear();
 
             var appliedModifiersTableTopLeft = currentPosition + new Vector2(0, 5);
 
             foreach (var modifierValue in GridLogic.Modifiers.GetModifierValues())
-                AppliedModifiersTable.Rows.Add(new Row
+                _appliedModifiersTable.Rows.Add(new Row
                 {
                     new Cell($"{modifierValue.Name}:"),
                     new Cell(modifierValue.Value.ToString())
                 });
 
-            AppliedModifiersTable.RenderToSprites(spritesToRender, appliedModifiersTableTopLeft, screenInnerWidth,
+            _appliedModifiersTable.RenderToSprites(spritesToRender, appliedModifiersTableTopLeft, screenInnerWidth,
                 cellGap, out currentPosition, bodyScale);
 
             var scrollPosition = GetScrollPosition(currentPosition + padding);
 
-            for (var i = 0; i < spritesToRender.Count; i++)
+            foreach (var t in spritesToRender)
             {
-                var sprite = spritesToRender[i];
+                var sprite = t;
 
-                if (scrollPosition.Y != 0) sprite.Position = sprite.Position - scrollPosition;
+                if (scrollPosition.Y != 0) sprite.Position -= scrollPosition;
 
                 frame.Add(sprite);
             }
@@ -261,31 +260,28 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var screenTopLeft = (Surface.TextureSize - screenSize) * 0.5f;
             var contentHeight = contentBottomRight.Y - screenTopLeft.Y;
 
-            if (contentHeight > screenSize.Y)
-            {
-                var scrollRange = contentHeight - screenSize.Y;
-                var numUpdatesToScroll = (int)Math.Ceiling(scrollRange / ScrollSpeed);
-                var fullScrollCycleTime = (ScrollPauseUpdates + numUpdatesToScroll) * 2;
-                Vector2 scrollPosition;
+            if (!(contentHeight > screenSize.Y)) return new Vector2();
+            var scrollRange = contentHeight - screenSize.Y;
+            var numUpdatesToScroll = (int)Math.Ceiling(scrollRange / ScrollSpeed);
+            var fullScrollCycleTime = (ScrollPauseUpdates + numUpdatesToScroll) * 2;
+            Vector2 scrollPosition;
 
-                if (ScrollTime < ScrollPauseUpdates)
-                    scrollPosition = new Vector2();
-                else if (ScrollTime < ScrollPauseUpdates + numUpdatesToScroll)
-                    scrollPosition = new Vector2(0, (ScrollTime - ScrollPauseUpdates) * ScrollSpeed);
-                else if (ScrollTime < ScrollPauseUpdates * 2 + numUpdatesToScroll)
-                    scrollPosition = new Vector2(0, scrollRange);
-                else
-                    scrollPosition = new Vector2(0,
-                        scrollRange - (ScrollTime - (ScrollPauseUpdates * 2 + numUpdatesToScroll)) * ScrollSpeed);
+            if (_scrollTime < ScrollPauseUpdates)
+                scrollPosition = new Vector2();
+            else if (_scrollTime < ScrollPauseUpdates + numUpdatesToScroll)
+                scrollPosition = new Vector2(0, (_scrollTime - ScrollPauseUpdates) * ScrollSpeed);
+            else if (_scrollTime < ScrollPauseUpdates * 2 + numUpdatesToScroll)
+                scrollPosition = new Vector2(0, scrollRange);
+            else
+                scrollPosition = new Vector2(0,
+                    scrollRange - (_scrollTime - (ScrollPauseUpdates * 2 + numUpdatesToScroll)) * ScrollSpeed);
 
-                ScrollTime++;
+            _scrollTime++;
 
-                if (ScrollTime > fullScrollCycleTime) ScrollTime = 0;
+            if (_scrollTime > fullScrollCycleTime) _scrollTime = 0;
 
-                return scrollPosition;
-            }
+            return scrollPosition;
 
-            return new Vector2();
         }
 
         private MySprite CreateLine(string text, Vector2 position, float scale = 1)
@@ -295,7 +291,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return CreateLine(text, position, out ignored, scale);
         }
 
-        private MySprite CreateLine(string text, Vector2 position, out Vector2 positionAfter, float scale = 1)
+        private static MySprite CreateLine(string text, Vector2 position, out Vector2 positionAfter, float scale = 1)
         {
             var sprite = MySprite.CreateText(text, "Monospace", Color.White, scale, TextAlignment.LEFT);
             sprite.Position =

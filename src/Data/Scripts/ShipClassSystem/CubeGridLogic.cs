@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ProtoBuf;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -47,12 +48,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             protected set
             {
-                if (value != _IsServerGridClassDirty)
-                {
-                    if (value) ToBeCheckedOnServerQueue.Enqueue(this);
+                if (value == _IsServerGridClassDirty) return;
+                if (value) ToBeCheckedOnServerQueue.Enqueue(this);
 
-                    _IsServerGridClassDirty = value;
-                }
+                _IsServerGridClassDirty = value;
             }
         }
 
@@ -60,11 +59,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             get
             {
-                if (IsGridOwnerDirty)
-                {
-                    _OwningFaction = GetOwningFaction();
-                    IsGridOwnerDirty = false;
-                }
+                if (!IsGridOwnerDirty) return _OwningFaction;
+                _OwningFaction = GetOwningFaction();
+                IsGridOwnerDirty = false;
 
                 return _OwningFaction;
             }
@@ -74,11 +71,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             get
             {
-                if (_isClientGridClassCheckDirty)
-                {
-                    _detailedGridClassCheckResult = GridClass?.CheckGrid(Grid);
-                    _isClientGridClassCheckDirty = false;
-                }
+                if (!_isClientGridClassCheckDirty) return _detailedGridClassCheckResult;
+                _detailedGridClassCheckResult = GridClass?.CheckGrid(Grid);
+                _isClientGridClassCheckDirty = false;
 
                 return _detailedGridClassCheckResult;
             }
@@ -201,17 +196,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             // executed when the entity gets serialized (saved, blueprinted, streamed, etc) and asks all
             //   its components whether to be serialized too or not (calling GetObjectBuilder())
-            if (Grid?.Physics != null)
-                if (Constants.IsServer)
-                    try
-                    {
-                        // serialise state here
-                        Entity.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
-                    }
-                    catch (Exception e)
-                    {
-                        Utils.Log($"Error serialising CubeGridLogic, {e.Message}");
-                    }
+            if (Grid?.Physics == null) return base.IsSerialized();
+            if (!Constants.IsServer) return base.IsSerialized();
+            try
+            {
+                // serialise state here
+                Entity.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
+            }
+            catch (Exception e)
+            {
+                Utils.Log($"Error serialising CubeGridLogic, {e.Message}");
+            }
 
             // you cannot add custom OBs to the game so this should always return the base (which currently is always false).
             return base.IsSerialized();
@@ -226,35 +221,33 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void CheckGridLimits()
         {
-            if (Constants.IsServer)
+            if (!Constants.IsServer) return;
+            IsServerGridClassDirty = false;
+
+            var grid = Grid as MyCubeGrid;
+            var gridClass = GridClass;
+
+            if (gridClass == null)
             {
-                IsServerGridClassDirty = false;
-
-                var grid = Grid as MyCubeGrid;
-                var gridClass = GridClass;
-
-                if (gridClass == null)
-                {
-                    Utils.Log("Missing grid class");
-                    return;
-                }
-
-                if (grid == null)
-                {
-                    Utils.Log("Missing grid grid");
-                    return;
-                }
-
-                if (GridCheckResultsSync == null)
-                {
-                    Utils.Log("Missing grid grid check results sync");
-                    return;
-                }
-
-                var checkResult = gridClass.CheckGrid(grid);
-                GridCheckResultsSync.Value =
-                    GridCheckResults.FromDetailedGridClassCheckResult(checkResult, gridClass.Id);
+                Utils.Log("Missing grid class");
+                return;
             }
+
+            if (grid == null)
+            {
+                Utils.Log("Missing grid grid");
+                return;
+            }
+
+            if (GridCheckResultsSync == null)
+            {
+                Utils.Log("Missing grid grid check results sync");
+                return;
+            }
+
+            var checkResult = gridClass.CheckGrid(grid);
+            GridCheckResultsSync.Value =
+                GridCheckResults.FromDetailedGridClassCheckResult(checkResult, gridClass.Id);
         }
 
         private void ApplyModifiers()
@@ -267,30 +260,28 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private IMyFaction GetOwningFaction()
         {
-            if (Grid.BigOwners.Count == 0) return null;
-
-            if (Grid.BigOwners.Count == 1) return MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
+            switch (Grid.BigOwners.Count)
+            {
+                case 0:
+                    return null;
+                case 1:
+                    return MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
+            }
 
             var ownersPerFaction = new Dictionary<IMyFaction, int>();
 
             //Find the faction with the most owners
-            foreach (var owner in Grid.BigOwners)
+            foreach (var ownerFaction in Grid.BigOwners.Select(owner => MyAPIGateway.Session.Factions.TryGetPlayerFaction(owner)).Where(ownerFaction => ownerFaction != null))
             {
-                var OwnerFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
-
-                if (OwnerFaction != null)
-                {
-                    if (!ownersPerFaction.ContainsKey(OwnerFaction))
-                        ownersPerFaction[OwnerFaction] = 1;
-                    else
-                        ownersPerFaction[OwnerFaction]++;
-                }
+                if (!ownersPerFaction.ContainsKey(ownerFaction))
+                    ownersPerFaction[ownerFaction] = 1;
+                else
+                    ownersPerFaction[ownerFaction]++;
             }
 
-            if (ownersPerFaction.Count == 0) return null;
-
-            //new select the faction with the most owners
-            return ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
+            return ownersPerFaction.Count == 0 ? null :
+                //new select the faction with the most owners
+                ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
 
         //Event handlers
@@ -372,9 +363,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static CubeGridLogic GetCubeGridLogicByEntityId(long entityId)
         {
-            if (CubeGridLogics.ContainsKey(entityId)) return CubeGridLogics[entityId];
-
-            return null;
+            CubeGridLogic id;
+            return CubeGridLogics.TryGetValue(entityId, out id) ? id : null;
         }
 
         public static void UpdateGridsPerFactionClass()
@@ -440,9 +430,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (!MaxBlocks || !MaxPCU || !MaxMass) return false;
 
-            if (BlockLimits != 0) return false;
-
-            return true;
+            return BlockLimits == 0;
         }
 
         public override string ToString()
@@ -454,12 +442,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public static GridCheckResults FromDetailedGridClassCheckResult(DetailedGridClassCheckResult result,
             long gridClassId)
         {
-            ulong BlockLimits = 0;
+            ulong blockLimits = 0;
 
+            // ReSharper disable once InvertIf
             if (result.BlockLimits != null)
                 for (var i = 0; i < result.BlockLimits.Length; i++)
                     if (!result.BlockLimits[i].Passed)
-                        BlockLimits += 1UL << i;
+                        blockLimits += 1UL << i;
 
             return new GridCheckResults
             {
@@ -467,7 +456,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 MinBlocks = result.MinBlocks.Passed,
                 MaxPCU = result.MaxPCU.Passed,
                 MaxMass = result.MaxMass.Passed,
-                BlockLimits = BlockLimits,
+                BlockLimits = blockLimits,
                 GridClassId = gridClassId,
                 ValidGridType = result.ValidGridType
             };
