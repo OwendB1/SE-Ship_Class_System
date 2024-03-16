@@ -110,32 +110,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static MyEntity GetControlledCockpit(MyEntity controlledGrid)
         {
-            if (controlledGrid == null)
-                return null;
-
             var grid = controlledGrid as MyCubeGrid;
-            if (grid == null)
-                return null;
-
-            foreach (var block in grid.GetFatBlocks())
-            {
-                var cockpit = block as MyCockpit; // Convert the block to MyCockpit
-                if (cockpit != null)
-                    if (cockpit.WorldMatrix != null) // Add null check here
-                        return cockpit;
-            }
-
-            return null;
+            return grid?.GetFatBlocks().OfType<MyCockpit>().FirstOrDefault(cockpit => cockpit.WorldMatrix != null);
         }
 
         public static T[] ConcatArrays<T>(params T[][] p)
         {
             var position = 0;
             var outputArray = new T[p.Sum(a => a.Length)];
-            foreach (var curr in p)
+            foreach (var current in p)
             {
-                Array.Copy(curr, 0, outputArray, position, curr.Length);
-                position += curr.Length;
+                Array.Copy(current, 0, outputArray, position, current.Length);
+                position += current.Length;
             }
 
             return outputArray;

@@ -43,12 +43,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     var row = Rows[rowNum];
                     var cell = row[colNum];
 
-                    if (!cell.IsEmpty)
-                    {
-                        columnContentWidths[colNum] = Math.Max(columnContentWidths[colNum],
-                            TextUtils.GetTextWidth(cell.Value, scale));
-                        rowHeights[rowNum] = Math.Max(rowHeights[rowNum], TextUtils.GetTextHeight(cell.Value, scale));
-                    }
+                    if (cell.IsEmpty) continue;
+                    columnContentWidths[colNum] = Math.Max(columnContentWidths[colNum],
+                        TextUtils.GetTextWidth(cell.Value, scale));
+                    rowHeights[rowNum] = Math.Max(rowHeights[rowNum], TextUtils.GetTextHeight(cell.Value, scale));
                 }
 
                 minWidthRequired += columnContentWidths[colNum] + (colNum > 0 ? cellGap.X : 0);

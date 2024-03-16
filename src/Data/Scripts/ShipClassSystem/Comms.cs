@@ -6,13 +6,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal class Comms
     {
-        private readonly ushort CommsId;
+        private readonly ushort _commsId;
 
         public Comms(ushort id)
         {
-            CommsId = id;
+            _commsId = id;
 
-            if (Constants.IsServer) MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(CommsId, MessageHandler);
+            if (Constants.IsServer) MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
         public void SendChangeGridClassMessage(long entityId, long gridClassId)
@@ -24,7 +24,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
                     { Type = MessageType.ChangeGridClass, Data = messageData });
                 Utils.Log($"Comms::SendChangeGridClassMessage sending message to server {entityId}, {gridClassId}", 1);
-                MyAPIGateway.Multiplayer.SendMessageToServer(CommsId, message);
+                MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
             }
             catch (Exception e)
             {
