@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Sandbox.Common.ObjectBuilders;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -95,13 +96,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 }
 
                 var gridClass = gridLogic.GridClass;
-
                 if (gridClass == null) return;
 
-                var checkGridResult = gridLogic.DetailedGridClassCheckResult;
-
                 var infoBuilder = new StringBuilder();
-                infoBuilder.Append($"\nClass: {gridClass.Name} ({(checkGridResult.Passed ? "valid" : "invalid")})\n\n");
+                infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
 
                 FormatRangeCheckResult("Blocks", infoBuilder, checkGridResult.MinBlocks, checkGridResult.MaxBlocks);
                 FormatMaxCheckResult("Mass", infoBuilder, checkGridResult.MaxMass);

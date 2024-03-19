@@ -3,7 +3,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using VRage.Game;
 using VRage.Game.ModAPI;
 
 //TODO better unknown config handling
@@ -166,8 +165,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public bool ForceBroadCast = false;
         public float ForceBroadCastRange = 0;
         public int Id;
-        public bool LargeGridMobile = false;
-        public bool LargeGridStatic = false;
+        public bool LargeGrid = false;
+        public bool SmallGrid = false;
+        public bool StaticOnly = false;
         public int MaxBlocks = -1;
         public float MaxMass = -1;
         public int MaxPCU = -1;
@@ -177,92 +177,39 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public GridModifiers Modifiers = new GridModifiers();
         public MyGridDamageModifiers DamageModifiers = new MyGridDamageModifiers();
         public string Name;
-        public bool SmallGrid = false;
+
+        //if (BlockLimits != null)
+        //{
+        //    //Init the result objects
+        //    blockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
+
+        //    for (var i = 0; i < BlockLimits.Length; i++)
+        //        blockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
+
+        //    //Get all blocks to check
+        //    var blocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
+
+        //    //Check all blocks against the limits
+        //    foreach (var block in blocksOnGrid)
+        //        for (var i = 0; i < BlockLimits.Length; i++)
+        //        {
+        //            float weightedCount;
+
+        //            if (!BlockLimits[i].IsLimitedBlock(block, out weightedCount)) continue;
+        //            blockLimitResults[i].Blocks++;
+        //            blockLimitResults[i].Score += weightedCount;
+        //        }
+
+        //    //Check if the limits were exceeded & decide if test was passed
+        //    for (var i = 0; i < blockLimitResults.Length; i++)
+        //        blockLimitResults[i].Passed = blockLimitResults[i].Score <= blockLimitResults[i].Max;
+        //}
+        //else
+        //{
+        //    Utils.Log("No blocklimits");
+        //}
+
         
-
-        public bool IsGridEligible(IMyCubeGrid grid)
-        {
-            return grid.IsStatic
-                ? LargeGridStatic
-                : grid.GridSizeEnum == MyCubeSize.Large
-                    ? LargeGridMobile
-                    : SmallGrid;
-        }
-
-        public DetailedGridClassCheckResult CheckGrid(IMyCubeGrid grid)
-        {
-            var concreteGrid = grid as MyCubeGrid;
-
-            var maxBlocksResult = new GridCheckResult<int>(
-                MaxBlocks > 0,
-                MaxBlocks <= 0 || concreteGrid.BlocksCount <= MaxBlocks,
-                concreteGrid.BlocksCount,
-                MaxBlocks
-            );
-
-            var minBlocksResult = new GridCheckResult<int>(
-                MinBlocks > 0,
-                MinBlocks <= 0 || concreteGrid.BlocksCount >= MinBlocks,
-                concreteGrid.BlocksCount,
-                MinBlocks
-            );
-
-            var maxPCUResult = new GridCheckResult<int>(
-                MaxPCU > 0,
-                MaxPCU <= 0 || concreteGrid.BlocksPCU <= MaxPCU,
-                concreteGrid.BlocksPCU,
-                MaxPCU
-            );
-
-            var maxMassResult = new GridCheckResult<float>(
-                MaxMass > 0,
-                !(MaxMass > 0) || concreteGrid.Mass <= MaxMass,
-                concreteGrid.Mass,
-                MaxMass
-            );
-
-            BlockLimitCheckResult[] blockLimitResults = null;
-
-            if (BlockLimits != null)
-            {
-                //Init the result objects
-                blockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
-
-                for (var i = 0; i < BlockLimits.Length; i++)
-                    blockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
-
-                //Get all blocks to check
-                var blocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
-
-                //Check all blocks against the limits
-                foreach (var block in blocksOnGrid)
-                    for (var i = 0; i < BlockLimits.Length; i++)
-                    {
-                        float weightedCount;
-
-                        if (!BlockLimits[i].IsLimitedBlock(block, out weightedCount)) continue;
-                        blockLimitResults[i].Blocks++;
-                        blockLimitResults[i].Score += weightedCount;
-                    }
-
-                //Check if the limits were exceeded & decide if test was passed
-                for (var i = 0; i < blockLimitResults.Length; i++)
-                    blockLimitResults[i].Passed = blockLimitResults[i].Score <= blockLimitResults[i].Max;
-            }
-            else
-            {
-                Utils.Log("No blocklimits");
-            }
-
-            return new DetailedGridClassCheckResult(
-                IsGridEligible(grid),
-                maxBlocksResult,
-                minBlocksResult,
-                maxPCUResult,
-                maxMassResult,
-                blockLimitResults
-            );
-        }
     }
 
     public class GridModifiers

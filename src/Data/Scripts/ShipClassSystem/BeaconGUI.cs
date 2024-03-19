@@ -71,13 +71,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static void SetComboboxContentLargeStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridStatic 
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.StaticOnly 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentLargeGrid(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridMobile 
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGrid 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 

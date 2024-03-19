@@ -4,23 +4,21 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class DetailedGridClassCheckResult
     {
-        public DetailedGridClassCheckResult(bool validGridType, GridCheckResult<int> maxBlocks,
+        public DetailedGridClassCheckResult(GridCheckResult<int> maxBlocks,
             GridCheckResult<int> minBlocks, GridCheckResult<int> maxPCU, GridCheckResult<float> maxMass,
             BlockLimitCheckResult[] blockLimits)
         {
-            ValidGridType = validGridType;
             MaxBlocks = maxBlocks;
             MinBlocks = minBlocks;
             MaxPCU = maxPCU;
             MaxMass = maxMass;
             BlockLimits = blockLimits;
 
-            Passed = validGridType && maxBlocks.Passed && minBlocks.Passed && maxPCU.Passed && maxMass.Passed &&
+            Passed = maxBlocks.Passed && minBlocks.Passed && maxPCU.Passed && maxMass.Passed &&
                      (blockLimits == null || blockLimits.All(blockLimit => blockLimit.Passed));
         }
 
         public bool Passed { get; private set; }
-        public bool ValidGridType { get; private set; }
         public GridCheckResult<int> MaxBlocks { get; private set; }
         public GridCheckResult<int> MinBlocks { get; private set; }
         public GridCheckResult<int> MaxPCU { get; private set; }

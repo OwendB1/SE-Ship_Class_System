@@ -79,12 +79,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 perGridClass[gridClassId].Add(gridLogic.Entity.EntityId);
         }
 
-        public Dictionary<long, List<long>> GetFactionGridsByClass(long factionId)
-        {
-            Dictionary<long, List<long>> value;
-            return _perFaction.TryGetValue(factionId, out value) ? value : null;
-        }
-
         public void Reset()
         {
             foreach (var gridsEntry in _perFaction.SelectMany(factionClassesEntry => factionClassesEntry.Value))
