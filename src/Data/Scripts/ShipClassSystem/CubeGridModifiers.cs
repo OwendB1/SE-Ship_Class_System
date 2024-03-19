@@ -1,6 +1,7 @@
 ﻿using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
@@ -60,6 +61,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (damageInfo.Type == MyDamageType.Rocket) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Rocket; }
             if (damageInfo.Type == MyDamageType.Explosion) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Explosion; }
             if (damageInfo.Type == MyDamageType.Environment) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Environment; }
+            if (damageInfo.Type == MyStringHash.GetOrCompute("Energy")) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Energy; }
+            if (damageInfo.Type == MyStringHash.GetOrCompute("Kinetic")) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Kinetic; }
         }
     }
 }
