@@ -277,8 +277,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Id = 0,
             Name = "Derelict",
             MaxBlocks = 10000,
-            SmallGridMobile = true,
-            SmallGridStatic = true,
+            SmallGrid = true,
             LargeGridMobile = true,
             LargeGridStatic = true,
             ForceBroadCast = false,
@@ -1313,7 +1312,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 20,
                     Name = "Utility",
-                    SmallGridMobile = true,
+                    SmallGrid = true,
                     MaxBlocks = 3000,
                     MaxPerFaction = 12,
                     MaxPerPlayer = 3,
@@ -1420,7 +1419,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 21,
                     Name = "Fighter",
-                    SmallGridMobile = true,
+                    SmallGrid = true,
                     MaxBlocks = 2000,
                     MaxPerFaction = 36,
                     MaxPerPlayer = 6,
