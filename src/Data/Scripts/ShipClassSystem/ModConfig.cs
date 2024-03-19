@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using ProtoBuf;
+﻿using ProtoBuf;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
@@ -176,29 +175,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public int MaxPerPlayer = -1;
         public int MinBlocks = -1;
         public GridModifiers Modifiers = new GridModifiers();
+        public MyGridDamageModifiers DamageModifiers = new MyGridDamageModifiers();
         public string Name;
-        public bool SmallGridMobile = false;
-        public bool SmallGridStatic = false;
+        public bool SmallGrid = false;
+        
 
         public bool IsGridEligible(IMyCubeGrid grid)
         {
             return grid.IsStatic
-                ? grid.GridSizeEnum == MyCubeSize.Large
-                    ? LargeGridStatic
-                    : SmallGridStatic
+                ? LargeGridStatic
                 : grid.GridSizeEnum == MyCubeSize.Large
                     ? LargeGridMobile
-                    : SmallGridMobile;
+                    : SmallGrid;
         }
 
         public DetailedGridClassCheckResult CheckGrid(IMyCubeGrid grid)
         {
             var concreteGrid = grid as MyCubeGrid;
 
-            if (concreteGrid == null) return null;
             var maxBlocksResult = new GridCheckResult<int>(
                 MaxBlocks > 0,
-                MaxBlocks <= 0 || concreteGrid?.BlocksCount <= MaxBlocks,
+                MaxBlocks <= 0 || concreteGrid.BlocksCount <= MaxBlocks,
                 concreteGrid.BlocksCount,
                 MaxBlocks
             );
@@ -364,5 +361,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                                                          Convert.ToString(block.BlockDefinition.SubtypeId) ==
                                                          SubtypeId);
         }
+    }
+
+    public class MyGridDamageModifiers
+    {
+        public float Bullet = 1f;
+        public float Rocket = 1f;
+        public float Explosion = 1f;
+        public float Environment = 1f;
+        public float Energy = 1f;
+        public float Kinetic = 1f;
     }
 }
