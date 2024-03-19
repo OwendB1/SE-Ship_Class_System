@@ -1,4 +1,6 @@
-﻿using Sandbox.ModAPI;
+﻿using System.Linq;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -26,16 +28,36 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var refinery = block as IMyRefinery;
             if (refinery != null)
             {
-                refinery.UpgradeValues["Productivity"] *= modifiers.RefineSpeed;
-                refinery.UpgradeValues["Effectiveness"] *= modifiers.RefineEfficiency;
-                refinery.UpgradeValues["PowerEfficiency"] *= modifiers.RefineSpeed;
+                var rawRefinery = block as MyCubeBlock;
+                if (rawRefinery != null)
+                {
+                    var productivity = 0f;
+                    var effectiveness = 0f;
+                    foreach (var module in rawRefinery.CurrentAttachedUpgradeModules)
+                    {
+                        if (module.Value.Block.UpgradeValues["Productivity"] > 0f)
+                            productivity += module.Value.Block.UpgradeValues["Productivity"];
+                        else 
+                        if (module.Value.Block.UpgradeValues["Effectiveness"] > 0f)
+                            effectiveness += module.Value.Block.UpgradeValues["Effectiveness"];
+                    }
+                    refinery.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
+                    refinery.UpgradeValues["Effectiveness"] = effectiveness * modifiers.RefineEfficiency;
+                }
             }
 
             var assembler = block as IMyAssembler;
             if (assembler != null)
             {
-                assembler.UpgradeValues["Productivity"] *= modifiers.RefineSpeed;
-                assembler.UpgradeValues["PowerEfficiency"] *= modifiers.RefineSpeed;
+                assembler.UpgradeValues["Productivity"] *= modifiers.AssemblerSpeed;
+                var rawAssembler = block as MyCubeBlock;
+                if (rawAssembler != null)
+                {
+                    var productivity = rawAssembler.CurrentAttachedUpgradeModules
+                        .Where(module => module.Value.Block.UpgradeValues["Productivity"] > 0f)
+                        .Sum(module => module.Value.Block.UpgradeValues["Productivity"]);
+                    assembler.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
+                }
             }
 
             var reactor = block as IMyReactor;
