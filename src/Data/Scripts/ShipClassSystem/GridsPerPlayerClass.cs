@@ -20,31 +20,31 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             if (!IsApplicableGrid(gridLogic)) return true;
 
-            var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
+            var playerId = gridLogic.MajorityOwningPlayerId;
             var gridClassId = gridLogic.GridClassId;
 
             if (!_config.IsValidGridClassId(gridClassId))
             {
-                Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {gridClassId}", 2);
+                Utils.Log($"GridsPerUserClass::IsGridWithinPlayerLimits: Unknown grid class id {gridClassId}", 2);
 
                 return false;
             }
 
-            if (_perPlayer.ContainsKey(factionId) && _perPlayer[factionId].ContainsKey(gridClassId))
+            if (_perPlayer.ContainsKey(playerId) && _perPlayer[playerId].ContainsKey(gridClassId))
             {
-                var numAllowedGrids = _config.GetGridClassById(gridClassId).MaxPerFaction;
-                var idx = _perPlayer[factionId][gridClassId].IndexOf(gridLogic.Entity.EntityId);
+                var numAllowedGrids = _config.GetGridClassById(gridClassId).MaxPerPlayer;
+                var idx = _perPlayer[playerId][gridClassId].IndexOf(gridLogic.Entity.EntityId);
 
                 if (idx == -1)
                     Utils.Log(
-                        $"GridsPerFactionClass::IsGridWithinFactionLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
+                        $"GridsPerUserClass::IsGridWithinPlayerLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
                         2);
 
                 return idx < numAllowedGrids;
             }
 
             Utils.Log(
-                "GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data",
+                "GridsPerUserClass::IsGridWithinPlayerLimits: Faction or class not found in faction limits data",
                 2);
 
             return true;
@@ -52,25 +52,25 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log("GridsPerFactionClass::AddCubeGrid: start");
+            Utils.Log("GridsPerUserClass::AddCubeGrid: start");
             if (!IsApplicableGrid(gridLogic)) return;
-            var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
+            var playerId = gridLogic.MajorityOwningPlayerId;
             var gridClassId = gridLogic.GridClassId;
             Dictionary<long, List<long>> perGridClass;
-            if (!_perPlayer.ContainsKey(factionId))
+            if (!_perPlayer.ContainsKey(playerId))
             {
-                perGridClass = GetDefaultFactionGridsSet();
-                _perPlayer[factionId] = perGridClass;
+                perGridClass = GetDefaultPLayerGridsSet();
+                _perPlayer[playerId] = perGridClass;
             }
             else
             {
-                perGridClass = _perPlayer[factionId];
+                perGridClass = _perPlayer[playerId];
             }
 
             if (!perGridClass.ContainsKey(gridClassId))
             {
                 Utils.Log(
-                    $"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} in faction {factionId}",
+                    $"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} for player {playerId}",
                     2);
                 perGridClass[gridClassId] = new List<long>();
             }
@@ -105,7 +105,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return MyAPIGateway.Utilities.SerializeToBinary(_perPlayer);
         }
 
-        private Dictionary<long, List<long>> GetDefaultFactionGridsSet()
+        private Dictionary<long, List<long>> GetDefaultPLayerGridsSet()
         {
             var set = new Dictionary<long, List<long>>();
 

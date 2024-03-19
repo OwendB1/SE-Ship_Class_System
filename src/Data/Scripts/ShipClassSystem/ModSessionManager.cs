@@ -42,45 +42,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.UpdateAfterSimulation();
 
             BeaconGUI.AddControls(ModContext);
-
-            if (Constants.IsServer)
-            {
-                var gridsToCheck = CubeGridLogic.GetGridsToBeChecked(Settings.MAX_GRID_PROCESSED_PER_TICK);
-
-                foreach (var gridLogic in gridsToCheck) gridLogic.CheckGridLimits();
-            }
-
-            if (!Constants.IsClient) return;
-            // Existing code for controlled entities and predictions
-            var controlledEntity = Utils.GetControlledGrid();
-            var cockpitEntity = Utils.GetControlledCockpit(controlledEntity);
-
-            if (controlledEntity != null && !controlledEntity.Equals(_lastControlledEntity))
-            {
-                _lastControlledEntity = controlledEntity;
-                var controlled = controlledEntity as MyCubeGrid;
-
-                if (controlled == null) return;
-                var cubeGridLogic = controlled.GetGridLogic();
-
-                if (cubeGridLogic != null && !cubeGridLogic.GridMeetsGridClassRestrictions)
-                {
-                    var gridClass = cubeGridLogic.GridClass;
-
-                    Utils.ShowNotification(
-                        gridClass != null
-                            ? $"Class \"{gridClass.Name}\" not valid for grid \"{controlled.DisplayName}\""
-                            : $"Unknown class assigned to grid \"{controlled.DisplayName}\"");
-                }
-                else if (cubeGridLogic == null)
-                {
-                    Utils.Log($"Grid missing CubeGridLogic: \"{controlled.DisplayName}\"", 1);
-                }
-            }
-            else if (controlledEntity == null)
-            {
-                _lastControlledEntity = null;
-            }
         }
 
         public static GridClass GetGridClassById(long GridClassId)

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using Sandbox.Game.Entities;
 using Sandbox.Game.GameSystems.TextSurfaceScripts;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.GUI.TextPanel;
+using VRage.Game.ModAPI;
+using VRage.Network;
 using VRage.Utils;
 using VRageMath;
 using IngameCubeBlock = VRage.Game.ModAPI.Ingame.IMyCubeBlock;
@@ -126,10 +130,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             // the colors in the terminal are Surface.ScriptBackgroundColor and Surface.ScriptForegroundColor, the other ones without Script in name are for text/image mode.
             var gridClass = _terminalBlock.GetGridLogic().GridClass;
+            var concreteGrid = _terminalBlock.CubeGrid as MyCubeGrid;
 
-            if (gridClass == null) return;
+            if (gridClass == null || concreteGrid == null) return;
 
-            var checkGridResult = _terminalBlock.GetGridLogic().DetailedGridClassCheckResult;
             _gridResultsTable.Clear();
 
             Vector2 currentPosition;
@@ -141,53 +145,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             _headerTable.Rows.Add(new Row
             {
                 new Cell("Class:"),
-                new Cell(gridClass.Name, checkGridResult.Passed ? successColor : failColor),
-                checkGridResult.Passed ? new Cell() : new Cell("X", failColor)
+                new Cell(gridClass.Name)
             });
 
             _headerTable.RenderToSprites(spritesToRender, screenTopLeft + padding, screenInnerWidth, new Vector2(15, 0),
                 out currentPosition, baseScale);
 
-            //Render the results checklist
-
-            if (!checkGridResult.ValidGridType)
-                _gridResultsTable.Rows.Add(new Row
-                {
-                    new Cell("Grid type:"),
-                    new Cell(null),
-                    new Cell(null),
-                    new Cell("Invalid", failColor),
-                    new Cell("X", failColor)
-                });
-
-            if (checkGridResult.MaxBlocks.Active || checkGridResult.MinBlocks.Active)
+            _gridResultsTable.Rows.Add(new Row
             {
-                var passed = checkGridResult.MaxBlocks.Passed && checkGridResult.MinBlocks.Passed;
-                var target = checkGridResult.MaxBlocks.Active && checkGridResult.MinBlocks.Active
-                    ? $"{checkGridResult.MinBlocks.Limit} - {checkGridResult.MaxBlocks.Limit}"
-                    : checkGridResult.MaxBlocks.Active
-                        ? $"<= {checkGridResult.MaxBlocks.Limit}"
-                        : $">= {checkGridResult.MinBlocks.Limit}";
+                new Cell("Blocks: "),
+                new Cell(concreteGrid.BlocksCount.ToString()),
+                new Cell("/"),
+                new Cell(gridClass.MaxBlocks.ToString())
+            });
 
-                _gridResultsTable.Rows.Add(new Row
-                {
-                    new Cell("Blocks: "),
-                    new Cell(checkGridResult.MaxBlocks.Value.ToString()),
-                    new Cell("/"),
-                    new Cell(target, passed ? successColor : failColor),
-                    passed ? new Cell() : new Cell("X", failColor)
-                });
-            }
-
-            if (checkGridResult.MaxMass.Active)
+            if (gridClass.MaxMass > 0)
                 _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("Mass: "),
-                    new Cell(checkGridResult.MaxMass.Value.ToString()),
+                    new Cell(Math.Round(concreteGrid.Mass).ToString(CultureInfo.InvariantCulture)),
                     new Cell("/"),
-                    new Cell(checkGridResult.MaxMass.Limit.ToString(),
-                        checkGridResult.MaxMass.Passed ? successColor : failColor),
-                    checkGridResult.MaxMass.Passed ? new Cell() : new Cell("X", failColor)
+                    new Cell(gridClass.MaxMass.ToString(CultureInfo.InvariantCulture))
                 });
 
             if (checkGridResult.MaxPCU.Active)
@@ -205,7 +183,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 for (var i = 0; i < gridClass.BlockLimits.Length; i++)
                 {
                     var blockLimit = gridClass.BlockLimits[i];
-                    var checkResults = checkGridResult.BlockLimits[i];
 
                     _gridResultsTable.Rows.Add(new Row
                     {

@@ -25,6 +25,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 gyro.PowerConsumptionMultiplier = 1f / modifiers.GyroEfficiency;
             }
 
+            var upgradeModule = block as IMyUpgradeModule;
+            if (upgradeModule != null)
+            {
+
+            }
+
             var refinery = block as IMyRefinery;
             if (refinery != null)
             {
