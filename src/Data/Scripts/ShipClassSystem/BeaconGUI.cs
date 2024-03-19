@@ -37,9 +37,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassLargeMobile",
                 SetComboboxContentLargeGrid,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassSmallStatic",
-                SetComboboxContentSmallStatic,
-                block => block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
             MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassSmallMobile",
                 SetComboboxContentSmallMobile,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
@@ -84,15 +81,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
-        private static void SetComboboxContentSmallStatic(List<MyTerminalControlComboBoxItem> list)
-        {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGridStatic 
-                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
-        }
-
         private static void SetComboboxContentSmallMobile(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGridMobile 
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGrid
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 

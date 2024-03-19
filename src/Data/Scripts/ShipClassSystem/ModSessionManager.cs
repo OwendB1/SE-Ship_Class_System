@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -33,6 +34,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (Constants.IsServer)
                 //Save whatever config you're using
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
         }
 
         public override void UpdateAfterSimulation()
