@@ -168,31 +168,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     new Cell(gridClass.MaxMass.ToString(CultureInfo.InvariantCulture))
                 });
 
-            if (checkGridResult.MaxPCU.Active)
+            if (gridClass.MaxPCU > 0)
                 _gridResultsTable.Rows.Add(new Row
                 {
                     new Cell("PCU: "),
-                    new Cell(checkGridResult.MaxPCU.Value.ToString()),
+                    new Cell(concreteGrid.BlocksPCU.ToString()),
                     new Cell("/"),
-                    new Cell(checkGridResult.MaxPCU.Limit.ToString(),
-                        checkGridResult.MaxPCU.Passed ? successColor : failColor),
-                    checkGridResult.MaxPCU.Passed ? new Cell() : new Cell("X", failColor)
+                    new Cell(gridClass.MaxPCU.ToString())
                 });
 
-            if (gridClass.BlockLimits != null)
-                for (var i = 0; i < gridClass.BlockLimits.Length; i++)
-                {
-                    var blockLimit = gridClass.BlockLimits[i];
-
-                    _gridResultsTable.Rows.Add(new Row
-                    {
-                        new Cell($"{blockLimit.Name}:"),
-                        new Cell(checkResults.Score.ToString()),
-                        new Cell("/"),
-                        new Cell(checkResults.Max.ToString(), checkResults.Passed ? successColor : failColor),
-                        checkResults.Passed ? new Cell() : new Cell("X", failColor)
-                    });
-                }
+            //if (gridClass.BlockLimits != null)
+            //    foreach (var blockLimit in gridClass.BlockLimits)
+            //    {
+            //        _gridResultsTable.Rows.Add(new Row
+            //        {
+            //            new Cell($"{blockLimit.Name}:"),
+            //            new Cell(checkResults.Score.ToString()),
+            //            new Cell("/"),
+            //            new Cell(checkResults.Max.ToString(), checkResults.Passed ? successColor : failColor),
+            //            checkResults.Passed ? new Cell() : new Cell("X", failColor)
+            //        });
+            //    }
 
             var gridResultsTableTopLeft = currentPosition + new Vector2(0, 5);
 

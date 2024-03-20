@@ -235,7 +235,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             yield return new ModifierNameValue("Thruster force", ThrusterForce);
             yield return new ModifierNameValue("Thruster efficiency", ThrusterEfficiency);
             yield return new ModifierNameValue("Gyro force", GyroForce);
-            yield return new ModifierNameValue("Gryo efficiency", GyroEfficiency);
+            yield return new ModifierNameValue("Gyro efficiency", GyroEfficiency);
             yield return new ModifierNameValue("Refinery efficiency", RefineEfficiency);
             yield return new ModifierNameValue("Refinery speed", RefineSpeed);
             yield return new ModifierNameValue("Assembler speed", AssemblerSpeed);
