@@ -1,9 +1,7 @@
 ﻿using ProtoBuf;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using VRage.Game.ModAPI;
 
 //TODO better unknown config handling
 
@@ -177,39 +175,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public GridModifiers Modifiers = new GridModifiers();
         public MyGridDamageModifiers DamageModifiers = new MyGridDamageModifiers();
         public string Name;
-
-        //if (BlockLimits != null)
-        //{
-        //    //Init the result objects
-        //    blockLimitResults = new BlockLimitCheckResult[BlockLimits.Length];
-
-        //    for (var i = 0; i < BlockLimits.Length; i++)
-        //        blockLimitResults[i] = new BlockLimitCheckResult { Max = BlockLimits[i].MaxCount };
-
-        //    //Get all blocks to check
-        //    var blocksOnGrid = grid.GetFatBlocks<IMyFunctionalBlock>();
-
-        //    //Check all blocks against the limits
-        //    foreach (var block in blocksOnGrid)
-        //        for (var i = 0; i < BlockLimits.Length; i++)
-        //        {
-        //            float weightedCount;
-
-        //            if (!BlockLimits[i].IsLimitedBlock(block, out weightedCount)) continue;
-        //            blockLimitResults[i].Blocks++;
-        //            blockLimitResults[i].Score += weightedCount;
-        //        }
-
-        //    //Check if the limits were exceeded & decide if test was passed
-        //    for (var i = 0; i < blockLimitResults.Length; i++)
-        //        blockLimitResults[i].Passed = blockLimitResults[i].Score <= blockLimitResults[i].Max;
-        //}
-        //else
-        //{
-        //    Utils.Log("No blocklimits");
-        //}
-
-        
     }
 
     public class GridModifiers

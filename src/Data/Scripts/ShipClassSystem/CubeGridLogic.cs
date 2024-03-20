@@ -19,7 +19,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         private static readonly List<CubeGridLogic> AllCubeGridLogics = new List<CubeGridLogic>();
-        private static List<IMyFunctionalBlock> _functionalBlocks = new List<IMyFunctionalBlock>();
+        private static HashSet<IMyFunctionalBlock> _functionalBlocks;
 
         private static readonly GridsPerFactionClassManager GridsPerFactionClassManager =
             new GridsPerFactionClassManager(ModSessionManager.Instance.Config);
@@ -63,7 +63,16 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             _grid = (IMyCubeGrid)Entity;
 
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
-            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToList();
+            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
+            MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
+        }
+
+        private void FactionsOnFactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
+        {
+            if ((action != MyFactionStateChange.FactionMemberAcceptJoin &&
+                 action != MyFactionStateChange.FactionMemberLeave &&
+                 action != MyFactionStateChange.FactionMemberKick) || _grid.BigOwners[0] != playerId) return;
+            if (!GridsPerFactionClassManager.IsGridWithinFactionLimits(this)) GridClassId = 0;
         }
 
         public override void UpdateOnceBeforeFrame()
@@ -118,11 +127,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override void MarkForClose()
         {
+            // called when entity is about to be removed for whatever reason (block destroyed, entity deleted, grid despawn because of sync range, etc)
             base.MarkForClose();
 
             RemoveGridLogic(this);
 
-            // called when entity is about to be removed for whatever reason (block destroyed, entity deleted, grid despawn because of sync range, etc)
+            MyAPIGateway.Session.Factions.FactionStateChanged -= FactionsOnFactionStateChanged;
         }
 
         private void ApplyModifiers()
@@ -181,7 +191,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             ApplyModifiers();
             UpdateGridsPerFactionClass();
-            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToList();
+            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
             foreach (var blockLimit in GridClass.BlockLimits)
             {
                 var relevantBlocks = _functionalBlocks.Where(block => blockLimit.BlockTypes
@@ -219,7 +229,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
         {
             // TODO: Do damage check
-            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToList();
+            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
             foreach (var blockLimit in GridClass.BlockLimits)
             {
                 var relevantBlocks = _functionalBlocks.Where(block => blockLimit.BlockTypes

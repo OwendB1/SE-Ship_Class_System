@@ -1,9 +1,7 @@
-﻿using System;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
+﻿using Sandbox.ModAPI;
+using System;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.Network;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
@@ -15,14 +13,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public ModConfig Config;
 
-        private MyEntity _lastControlledEntity;
         public static ModSessionManager Instance { get; private set; }
 
         internal static Comms Comms => Instance._comms;
 
-        public override void Init(MyObjectBuilder_SessionComponent SessionComponent)
+        public override void Init(MyObjectBuilder_SessionComponent sessionComponent)
         {
-            base.Init(SessionComponent);
+            base.Init(sessionComponent);
 
             Instance = this;
 
