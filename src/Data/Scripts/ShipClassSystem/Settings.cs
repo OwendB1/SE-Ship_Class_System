@@ -2,7 +2,6 @@
 {
     public static class Settings
     {
-        public static readonly int MAX_GRID_PROCESSED_PER_TICK = 5;
         public static readonly bool Debug = true;
 
         public static readonly int
