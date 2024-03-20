@@ -28,7 +28,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static readonly GridsPerPlayerClassManager GridsPerPlayerClassManager =
             new GridsPerPlayerClassManager(ModSessionManager.Instance.Config);
 
-        private readonly MySync<long, SyncDirection.FromServer> _gridClassSync = null;
+        private MySync<long, SyncDirection.FromServer> _gridClassSync = null;
 
         private IMyCubeGrid _grid;
 
@@ -55,6 +55,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public GridClass GridClass => ModSessionManager.GetGridClassById(GridClassId);
         public GridModifiers Modifiers => GridClass.Modifiers;
+        public GridDamageModifiers DamageModifiers;
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -140,6 +141,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             Utils.Log($"Applying modifiers {Modifiers}");
 
+            DamageModifiers = GridClass.DamageModifiers;
             foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
                 CubeGridModifiers.ApplyModifiers(block, Modifiers);
         }
@@ -178,8 +180,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         //Event handlers
         private void Grid_OnIsStaticChanged(IMyCubeGrid grid, bool isStatic)
         {
-            if (GridClass.StaticOnly && !isStatic) grid.IsStatic = true;
-            if (!GridClass.StaticOnly && isStatic) grid.IsStatic = false;
+            if (GridClass.LargeGridStatic && !GridClass.LargeGridMobile && !isStatic) grid.IsStatic = true;
+            if (!GridClass.LargeGridStatic && isStatic) grid.IsStatic = false;
         }
 
         private void OnGridClassChanged(MySync<long, SyncDirection.FromServer> newGridClassId)
@@ -234,16 +236,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 funcBlock.EnabledChanged += _ => FuncBlockOnEnabledChanged(funcBlock);
 
             if (obj.FatBlock != null)
-                //Utils.WriteToClient($"Added block TypeId = {Utils.GetBlockId(fatBlock)}, Subtype = {Utils.GetBlockSubtypeId(fatBlock)}");
-                CubeGridModifiers.ApplyModifiers(obj.FatBlock, Modifiers);
+                CubeGridModifiers.ApplyModifiers(obj.FatBlock as IMyTerminalBlock, Modifiers);
         }
 
         private void OnBlockRemoved(IMySlimBlock obj)
         {
             _functionalBlocks.Remove(obj.FatBlock as IMyFunctionalBlock);
-            if (obj.FatBlock != null)
-                //Utils.WriteToClient($"Added block TypeId = {Utils.GetBlockId(fatBlock)}, Subtype = {Utils.GetBlockSubtypeId(fatBlock)}");
-                CubeGridModifiers.ApplyModifiers(obj.FatBlock, Modifiers);
+            if (obj.FatBlock != null && HasFunctioningBeaconIfNeeded())
+            {
+                DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
+                foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
+                {
+                    CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
+                }
+            }
 
             var concreteGrid = _grid as MyCubeGrid;
             if (concreteGrid?.BlocksCount < GridClass.MinBlocks)
@@ -278,7 +284,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void FuncBlockOnEnabledChanged(IMyFunctionalBlock func)
         {
-            if(func.Enabled == false) return;
+            if (func is IMyBeacon && func.Enabled == false && HasFunctioningBeaconIfNeeded())
+            {
+                DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
+                foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
+                    CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
+            }
+
             var subTypeId = func.BlockDefinition.SubtypeId;
             var typeId = func.BlockDefinition.TypeIdString;
 
@@ -344,6 +356,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             CubeGridLogics.Remove(gridLogic._grid.EntityId);
             AllCubeGridLogics.RemoveAll(item => item == gridLogic);
+        }
+
+        private bool HasFunctioningBeaconIfNeeded()
+        {
+            return GridClass.ForceBroadCast == false || _functionalBlocks.Any(block => block is IMyBeacon && block.Enabled);
         }
 
         public override bool IsSerialized()

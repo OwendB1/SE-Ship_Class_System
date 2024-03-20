@@ -9,6 +9,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class CubeGridModifiers
     {
+        private static GridDamageModifiers damageModifiers;
         public static void ApplyModifiers(IMyCubeBlock block, GridModifiers modifiers)
         {
             var thruster = block as IMyThrust;
@@ -85,12 +86,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (myBlock == null) return;
             var myGrid = myBlock.CubeGrid;
             var myGridLogic = myGrid.GetGridLogic();
-            if (damageInfo.Type == MyDamageType.Bullet) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Bullet; }
-            if (damageInfo.Type == MyDamageType.Rocket) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Rocket; }
-            if (damageInfo.Type == MyDamageType.Explosion) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Explosion; }
-            if (damageInfo.Type == MyDamageType.Environment) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Environment; }
-            if (damageInfo.Type == MyStringHash.GetOrCompute("Energy")) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Energy; }
-            if (damageInfo.Type == MyStringHash.GetOrCompute("Kinetic")) { damageInfo.Amount *= myGridLogic.GridClass.DamageModifiers.Kinetic; }
+            if (damageInfo.Type == MyDamageType.Bullet) { damageInfo.Amount *= myGridLogic.DamageModifiers.Bullet; }
+            if (damageInfo.Type == MyDamageType.Rocket) { damageInfo.Amount *= myGridLogic.DamageModifiers.Rocket; }
+            if (damageInfo.Type == MyDamageType.Explosion) { damageInfo.Amount *= myGridLogic.DamageModifiers.Explosion; }
+            if (damageInfo.Type == MyDamageType.Environment) { damageInfo.Amount *= myGridLogic.DamageModifiers.Environment; }
+            if (damageInfo.Type == MyStringHash.GetOrCompute("Energy")) { damageInfo.Amount *= myGridLogic.DamageModifiers.Energy; }
+            if (damageInfo.Type == MyStringHash.GetOrCompute("Kinetic")) { damageInfo.Amount *= myGridLogic.DamageModifiers.Kinetic; }
         }
     }
 }
