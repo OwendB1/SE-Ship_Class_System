@@ -12,22 +12,22 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class BeaconGUI
     {
-        private static int waitTicks;
-        private static bool controlsAdded;
+        private static int _waitTicks;
+        private static bool _controlsAdded;
         private static readonly string[] ControlsToHideIfForceBroadcast = { "Radius", "HudText" };
 
         public static void AddControls(IMyModContext context)
         {
-            if (controlsAdded) return;
+            if (_controlsAdded) return;
 
-            if (waitTicks <
+            if (_waitTicks <
                 100) //TODO I don't know why I need this, but without it, I lose all vanilla controls on dedicated servers - I'm going to leave this for now
             {
-                waitTicks++;
+                _waitTicks++;
                 return;
             }
 
-            controlsAdded = true;
+            _controlsAdded = true;
 
             // Create Drop Down Menu and add the control to the grid controller's terminal
             // Different comboboxes available depending on grid type
@@ -35,10 +35,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 SetComboboxContentLargeStatic,
                 block => block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
             MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassLargeMobile",
-                SetComboboxContentLargeGrid,
+                SetComboboxContentLargeGridMobile,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassSmallMobile",
-                SetComboboxContentSmallMobile,
+            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassSmall",
+                SetComboboxContentSmall,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
 
             var controls = new List<IMyTerminalControl>();
@@ -71,17 +71,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static void SetComboboxContentLargeStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.StaticOnly 
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridStatic 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
-        private static void SetComboboxContentLargeGrid(List<MyTerminalControlComboBoxItem> list)
+        private static void SetComboboxContentLargeGridMobile(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGrid 
+            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridMobile 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
-        private static void SetComboboxContentSmallMobile(List<MyTerminalControlComboBoxItem> list)
+        private static void SetComboboxContentSmall(List<MyTerminalControlComboBoxItem> list)
         {
             list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGrid
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });

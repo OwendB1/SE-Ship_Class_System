@@ -272,14 +272,24 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             RefineSpeed = 0
         };
 
+        public static GridDamageModifiers DefaultGridDamageModifiers2X = new GridDamageModifiers
+        {
+            Explosion = 2f,
+            Environment = 2f,
+            Energy = 2f,
+            Kinetic = 2f,
+            Bullet = 2f,
+            Rocket = 2f
+        };
+
         public static GridClass DefaultGridClassDefinition = new GridClass
         {
             Id = 0,
             Name = "Derelict",
             MaxBlocks = 10000,
             SmallGrid = true,
-            LargeGrid = true,
-            StaticOnly = true,
+            LargeGridMobile = true,
+            LargeGridStatic = true,
             ForceBroadCast = false,
             ForceBroadCastRange = 2000,
             Modifiers = DefaultGridModifiers,
@@ -352,7 +362,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 1,
                     Name = "Station",
-                    StaticOnly = true,
+                    LargeGridStatic = true,
                     MaxBlocks = 25000,
                     ForceBroadCast = true,
                     ForceBroadCastRange = 10000,
@@ -462,7 +472,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 2,
                     Name = "Outpost",
-                    StaticOnly = true,
+                    LargeGridStatic = true,
                     MaxBlocks = 5000,
                     ForceBroadCast = true,
                     ForceBroadCastRange = 2000,
@@ -572,8 +582,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 10,
                     Name = "Support",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 10000,
                     MaxPerFaction = 20,
                     MaxPerPlayer = 4,
@@ -678,8 +688,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 11,
                     Name = "Scout",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 1500,
                     MaxPerFaction = 8,
                     MaxPerPlayer = 2,
@@ -771,8 +781,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 12,
                     Name = "Corvette",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 3000,
                     MaxPerFaction = 6,
                     MaxPerPlayer = 2,
@@ -865,8 +875,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 13,
                     Name = "Destroyer",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 5000,
                     MaxPerFaction = 4,
                     MaxPerPlayer = 2,
@@ -959,8 +969,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 14,
                     Name = "Cruiser",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 8000,
                     MaxPerFaction = 3,
                     MaxPerPlayer = 1,
@@ -976,7 +986,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1.2f
                     },
-                    DamageModifiers = new MyGridDamageModifiers
+                    DamageModifiers = new GridDamageModifiers
                     {
                         Bullet = 0.9f,
                         Energy = 0.9f,
@@ -1062,8 +1072,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 15,
                     Name = "Battleship",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 12000,
                     MaxPerFaction = 2,
                     MaxPerPlayer = 1,
@@ -1079,7 +1089,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 0.8f
                     },
-                    DamageModifiers = new MyGridDamageModifiers
+                    DamageModifiers = new GridDamageModifiers
                     {
                         Bullet = 0.8f,
                         Energy = 0.8f,
@@ -1176,8 +1186,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 {
                     Id = 16,
                     Name = "Dreadnought",
-                    StaticOnly = true,
-                    LargeGrid = true,
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
                     MaxBlocks = 15000,
                     MaxPerFaction = 1,
                     MaxPerPlayer = 1,
@@ -1192,7 +1202,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineSpeed = 0.6f,
                         DrillHarvestMultiplier = 0
                     },
-                    DamageModifiers = new MyGridDamageModifiers
+                    DamageModifiers = new GridDamageModifiers
                     {
                         Bullet = 0.7f,
                         Energy = 0.7f,
@@ -1323,7 +1333,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         RefineSpeed = 2,
                         DrillHarvestMultiplier = 3,
                     },
-                    DamageModifiers = new MyGridDamageModifiers
+                    DamageModifiers = new GridDamageModifiers
                     {
                         Rocket = 0.8f,
                         Explosion = 0.8f,

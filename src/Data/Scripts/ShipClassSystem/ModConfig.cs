@@ -163,9 +163,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public bool ForceBroadCast = false;
         public float ForceBroadCastRange = 0;
         public int Id;
-        public bool LargeGrid = false;
+        public bool LargeGridMobile = false;
         public bool SmallGrid = false;
-        public bool StaticOnly = false;
+        public bool LargeGridStatic = false;
         public int MaxBlocks = -1;
         public float MaxMass = -1;
         public int MaxPCU = -1;
@@ -173,7 +173,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public int MaxPerPlayer = -1;
         public int MinBlocks = -1;
         public GridModifiers Modifiers = new GridModifiers();
-        public MyGridDamageModifiers DamageModifiers = new MyGridDamageModifiers();
+        public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
         public string Name;
     }
 
@@ -275,7 +275,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
     }
 
-    public class MyGridDamageModifiers
+    public class GridDamageModifiers
     {
         public float Bullet = 1f;
         public float Rocket = 1f;
