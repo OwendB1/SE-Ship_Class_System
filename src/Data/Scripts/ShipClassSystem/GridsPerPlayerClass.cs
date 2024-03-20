@@ -26,7 +26,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!_config.IsValidGridClassId(gridClassId))
             {
                 Utils.Log($"GridsPerUserClass::IsGridWithinPlayerLimits: Unknown grid class id {gridClassId}", 2);
-
                 return false;
             }
 
@@ -77,12 +76,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (!perGridClass[gridClassId].Contains(gridLogic.Entity.EntityId))
                 perGridClass[gridClassId].Add(gridLogic.Entity.EntityId);
-        }
-
-        public Dictionary<long, List<long>> GetFactionGridsByClass(long factionId)
-        {
-            Dictionary<long, List<long>> value;
-            return _perPlayer.TryGetValue(factionId, out value) ? value : null;
         }
 
         public void Reset()

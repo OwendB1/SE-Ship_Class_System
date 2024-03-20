@@ -26,7 +26,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!_config.IsValidGridClassId(gridClassId))
             {
                 Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {gridClassId}", 2);
-
                 return false;
             }
 

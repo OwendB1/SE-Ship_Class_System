@@ -1,8 +1,10 @@
-﻿using System;
-using System.Text;
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.Game.Entities.Cube;
+﻿using Sandbox.Common.ObjectBuilders;
 using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Sandbox.Game.Entities;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -96,19 +98,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 }
 
                 var gridClass = gridLogic.GridClass;
-                if (gridClass == null) return;
+                var concreteGrid = _beacon.CubeGrid as MyCubeGrid;
+                var functionalBlocks = _beacon.CubeGrid.GetFatBlocks<IMyFunctionalBlock>().ToList();
+                if (gridClass == null || concreteGrid == null) return;
 
                 var infoBuilder = new StringBuilder();
                 infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
 
-                FormatRangeCheckResult("Blocks", infoBuilder, checkGridResult.MinBlocks, checkGridResult.MaxBlocks);
-                FormatMaxCheckResult("Mass", infoBuilder, checkGridResult.MaxMass);
-                FormatMaxCheckResult("PCU", infoBuilder, checkGridResult.MaxPCU);
+                FormatRangeCheckResult("Blocks", infoBuilder, gridClass.MinBlocks, gridClass.MaxBlocks, concreteGrid.BlocksCount);
+                FormatMaxCheckResult("Mass", infoBuilder, gridClass.MaxMass, concreteGrid.Mass);
+                FormatMaxCheckResult("PCU", infoBuilder, gridClass.MaxPCU, concreteGrid.BlocksPCU);
 
                 if (gridClass.BlockLimits != null)
-                    for (var i = 0; i < gridClass.BlockLimits.Length; i++)
-                        FormatBlockLimitCheckResult(infoBuilder, gridClass.BlockLimits[i],
-                            checkGridResult.BlockLimits[i]);
+                    foreach (var blockLimit in gridClass.BlockLimits)
+                    {
+                        var relevantBlocks = functionalBlocks.Where(functionalBlock => blockLimit.BlockTypes
+                            .Any(t => t.SubtypeId == functionalBlock.BlockDefinition.SubtypeId &&
+                                      t.TypeId == functionalBlock.BlockDefinition.TypeIdString)).ToList();
+
+                        FormatBlockLimitCheckResult(infoBuilder, blockLimit, relevantBlocks);
+                    }
+                        
 
                 infoBuilder.Append("\nApplied Modifiers: \n\n");
 
@@ -123,28 +133,32 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, BlockLimitCheckResult result)
+        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<IMyFunctionalBlock> blocks)
         {
-            sb.Append($"{blockLimit.Name}: {result.Score}/{result.Max}{(result.Passed ? "\n" : " (fail)\n")}");
+            sb.Append($"{blockLimit.Name}: {blocks.Count}/{blockLimit.MaxCount}{(blocks.Count <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
         }
 
-        private static void FormatMaxCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> result)
+        private static void FormatMaxCheckResult(string name, StringBuilder sb, float max,float value)
         {
-            if (result.Active)
-                sb.Append($"{name}: {result.Value}/{result.Limit}{(result.Passed ? "\n" : " (fail)\n")}");
+            if (max > 0)
+                sb.Append($"{name}: {value}/{max}{(value <= max ? "\n" : " (fail)\n")}");
         }
 
-        private static void FormatRangeCheckResult<T>(string name, StringBuilder sb, GridCheckResult<T> min,
-            GridCheckResult<T> max)
+        private static void FormatMaxCheckResult(string name, StringBuilder sb, int max, int value)
         {
-            if (!min.Active && !max.Active) return;
-            var value = min.Active ? min.Value : max.Value;
-            var passed = min.Passed && max.Passed;
-            var range = min.Active && max.Active
-                ? $"{min.Limit} - {max.Limit}"
-                : min.Active
-                    ? $">= {min.Limit}"
-                    : $"<= {max.Limit}";
+            if (max > 0)
+                sb.Append($"{name}: {value}/{max}{(value <= max ? "\n" : " (fail)\n")}");
+        }
+
+        private static void FormatRangeCheckResult(string name, StringBuilder sb, int min, int max, int value)
+        {
+            if (min < 1 && max < 1) return;
+            var passed = value <= max && value >= min;
+            var range = min > 0 && max > 0
+                ? $"{min} - {max}"
+                : min > 0
+                    ? $">= {min}"
+                    : $"<= {max}";
 
             sb.Append($"{name}: {value}/{range}{(passed ? "\n" : " (fail)\n")}");
         }
