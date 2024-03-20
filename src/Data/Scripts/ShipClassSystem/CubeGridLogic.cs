@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -19,7 +20,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         private static readonly List<CubeGridLogic> AllCubeGridLogics = new List<CubeGridLogic>();
-        private static HashSet<IMyFunctionalBlock> _functionalBlocks;
+        private HashSet<IMyFunctionalBlock> _functionalBlocks;
 
         private static readonly GridsPerFactionClassManager GridsPerFactionClassManager =
             new GridsPerFactionClassManager(ModSessionManager.Instance.Config);
@@ -207,8 +208,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
+            var concreteGrid = _grid as MyCubeGrid;
+            if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
+            {
+                _grid.RemoveBlock(obj);
+                return;
+            }
+
+            var blockDefinition = obj.FatBlock.BlockDefinition;
+            var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
+                .Any(type => type.TypeId == blockDefinition.TypeIdString && type.SubtypeId == blockDefinition.SubtypeId));
+            
+            if ((from blockLimit in relevantLimits let relevantBlocks = _functionalBlocks.Where(block => blockLimit.BlockTypes
+                    .Any(t => t.SubtypeId == block.BlockDefinition.SubtypeId &&
+                              t.TypeId == block.BlockDefinition.TypeIdString)).ToList() where relevantBlocks.Count + 1 > blockLimit.MaxCount select blockLimit).Any())
+            {
+                _grid.RemoveBlock(obj);
+                return;
+            }
+
             _functionalBlocks.Add(obj.FatBlock as IMyFunctionalBlock);
-            // TODO: remove block in question if over block limit or general limit
+
             var funcBlock = obj.FatBlock as IMyFunctionalBlock;
             if (funcBlock != null)
                 funcBlock.EnabledChanged += _ => FuncBlockOnEnabledChanged(funcBlock);
@@ -224,6 +244,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (obj.FatBlock != null)
                 //Utils.WriteToClient($"Added block TypeId = {Utils.GetBlockId(fatBlock)}, Subtype = {Utils.GetBlockSubtypeId(fatBlock)}");
                 CubeGridModifiers.ApplyModifiers(obj.FatBlock, Modifiers);
+
+            var concreteGrid = _grid as MyCubeGrid;
+            if (concreteGrid?.BlocksCount < GridClass.MinBlocks)
+            {
+                GridClassId = 0;
+            }
         }
 
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
