@@ -25,7 +25,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (!_config.IsValidGridClassId(gridClassId))
             {
-                Utils.Log($"GridsPerUserClass::IsGridWithinPlayerLimits: Unknown grid class id {gridClassId}", 2);
+                Utils.Log($"GridsPerPlayerClass::IsGridWithinPlayerLimits: Unknown grid class id {gridClassId}", 2);
                 return false;
             }
 
@@ -36,14 +36,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 if (idx == -1)
                     Utils.Log(
-                        $"GridsPerUserClass::IsGridWithinPlayerLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
+                        $"GridsPerPlayerClass::IsGridWithinPlayerLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
                         2);
 
                 return idx < numAllowedGrids;
             }
 
             Utils.Log(
-                "GridsPerUserClass::IsGridWithinPlayerLimits: Faction or class not found in faction limits data",
+                "GridsPerPlayerClass::IsGridWithinPlayerLimits: Faction or class not found in faction limits data",
                 2);
 
             return true;
@@ -51,7 +51,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log("GridsPerUserClass::AddCubeGrid: start");
+            Utils.Log("GridsPerPlayerClass::AddCubeGrid: start");
             if (!IsApplicableGrid(gridLogic)) return;
             var playerId = gridLogic.MajorityOwningPlayerId;
             var gridClassId = gridLogic.GridClassId;
@@ -69,7 +69,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!perGridClass.ContainsKey(gridClassId))
             {
                 Utils.Log(
-                    $"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} for player {playerId}",
+                    $"GridsPerPlayerClass::AddCubeGrid: Missing list for grid class {gridClassId} for player {playerId}",
                     2);
                 perGridClass[gridClassId] = new List<long>();
             }

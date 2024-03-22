@@ -41,9 +41,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             BeaconGUI.AddControls(ModContext);
         }
 
-        public static GridClass GetGridClassById(long GridClassId)
+        public static GridClass GetGridClassById(long gridClassId)
         {
-            return Instance.Config.GetGridClassById(GridClassId);
+            return Instance.Config.GetGridClassById(gridClassId);
         }
 
         public static GridClass[] GetAllGridClasses()

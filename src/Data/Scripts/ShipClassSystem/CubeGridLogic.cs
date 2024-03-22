@@ -63,6 +63,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.Init(objectBuilder);
 
             _grid = (IMyCubeGrid)Entity;
+            if (_grid?.Physics == null) return;
 
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
@@ -82,10 +83,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.UpdateOnceBeforeFrame();
 
             //Utils.Log("[CubeGridLogic] FirstUpdate");
-
-            if (_grid?.Physics == null) // ignore projected and other non-physical grids
-                return;
-
             AddGridLogic(this);
 
             if (Entity.Storage == null) Entity.Storage = new MyModStorageComponent();
@@ -139,11 +136,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void ApplyModifiers()
         {
-            Utils.Log($"Applying modifiers {Modifiers}");
+            Utils.Log($"Applying modifiers to {_grid.EntityId} \n {Modifiers}");
 
             DamageModifiers = GridClass.DamageModifiers;
+            Utils.Log(_grid.GetFatBlocks<IMyTerminalBlock>().Count().ToString());
             foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
+            {
+                if (block == null || Modifiers == null) continue;
                 CubeGridModifiers.ApplyModifiers(block, Modifiers);
+            }
         }
 
         private long GetMajorityOwner()
@@ -236,7 +237,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 funcBlock.EnabledChanged += _ => FuncBlockOnEnabledChanged(funcBlock);
 
             if (obj.FatBlock != null)
-                CubeGridModifiers.ApplyModifiers(obj.FatBlock as IMyTerminalBlock, Modifiers);
+                CubeGridModifiers.ApplyModifiers(obj.FatBlock, Modifiers);
         }
 
         private void OnBlockRemoved(IMySlimBlock obj)

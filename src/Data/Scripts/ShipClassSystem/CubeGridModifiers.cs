@@ -9,7 +9,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class CubeGridModifiers
     {
-        private static GridDamageModifiers damageModifiers;
         public static void ApplyModifiers(IMyCubeBlock block, GridModifiers modifiers)
         {
             var thruster = block as IMyThrust;
