@@ -63,10 +63,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.Init(objectBuilder);
 
             _grid = (IMyCubeGrid)Entity;
-            if (_grid?.Physics == null) return;
 
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
-            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
         }
 
@@ -83,7 +81,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.UpdateOnceBeforeFrame();
 
             //Utils.Log("[CubeGridLogic] FirstUpdate");
+
+            if (_grid?.Physics == null) // ignore projected and other non-physical grids
+                return;
+
             AddGridLogic(this);
+            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
 
             if (Entity.Storage == null) Entity.Storage = new MyModStorageComponent();
 
