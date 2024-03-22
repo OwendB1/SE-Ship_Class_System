@@ -82,12 +82,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             //Utils.Log("[CubeGridLogic] FirstUpdate");
 
-            if (_grid?.Physics == null) // ignore projected and other non-physical grids
-                return;
+            // ignore projected and other non-physical grids
+            if (_grid?.Physics == null) return;
+            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
+            if (_functionalBlocks == null) return;
 
             AddGridLogic(this);
-            _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
-
+            
             if (Entity.Storage == null) Entity.Storage = new MyModStorageComponent();
 
             //Init event handlers
@@ -145,7 +146,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Utils.Log(_grid.GetFatBlocks<IMyTerminalBlock>().Count().ToString());
             foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
             {
-                if (block == null || Modifiers == null) continue;
                 CubeGridModifiers.ApplyModifiers(block, Modifiers);
             }
         }
@@ -264,6 +264,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
         {
+
             // TODO: Do damage check
             _functionalBlocks = _grid.GetFatBlocks<IMyFunctionalBlock>().ToHashSet();
             foreach (var blockLimit in GridClass.BlockLimits)
