@@ -28,15 +28,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static void WriteToClient(string msg)
         {
-            if (Constants.IsClient) MyAPIGateway.Utilities.ShowMessage("[RvBCS]: ", msg);
+            if (Constants.IsClient) MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", msg);
         }
 
         public static void Log(string msg, int logPriority = 0)
         {
-            if (logPriority >= Settings.LOG_LEVEL) MyLog.Default.WriteLine($"[RvBCS]: {msg}");
+            if (logPriority >= Settings.LOG_LEVEL) MyLog.Default.WriteLine($"[Ship Classes]: {msg}");
 
             if (logPriority >= Settings.CLIENT_OUTPUT_LOG_LEVEL)
-                MyAPIGateway.Utilities.ShowMessage($"[RvBCS={logPriority}]: ", msg);
+                MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);
         }
 
         public static void LogException(Exception e)

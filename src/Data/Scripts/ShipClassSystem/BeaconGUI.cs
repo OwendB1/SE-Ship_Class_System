@@ -41,7 +41,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 SetComboboxContentSmall,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
 
-            var controls = new List<IMyTerminalControl>();
+            List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
 
             foreach (var control in controls.Where(control => ControlsToHideIfForceBroadcast.Contains(control.Id)))
