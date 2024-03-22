@@ -25,20 +25,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 gyro.PowerConsumptionMultiplier = 1f / modifiers.GyroEfficiency;
             }
 
-            var upgradeModule = block as IMyUpgradeModule;
-            if (upgradeModule != null)
-            {
-
-            }
-
             var refinery = block as IMyRefinery;
             if (refinery != null)
             {
                 var rawRefinery = block as MyCubeBlock;
-                if (rawRefinery != null)
+                if (rawRefinery?.CurrentAttachedUpgradeModules != null)
                 {
-                    var productivity = 0f;
-                    var effectiveness = 0f;
+                    var productivity = 1f;
+                    var effectiveness = 1f;
                     foreach (var module in rawRefinery.CurrentAttachedUpgradeModules)
                     {
                         if (module.Value.Block.UpgradeValues["Productivity"] > 0f)
@@ -50,6 +44,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     refinery.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
                     refinery.UpgradeValues["Effectiveness"] = effectiveness * modifiers.RefineEfficiency;
                 }
+                else
+                {
+                    refinery.UpgradeValues["Productivity"] = modifiers.RefineSpeed;
+                    refinery.UpgradeValues["Effectiveness"] = modifiers.RefineEfficiency;
+                }
             }
 
             var assembler = block as IMyAssembler;
@@ -57,12 +56,16 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 assembler.UpgradeValues["Productivity"] *= modifiers.AssemblerSpeed;
                 var rawAssembler = block as MyCubeBlock;
-                if (rawAssembler != null)
+                if (rawAssembler?.CurrentAttachedUpgradeModules != null)
                 {
                     var productivity = rawAssembler.CurrentAttachedUpgradeModules
                         .Where(module => module.Value.Block.UpgradeValues["Productivity"] > 0f)
                         .Sum(module => module.Value.Block.UpgradeValues["Productivity"]);
                     assembler.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
+                }
+                else
+                {
+                    assembler.UpgradeValues["Productivity"] = modifiers.AssemblerSpeed;
                 }
             }
 
