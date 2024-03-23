@@ -562,12 +562,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var group = obj == null ? grid?.GetGridGroup(GridLinkTypeEnum.Physical) : obj.CubeGrid.GetGridGroup(GridLinkTypeEnum.Physical);
             var grids = new List<IMyCubeGrid>();
+
+            Utils.Log($"HIT1: {group} ");
             group?.GetGrids(grids);
+            Utils.Log($"HIT2: {grids} ");
 
             var logics = new List<CubeGridLogic>();
             grids.ForEach(g =>
             {
-                Utils.Log($"HIT: {g?.EntityId} ");
+                Utils.Log($"HIT3: {g?.EntityId} ");
                 logics.Add(GetCubeGridLogicByEntityId(g.EntityId));
             });
             return logics.FirstOrDefault(e => e.IsMainGrid);
