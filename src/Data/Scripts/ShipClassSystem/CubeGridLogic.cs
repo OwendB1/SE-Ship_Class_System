@@ -20,7 +20,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         private static readonly List<CubeGridLogic> AllCubeGridLogics = new List<CubeGridLogic>();
-        private static readonly List<long> BlackListedSubgrids = new List<long>();
+
         private HashSet<IMyCubeBlock> _blocks;
 
         private static readonly GridsPerFactionClassManager GridsPerFactionClassManager =
@@ -32,7 +32,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         // ReSharper disable once FieldCanBeMadeReadOnly.Local
         private MySync<long, SyncDirection.FromServer> _gridClassSync = null;
 
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+        private MySync<bool, SyncDirection.FromServer> _gridTypeSync = null;
+
         private IMyCubeGrid _grid;
+
+        public bool IsMainGrid
+        {
+            get { return _gridTypeSync.Value; }
+            set
+            {
+                _gridTypeSync.Value = value;
+                if (!Constants.IsServer) OnMainGridChanged(_gridTypeSync);
+            }
+        }
 
         public IMyFaction OwningFaction => GetOwningFaction();
 
@@ -68,7 +81,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.Init(objectBuilder);
 
             _grid = (IMyCubeGrid)Entity;
-            if (BlackListedSubgrids.Contains(_grid.EntityId)) return;
             if (ModSessionManager.GetIgnoredFactionTags().Any(item => item == OwningFaction.Tag))
                 return;
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
@@ -93,40 +105,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (_blocks == null) return;
 
             // If subgrid then blacklist and add blocks to main grid
-            var group = _grid.GetGridGroup(GridLinkTypeEnum.Physical);
-            var grids = new List<IMyCubeGrid>();
-            group.GetGrids(grids);
-            foreach (var gridInGroup in grids)
-            {
-                BlackListedSubgrids.Add(gridInGroup.EntityId);
-                _blocks.UnionWith(gridInGroup.GetFatBlocks<IMyCubeBlock>());
-            }
 
-            AddGridLogic(this);
+            if (!AddGridLogic(this)) return;
             
             if (Entity.Storage == null) Entity.Storage = new MyModStorageComponent();
 
             //Init event handlers
             _gridClassSync.ValueChanged += OnGridClassChanged;
+            _gridTypeSync.ValueChanged += OnMainGridChanged;
+
             _grid.OnBlockOwnershipChanged += OnBlockOwnershipChanged;
             _grid.OnIsStaticChanged += Grid_OnIsStaticChanged;
             _grid.OnBlockAdded += OnBlockAdded;
             _grid.OnBlockRemoved += OnBlockRemoved;
             _grid.OnGridMerge += OnGridMerge;
-
-            foreach (var block in _blocks)
-            {
-                var funcBlock = block as IMyFunctionalBlock;
-                if (funcBlock != null)
-                {
-                    funcBlock.EnabledChanged += _ => FuncBlockOnEnabledChanged(funcBlock);
-                    EnforceFunctionalBlockPunishment(funcBlock);
-                }
-                else
-                {
-                    EnforceNonFunctionalBlockPunishment(block);
-                }
-            }
 
             //Load persisted grid class id from storage (if server)
             if (Entity.Storage.ContainsKey(Constants.GridClassStorageGUID))
@@ -216,6 +208,19 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!GridClass.LargeGridStatic && isStatic) grid.IsStatic = false;
         }
 
+        private void OnMainGridChanged(MySync<bool, SyncDirection.FromServer> newMainGridSetting)
+        {
+            Utils.Log($"CubeGridLogic::OnMainGridChanged: main grid set to {newMainGridSetting}", 2);
+
+            var logics = GetLinkedCubeGridLogics();
+            var mains = logics.Where(gridLogic => gridLogic.IsMainGrid).ToList();
+            foreach (var gridLogic in mains.Where(gridLogic => gridLogic._grid.EntityId != _grid.EntityId))
+            {
+                _blocks.UnionWith(gridLogic._blocks);
+                gridLogic._gridTypeSync.Value = false;
+            }
+        }
+
         private void OnGridClassChanged(MySync<long, SyncDirection.FromServer> newGridClassId)
         {
             Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {newGridClassId}", 2);
@@ -233,24 +238,56 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
-            var concreteGrid = _grid as MyCubeGrid;
-            if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
+            if (IsMainGrid)
             {
-                _grid.RemoveBlock(obj);
-                return;
+                var concreteGrid = _grid as MyCubeGrid;
+                if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
+                {
+                    _grid.RemoveBlock(obj);
+                    return;
+                }
+
+                var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
+                    .Any(type => type.TypeId == Utils.GetBlockId(obj.FatBlock) && type.SubtypeId == Utils.GetBlockSubtypeId(obj.FatBlock))).ToList();
+
+                if ((from blockLimit in relevantLimits
+                        let relevantBlocks = _blocks.Where(block => blockLimit.BlockTypes
+                            .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
+                                      t.TypeId == Utils.GetBlockId(block))).ToList()
+                        where relevantBlocks.Count + 1 > blockLimit.MaxCount
+                        select blockLimit).Any())
+                {
+                    _grid.RemoveBlock(obj);
+                    return;
+                }
             }
-
-            var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
-                .Any(type => type.TypeId == Utils.GetBlockId(obj.FatBlock) && type.SubtypeId == Utils.GetBlockSubtypeId(obj.FatBlock))).ToList();
-
-            if ((from blockLimit in relevantLimits let relevantBlocks = _blocks.Where(block => blockLimit.BlockTypes
-                    .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
-                              t.TypeId == Utils.GetBlockId(block))).ToList() where relevantBlocks.Count + 1 > blockLimit.MaxCount select blockLimit).Any())
+            else
             {
-                _grid.RemoveBlock(obj);
-                return;
-            }
+                var concreteGrid = _grid as MyCubeGrid;
+                var mainLogic = GetMainCubeGridLogic(obj);
+                var mainConcreteGrid = mainLogic._grid as MyCubeGrid;
+                if (concreteGrid?.BlocksCount + mainConcreteGrid?.BlocksCount > GridClass.MaxBlocks)
+                {
+                    _grid.RemoveBlock(obj);
+                    return;
+                }
 
+                var relevantLimits = mainLogic.GridClass.BlockLimits.Where(limit => limit.BlockTypes
+                    .Any(type => type.TypeId == Utils.GetBlockId(obj.FatBlock) && type.SubtypeId == Utils.GetBlockSubtypeId(obj.FatBlock))).ToList();
+
+                if ((from blockLimit in relevantLimits
+                        let relevantBlocks = mainLogic._blocks.Where(block => blockLimit.BlockTypes
+                            .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
+                                      t.TypeId == Utils.GetBlockId(block))).ToList()
+                        where relevantBlocks.Count + 1 > blockLimit.MaxCount
+                        select blockLimit).Any())
+                {
+                    _grid.RemoveBlock(obj);
+                    return;
+                }
+                mainLogic._blocks.Add(obj.FatBlock);
+            }
+            
             _blocks.Add(obj.FatBlock);
 
             var funcBlock = obj.FatBlock as IMyFunctionalBlock;
@@ -263,43 +300,74 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void OnBlockRemoved(IMySlimBlock obj)
         {
-            _blocks.Remove(obj.FatBlock as IMyFunctionalBlock);
-            if (obj.FatBlock != null && HasFunctioningBeaconIfNeeded())
+            if (!IsMainGrid)
             {
-                DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
-                foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
+                var mainLogic = GetMainCubeGridLogic(obj);
+                mainLogic._blocks.Remove(obj.FatBlock as IMyFunctionalBlock);
+            }
+            else
+            {
+                if (obj.FatBlock != null && HasFunctioningBeaconIfNeeded())
                 {
-                    CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
+                    DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
+                    foreach (var block in _grid.GetFatBlocks<IMyTerminalBlock>())
+                    {
+                        CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
+                    }
+                }
+
+                var concreteGrid = _grid as MyCubeGrid;
+                if (concreteGrid?.BlocksCount < GridClass.MinBlocks)
+                {
+                    GridClassId = 0;
                 }
             }
-
-            var concreteGrid = _grid as MyCubeGrid;
-            if (concreteGrid?.BlocksCount < GridClass.MinBlocks)
-            {
-                GridClassId = 0;
-            }
+            _blocks.Remove(obj.FatBlock as IMyFunctionalBlock);
         }
 
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
         {
-            // TODO: Do damage check
             _blocks = _grid.GetFatBlocks<IMyCubeBlock>().ToHashSet();
-            foreach (var blockLimit in GridClass.BlockLimits)
+            if (IsMainGrid)
             {
-                var functionalBlocks = _blocks.Where(block => blockLimit.BlockTypes
-                    .Any(t => t.SubtypeId == block.BlockDefinition.SubtypeId &&
-                              t.TypeId == Utils.GetBlockId(block))).ToList();
-                for (var i = (int)blockLimit.MaxCount + 1; i < functionalBlocks.Count; i++)
+                foreach (var blockLimit in GridClass.BlockLimits)
                 {
-                    var funcBlock = functionalBlocks[i] as IMyFunctionalBlock;
-                    if (funcBlock != null) funcBlock.Enabled = false;
-                    else
+                    var functionalBlocks = _blocks.Where(block => blockLimit.BlockTypes
+                        .Any(t => t.SubtypeId == block.BlockDefinition.SubtypeId &&
+                                  t.TypeId == Utils.GetBlockId(block))).ToList();
+                    for (var i = (int)blockLimit.MaxCount + 1; i < functionalBlocks.Count; i++)
                     {
-                        var slim = functionalBlocks[i].SlimBlock;
-                        EnforceNonFunctionalBlockPunishment(slim.FatBlock);
+                        var funcBlock = functionalBlocks[i] as IMyFunctionalBlock;
+                        if (funcBlock != null) funcBlock.Enabled = false;
+                        else
+                        {
+                            var slim = functionalBlocks[i].SlimBlock;
+                            EnforceNonFunctionalBlockPunishment(slim.FatBlock);
+                        }
                     }
                 }
             }
+            else
+            {
+                var mainLogic = GetMainCubeGridLogic(null, obj);
+                foreach (var blockLimit in mainLogic.GridClass.BlockLimits)
+                {
+                    var functionalBlocks = mainLogic._blocks.Where(block => blockLimit.BlockTypes
+                        .Any(t => t.SubtypeId == block.BlockDefinition.SubtypeId &&
+                                  t.TypeId == Utils.GetBlockId(block))).ToList();
+                    for (var i = (int)blockLimit.MaxCount + 1; i < functionalBlocks.Count; i++)
+                    {
+                        var funcBlock = functionalBlocks[i] as IMyFunctionalBlock;
+                        if (funcBlock != null) funcBlock.Enabled = false;
+                        else
+                        {
+                            var slim = functionalBlocks[i].SlimBlock;
+                            EnforceNonFunctionalBlockPunishment(slim.FatBlock);
+                        }
+                    }
+                }
+            }
+            
         }
 
         private void OnGridMerge(IMyCubeGrid grid1, IMyCubeGrid grid2)
@@ -343,27 +411,58 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var subTypeId = Utils.GetBlockSubtypeId(block);
             var typeId = Utils.GetBlockId(block);
-            var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
-                .Any(types => types.TypeId == typeId && types.SubtypeId == subTypeId));
 
-            foreach (var blockLimit in relevantLimits)
+            if (IsMainGrid)
             {
-                // Get all relevant blocks that match the types from the block limit
-                var relevantBlocks = _blocks.Where(b => blockLimit.BlockTypes
-                    .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
-                              t.TypeId == Utils.GetBlockId(b))).ToList();
-                
-                if (!(relevantBlocks.IndexOf(block) >= blockLimit.MaxCount)) continue;
-                var slim = block.SlimBlock;
-                var targetIntegrity = slim.MaxIntegrity * 0.2;
-                var damageRequired = slim.Integrity - targetIntegrity;
+                var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
+                    .Any(types => types.TypeId == typeId && types.SubtypeId == subTypeId));
 
-                if (damageRequired < 0)
+                foreach (var blockLimit in relevantLimits)
                 {
-                    damageRequired = 0;
+                    // Get all relevant blocks that match the types from the block limit
+                    var relevantBlocks = _blocks.Where(b => blockLimit.BlockTypes
+                        .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
+                                  t.TypeId == Utils.GetBlockId(b))).ToList();
+
+                    if (!(relevantBlocks.IndexOf(block) >= blockLimit.MaxCount)) continue;
+                    var slim = block.SlimBlock;
+                    var targetIntegrity = slim.MaxIntegrity * 0.2;
+                    var damageRequired = slim.Integrity - targetIntegrity;
+
+                    if (damageRequired < 0)
+                    {
+                        damageRequired = 0;
+                    }
+                    slim.DoDamage((float)damageRequired, MyDamageType.Bullet, true);
                 }
-                slim.DoDamage((float)damageRequired, MyDamageType.Bullet, true);
             }
+            else
+            {
+                Utils.Log(block?.SlimBlock.ToString());
+                var mainLogic = GetMainCubeGridLogic(block.SlimBlock);
+                var relevantLimits = mainLogic.GridClass.BlockLimits.Where(limit => limit.BlockTypes
+                    .Any(types => types.TypeId == typeId && types.SubtypeId == subTypeId));
+
+                foreach (var blockLimit in relevantLimits)
+                {
+                    // Get all relevant blocks that match the types from the block limit
+                    var relevantBlocks = mainLogic._blocks.Where(b => blockLimit.BlockTypes
+                        .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
+                                  t.TypeId == Utils.GetBlockId(b))).ToList();
+
+                    if (!(relevantBlocks.IndexOf(block) >= blockLimit.MaxCount)) continue;
+                    var slim = block.SlimBlock;
+                    var targetIntegrity = slim.MaxIntegrity * 0.2;
+                    var damageRequired = slim.Integrity - targetIntegrity;
+
+                    if (damageRequired < 0)
+                    {
+                        damageRequired = 0;
+                    }
+                    slim.DoDamage((float)damageRequired, MyDamageType.Bullet, true);
+                }
+            }
+            
         }
 
         public static CubeGridLogic GetCubeGridLogicByEntityId(long entityId)
@@ -378,7 +477,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             foreach (var gridLogic in AllCubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic);
         }
 
-        private static void AddGridLogic(CubeGridLogic gridLogic)
+        private static bool AddGridLogic(CubeGridLogic gridLogic)
         {
             try
             {
@@ -399,11 +498,44 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 GridsPerFactionClassManager.AddCubeGrid(gridLogic);
                 GridsPerPlayerClassManager.AddCubeGrid(gridLogic);
                 CubeGridLogics[gridLogic._grid.EntityId] = gridLogic;
+
+                var concreteGrid = gridLogic._grid as MyCubeGrid;
+                if (concreteGrid == null) return false;
+
+                var beaconPresent = gridLogic._blocks.Any(b => b is IMyBeacon);
+                if (beaconPresent) gridLogic.IsMainGrid = true;
+                else
+                {
+                    var biggest = concreteGrid.GetBiggestGridInGroup();
+                    var biggestLogic = GetCubeGridLogicByEntityId(biggest.EntityId);
+                    if (biggest.EntityId == gridLogic._grid.EntityId) gridLogic.IsMainGrid = true;
+                    else
+                    {
+                        biggestLogic?._blocks.UnionWith(gridLogic._blocks);
+                    }
+                }
+
+                foreach (var block in gridLogic._blocks)
+                {
+                    var funcBlock = block as IMyFunctionalBlock;
+                    if (funcBlock != null)
+                    {
+                        funcBlock.EnabledChanged += _ => gridLogic.FuncBlockOnEnabledChanged(funcBlock);
+                        gridLogic.EnforceFunctionalBlockPunishment(funcBlock);
+                    }
+                    else
+                    {
+                        gridLogic.EnforceNonFunctionalBlockPunishment(block);
+                    }
+                }
+
+                return true;
             }
             catch (Exception e)
             {
                 Utils.Log("CubeGridLogic::AddGridLogic: caught error", 3);
                 Utils.LogException(e);
+                return false;
             }
         }
 
@@ -416,6 +548,29 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private bool HasFunctioningBeaconIfNeeded()
         {
             return GridClass.ForceBroadCast == false || _blocks.OfType<IMyFunctionalBlock>().Any(block => block is IMyBeacon && block.Enabled);
+        }
+
+        private List<CubeGridLogic> GetLinkedCubeGridLogics()
+        {
+            var group = _grid.GetGridGroup(GridLinkTypeEnum.Physical);
+            var grids = new List<IMyCubeGrid>();
+            group.GetGrids(grids);
+            return grids.Select(grid => GetCubeGridLogicByEntityId(grid.EntityId)).ToList();
+        }
+
+        private static CubeGridLogic GetMainCubeGridLogic(IMySlimBlock obj = null, IMyCubeGrid grid = null)
+        {
+            var group = obj == null ? grid?.GetGridGroup(GridLinkTypeEnum.Physical) : obj.CubeGrid.GetGridGroup(GridLinkTypeEnum.Physical);
+            var grids = new List<IMyCubeGrid>();
+            group?.GetGrids(grids);
+
+            var logics = new List<CubeGridLogic>();
+            grids.ForEach(g =>
+            {
+                Utils.Log($"HIT: {g?.EntityId} ");
+                logics.Add(GetCubeGridLogicByEntityId(g.EntityId));
+            });
+            return logics.FirstOrDefault(e => e.IsMainGrid);
         }
 
         public override bool IsSerialized()

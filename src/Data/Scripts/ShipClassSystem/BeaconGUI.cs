@@ -41,6 +41,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 SetComboboxContentSmall,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
 
+            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCheckbox("SetIsMainGrid", _ => true));
+
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
 
@@ -51,6 +53,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static bool VisibleIfClassNotForceBroadcast(IMyTerminalBlock block)
         {
             return !(block.GetGridLogic()?.GridClass?.ForceBroadCast ?? false);
+        }
+
+        private static IMyTerminalControlCheckbox GetCheckbox(string name, Func<IMyTerminalBlock, bool> isVisible)
+        {
+            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyBeacon>(name);
+            combobox.Visible = isVisible;
+            combobox.Enabled = isVisible;
+            combobox.Title = MyStringId.GetOrCompute("Main grid?");
+            combobox.Tooltip = MyStringId.GetOrCompute("Set this to be the grid to the parent to other subgrids");
+            combobox.SupportsMultipleBlocks = false;
+            combobox.Getter = GetIsMainGrid;
+            combobox.Setter = SetIsMainGrid;
+
+            return combobox;
         }
 
         private static IMyTerminalControlCombobox GetCombobox(string name,
@@ -87,10 +103,31 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
+        private static bool GetIsMainGrid(IMyTerminalBlock block)
+        {
+            var cubeGridLogic = block.GetGridLogic();
+            return cubeGridLogic?.IsMainGrid ?? false;
+        }
+
+        private static void SetIsMainGrid(IMyTerminalBlock block, bool key)
+        {
+            var cubeGridLogic = block.GetGridLogic();
+            if (cubeGridLogic != null)
+            {
+                Utils.Log(
+                    $"BeaconGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
+                    2);
+                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, cubeGridLogic.GridClassId, key);
+            }
+            else
+            {
+                Utils.Log("BeaconGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
+            }
+        }
+
         private static long GetGridClass(IMyTerminalBlock block)
         {
             var cubeGridLogic = block.GetGridLogic();
-
             return cubeGridLogic?.GridClassId ?? 0;
         }
 
@@ -103,7 +140,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Utils.Log(
                     $"BeaconGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key);
+                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key, cubeGridLogic.IsMainGrid);
             }
             else
             {
