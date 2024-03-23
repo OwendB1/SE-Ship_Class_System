@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+﻿namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal static class DefaultGridClassConfig
     {

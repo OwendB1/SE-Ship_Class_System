@@ -16,30 +16,30 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             _config = config;
         }
 
-        public bool IsGridWithinFactionLimits(CubeGridLogic gridLogic)
+        public bool WillGridBeWithinFactionLimits(CubeGridLogic gridLogic, long newClassId)
         {
             if (!IsApplicableGrid(gridLogic)) return true;
 
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
-            var gridClassId = gridLogic.GridClassId;
 
-            if (!_config.IsValidGridClassId(gridClassId))
+            if (!_config.IsValidGridClassId(newClassId))
             {
-                Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {gridClassId}", 2);
+                Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {newClassId}", 2);
                 return false;
             }
 
-            if (_perFaction.ContainsKey(factionId) && _perFaction[factionId].ContainsKey(gridClassId))
+            if (_perFaction.ContainsKey(factionId) && _perFaction[factionId].ContainsKey(newClassId))
             {
-                var numAllowedGrids = _config.GetGridClassById(gridClassId).MaxPerFaction;
-                var idx = _perFaction[factionId][gridClassId].IndexOf(gridLogic.Entity.EntityId);
-
+                var numAllowedGrids = _config.GetGridClassById(newClassId).MaxPerFaction;
+                if (numAllowedGrids < 0) return true;
+                var idx = _perFaction[factionId][newClassId].IndexOf(gridLogic.Entity.EntityId);
                 if (idx == -1)
                     Utils.Log(
                         $"GridsPerFactionClass::IsGridWithinFactionLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
                         2);
+                Utils.Log($"{idx} | {numAllowedGrids}");
 
-                return idx < numAllowedGrids;
+                return idx <= numAllowedGrids;
             }
 
             Utils.Log(
