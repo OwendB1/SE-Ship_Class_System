@@ -2,6 +2,7 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 //TODO better unknown config handling
 
@@ -9,11 +10,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class ModConfig
     {
-        private static readonly bool ForceRegenerateConfig = false;
-
-        private static readonly string
-            VariableId = nameof(ModConfig); // IMPORTANT: must be unique as it gets written in a shared space (sandbox.sbc)
-
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
 
         private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
@@ -23,22 +19,22 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public bool IncludeAiFactions = false;
 
-        public GridClass[] GridClasses
-        {
-            get { return _gridClasses; }
-            set
-            {
-                _gridClasses = value;
-                UpdateGridClassesDictionary();
-            }
-        }
-
         public GridClass DefaultGridClass
         {
             get { return _defaultGridClass; }
             set
             {
                 _defaultGridClass = value;
+                UpdateGridClassesDictionary();
+            }
+        }
+
+        public GridClass[] GridClasses
+        {
+            get { return _gridClasses; }
+            set
+            {
+                _gridClasses = value;
                 UpdateGridClassesDictionary();
             }
         }
@@ -72,71 +68,32 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 _gridClassesById[gridClass.Id] = gridClass;
         }
 
-        public static ModConfig LoadOrGetDefaultConfig(string filename)
+        public static ModConfig LoadConfig()
         {
-            if (ForceRegenerateConfig) return DefaultGridClassConfig.DefaultModConfig;
-
-            return LoadConfig(filename) ?? DefaultGridClassConfig.DefaultModConfig;
-        }
-
-        public static ModConfig LoadConfig(string filename)
-        {
-            //return null;//TEMP force load default config
-
-            string fileContent = null;
-
-            //If this is the server, initially try loading from world storage
-            if (Constants.IsServer)
-                if (MyAPIGateway.Utilities.FileExistsInWorldStorage(filename, typeof(ModConfig)))
-                {
-                    Utils.Log($"Loading config {filename} from world storage");
-                    var Reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(filename, typeof(ModConfig));
-                    fileContent = Reader.ReadToEnd();
-                    Reader.Close();
-
-                    Utils.Log(string.IsNullOrEmpty(fileContent)
-                        ? $"Loaded config {filename} from world storage was empty"
-                        : $"Loaded config {filename} from world storage size = {fileContent.Length}");
-                }
-
-            //If we do not have any data (either not the server, or no config file present on the server)
-            //then try loading from the sandbox.sbc
-            if (fileContent == null)
-            {
-                Utils.Log($"Loading config {filename} from sandbox data");
-                if (!MyAPIGateway.Utilities.GetVariable(GetVariableName(filename), out fileContent)) return null;
-            }
-
-            //We didn't find any saved config, so return null
-            if (fileContent == null)
-            {
-                Utils.Log($"No saved config found for {filename}");
-                return null;
-            }
-
-            //Otherwise, attempt to parse the saved config data
+            var config = DefaultGridClassConfig.DefaultModConfig;
             try
             {
-                var loadedConfig = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(fileContent);
-
-                if (loadedConfig != null) return loadedConfig;
-                Utils.Log($"Failed to load ModConfig from {filename}", 2);
-
-                return null;
+                if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Constants.ConfigFilename, typeof(ModConfig)))
+                {
+                    var reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(Constants.ConfigFilename, typeof(ModConfig));
+                    var myText = reader.ReadToEnd();
+                    reader.Close();
+                    config = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(myText);
+                    if (config == null) { throw new Exception("Word Settings Empty! :(.... \n ...Fixed!"); }
+                }
 
             }
-            catch (Exception e)
+            catch (Exception x)
             {
-                Utils.Log($"Failed to parse saved config file {filename}, reason = {e.Message}", 2);
-                Utils.Log($"{e.StackTrace}");
+                config = DefaultGridClassConfig.DefaultModConfig;
+                MyAPIGateway.Utilities.ShowMessage("Debug", $"Blue's sketchy ConfigLoad crashed because...\n{x.Message}");
             }
 
-            return null;
+            return config;
         }
 
         public static void SaveConfig(ModConfig config, string filename)
         {
-            if (!Constants.IsServer) return;
             try
             {
                 var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
@@ -147,22 +104,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 Utils.Log($"Failed to save ModConfig file {filename}, reason {e.Message}", 3);
             }
-
-            Utils.SaveConfig(GetVariableName(filename), filename, config);
-        }
-
-        private static string GetVariableName(string filename)
-        {
-            return $"{VariableId}/{filename}";
         }
     }
 
     public class GridClass
     {
-        public BlockLimit[] BlockLimits;
+        public int Id;
+        public string Name;
         public bool ForceBroadCast = false;
         public float ForceBroadCastRange = 0;
-        public int Id;
         public bool LargeGridMobile = false;
         public bool SmallGrid = false;
         public bool LargeGridStatic = false;
@@ -174,7 +124,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public int MinBlocks = -1;
         public GridModifiers Modifiers = new GridModifiers();
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
-        public string Name;
+        public BlockLimit[] BlockLimits;
     }
 
     public class GridModifiers
@@ -224,11 +174,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [ProtoContract]
     public class BlockLimit
     {
+        [ProtoMember(1)] public string Name;
+
         [ProtoMember(2)] public BlockType[] BlockTypes;
 
         [ProtoMember(4)] public float MaxCount;
-
-        [ProtoMember(1)] public string Name;
 
         public bool IsLimitedBlock(IMyFunctionalBlock block, out float blockCountWeight)
         {

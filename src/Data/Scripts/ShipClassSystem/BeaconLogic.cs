@@ -2,6 +2,7 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Sandbox.Game.Entities;
@@ -9,6 +10,7 @@ using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
+using Sandbox.Definitions;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
@@ -99,9 +101,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 var gridClass = gridLogic.GridClass;
                 var concreteGrid = _beacon.CubeGrid as MyCubeGrid;
-                var functionalBlocks = _beacon.CubeGrid.GetFatBlocks<IMyFunctionalBlock>().ToList();
                 if (gridClass == null || concreteGrid == null) return;
 
+                var blocks = concreteGrid.GetFatBlocks();
                 var infoBuilder = new StringBuilder();
                 infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
 
@@ -112,10 +114,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 if (gridClass.BlockLimits != null)
                     foreach (var blockLimit in gridClass.BlockLimits)
                     {
-                        var relevantBlocks = functionalBlocks.Where(functionalBlock => blockLimit.BlockTypes
-                            .Any(t => t.SubtypeId == functionalBlock.BlockDefinition.SubtypeId &&
-                                      t.TypeId == functionalBlock.BlockDefinition.TypeIdString)).ToList();
-
+                        var relevantBlocks = blocks.Where(b => blockLimit.BlockTypes
+                            .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) && 
+                                       bl.TypeId == Utils.GetBlockId(b))).ToList();
                         FormatBlockLimitCheckResult(infoBuilder, blockLimit, relevantBlocks);
                     }
                         
@@ -133,7 +134,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<IMyFunctionalBlock> blocks)
+        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<MyCubeBlock> blocks)
         {
             sb.Append($"{blockLimit.Name}: {blocks.Count}/{blockLimit.MaxCount}{(blocks.Count <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
         }

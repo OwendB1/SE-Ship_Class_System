@@ -26,11 +26,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Utils.Log("Init");
 
             _comms = new Comms(Settings.COMMS_MESSAGE_ID);
-            Config = ModConfig.LoadOrGetDefaultConfig(Constants.ConfigFilename);
-
-            if (Constants.IsServer)
-                //Save whatever config you're using
-                ModConfig.SaveConfig(Config, Constants.ConfigFilename);
+            Config = ModConfig.LoadConfig();
+            ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
         }
 
