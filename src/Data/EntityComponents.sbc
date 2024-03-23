@@ -6,7 +6,7 @@
         <SubtypeId>ShipClassId</SubtypeId>
       </Id>
       <RegisteredStorageGuids>
-        <guid>02bfbbe4-8168-4a7f-855a-939a0f9d9dd5</guid>
+        <guid>a8807ad4-524d-441a-a89a-0671fbfb1dd3</guid>
       </RegisteredStorageGuids>
     </EntityComponent>
   </EntityComponents>
