@@ -38,6 +38,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             BeaconGUI.AddControls(ModContext);
         }
 
+        public static string[] GetIgnoredFactionTags()
+        {
+            return Instance.Config.IgnoreFactionTags;
+        }
+
         public static GridClass GetGridClassById(long gridClassId)
         {
             return Instance.Config.GetGridClassById(gridClassId);
