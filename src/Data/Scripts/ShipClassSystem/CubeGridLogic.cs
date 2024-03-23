@@ -69,6 +69,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             _grid = (IMyCubeGrid)Entity;
             if (BlackListedSubgrids.Contains(_grid.EntityId)) return;
+            if (ModSessionManager.GetIgnoredFactionTags().Any(item => item == OwningFaction.Tag))
+                return;
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
         }
@@ -239,8 +241,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
 
             var relevantLimits = GridClass.BlockLimits.Where(limit => limit.BlockTypes
-                .Any(type => type.TypeId == Utils.GetBlockId(obj.FatBlock) && type.SubtypeId == Utils.GetBlockSubtypeId(obj.FatBlock)));
-            Utils.Log("1");
+                .Any(type => type.TypeId == Utils.GetBlockId(obj.FatBlock) && type.SubtypeId == Utils.GetBlockSubtypeId(obj.FatBlock))).ToList();
+
             if ((from blockLimit in relevantLimits let relevantBlocks = _blocks.Where(block => blockLimit.BlockTypes
                     .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
                               t.TypeId == Utils.GetBlockId(block))).ToList() where relevantBlocks.Count + 1 > blockLimit.MaxCount select blockLimit).Any())
@@ -249,7 +251,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 return;
             }
 
-            _blocks.Add(obj.FatBlock as IMyFunctionalBlock);
+            _blocks.Add(obj.FatBlock);
 
             var funcBlock = obj.FatBlock as IMyFunctionalBlock;
             if (funcBlock != null)
@@ -333,7 +335,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
                               t.TypeId == Utils.GetBlockId(block))).ToList();
 
-                if (relevantBlocks.IndexOf(func) > blockLimit.MaxCount) func.Enabled = false;
+                if (relevantBlocks.IndexOf(func) >= blockLimit.MaxCount) func.Enabled = false;
             }
         }
 
@@ -351,7 +353,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
                               t.TypeId == Utils.GetBlockId(b))).ToList();
                 
-                if (!(relevantBlocks.IndexOf(block) > blockLimit.MaxCount)) continue;
+                if (!(relevantBlocks.IndexOf(block) >= blockLimit.MaxCount)) continue;
                 var slim = block.SlimBlock;
                 var targetIntegrity = slim.MaxIntegrity * 0.2;
                 var damageRequired = slim.Integrity - targetIntegrity;
