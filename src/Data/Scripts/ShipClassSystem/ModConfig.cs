@@ -85,7 +85,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             catch (Exception x)
             {
                 config = DefaultGridClassConfig.DefaultModConfig;
-                MyAPIGateway.Utilities.ShowMessage("Debug", $"Blue's sketchy ConfigLoad crashed because...\n{x.Message}");
+                MyAPIGateway.Utilities.ShowMessage("Debug", $"ConfigLoad crashed because...\n{x.Message}");
             }
 
             return config;
@@ -106,36 +106,63 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
     }
 
+    [ProtoContract]
     public class GridClass
     {
+        [ProtoMember(1)]
         public int Id;
+        [ProtoMember(2)]
         public string Name;
+        [ProtoMember(3)]
         public bool ForceBroadCast = false;
+        [ProtoMember(4)]
         public float ForceBroadCastRange = 0;
-        public bool LargeGridMobile = false;
-        public bool SmallGrid = false;
+        [ProtoMember(5)]
         public bool LargeGridStatic = false;
+        [ProtoMember(6)]
+        public bool LargeGridMobile = false;
+        [ProtoMember(7)]
+        public bool SmallGrid = false;
+        [ProtoMember(8)]
         public int MaxBlocks = -1;
+        [ProtoMember(9)]
         public float MaxMass = -1;
+        [ProtoMember(10)]
         public int MaxPCU = -1;
+        [ProtoMember(11)]
         public int MaxPerFaction = -1;
+        [ProtoMember(12)]
         public int MaxPerPlayer = -1;
+        [ProtoMember(13)]
         public int MinBlocks = -1;
+        [ProtoMember(14)]
         public GridModifiers Modifiers = new GridModifiers();
+        [ProtoMember(15)]
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
+        [ProtoMember(16)]
         public BlockLimit[] BlockLimits;
     }
 
+    [ProtoContract]
     public class GridModifiers
     {
+        [ProtoMember(1)]
         public float AssemblerSpeed = 1;
+        [ProtoMember(2)]
         public float DrillHarvestMultiplier = 1;
+        [ProtoMember(3)]
         public float GyroEfficiency = 1;
+        [ProtoMember(4)]
         public float GyroForce = 1;
+        [ProtoMember(5)]
         public float PowerProducersOutput = 1;
+        [ProtoMember(6)]
         public float RefineEfficiency = 1;
+        [ProtoMember(7)]
         public float RefineSpeed = 1;
+        [ProtoMember(8)]
         public float ThrusterEfficiency = 1;
+        [ProtoMember(9)]
         public float ThrusterForce = 1;
 
         public override string ToString()
@@ -173,11 +200,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [ProtoContract]
     public class BlockLimit
     {
-        [ProtoMember(1)] public string Name;
+        [ProtoMember(1)] 
+        public string Name;
 
-        [ProtoMember(2)] public BlockType[] BlockTypes;
+        [ProtoMember(2)] 
+        public BlockType[] BlockTypes;
 
-        [ProtoMember(4)] public float MaxCount;
+        [ProtoMember(3)] 
+        public float MaxCount;
 
         public bool IsLimitedBlock(IMyFunctionalBlock block, out float blockCountWeight)
         {
@@ -199,11 +229,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [ProtoContract]
     public class BlockType
     {
-        [ProtoMember(3)] public float CountWeight;
+        [ProtoMember(1)] 
+        public string TypeId;
 
-        [ProtoMember(2)] public string SubtypeId;
+        [ProtoMember(2)] 
+        public string SubtypeId;
 
-        [ProtoMember(1)] public string TypeId;
+        [ProtoMember(3)] 
+        public float CountWeight;
 
         public BlockType()
         {
@@ -224,13 +257,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
     }
 
+    [ProtoContract]
     public class GridDamageModifiers
     {
+        [ProtoMember(1)]
         public float Bullet = 1f;
+        [ProtoMember(2)]
         public float Rocket = 1f;
+        [ProtoMember(3)]
         public float Explosion = 1f;
+        [ProtoMember(4)]
         public float Environment = 1f;
+        [ProtoMember(5)]
         public float Energy = 1f;
+        [ProtoMember(6)]
         public float Kinetic = 1f;
     }
 }
