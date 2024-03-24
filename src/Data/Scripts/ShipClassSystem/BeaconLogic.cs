@@ -101,7 +101,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var concreteGrid = _beacon.CubeGrid as MyCubeGrid;
                 if (gridClass == null || concreteGrid == null) return;
 
-                var blocks = concreteGrid.GetFatBlocks();
                 var infoBuilder = new StringBuilder();
                 infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
 
@@ -112,7 +111,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 if (gridClass.BlockLimits != null)
                     foreach (var blockLimit in gridClass.BlockLimits)
                     {
-                        var relevantBlocks = blocks.Where(b => blockLimit.BlockTypes
+                        var relevantBlocks = gridLogic.Blocks.Where(b => blockLimit.BlockTypes
                             .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) && 
                                        bl.TypeId == Utils.GetBlockId(b))).ToList();
                         FormatBlockLimitCheckResult(infoBuilder, blockLimit, relevantBlocks);
@@ -132,7 +131,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<MyCubeBlock> blocks)
+        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<IMyCubeBlock> blocks)
         {
             sb.Append($"{blockLimit.Name}: {blocks.Count}/{blockLimit.MaxCount}{(blocks.Count <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
         }

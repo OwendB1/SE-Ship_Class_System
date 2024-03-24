@@ -553,25 +553,25 @@
                         new BlockLimit
                         {
                             Name = "Turrets",
-                            MaxCount = 40,
+                            MaxCount = 10,
                             BlockTypes = Turrets
                         },
                         new BlockLimit
                         {
                             Name = "Static Weaponry",
-                            MaxCount = 40,
+                            MaxCount = 0,
                             BlockTypes = StaticWeaponry
                         },
                         new BlockLimit
                         {
                             Name = "TIO Railgun Turrets",
-                            MaxCount = 10,
+                            MaxCount = 4,
                             BlockTypes = TIORailgunTurrets
                         },
                         new BlockLimit
                         {
                             Name = "TIO Battleship Turrets",
-                            MaxCount = 10,
+                            MaxCount = 4,
                             BlockTypes = TIOBattleshipTurrets
                         }
                     }

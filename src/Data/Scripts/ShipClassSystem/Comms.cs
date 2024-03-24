@@ -11,7 +11,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public Comms(ushort id)
         {
             _commsId = id;
-
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
             if (Constants.IsServer) MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
@@ -86,7 +86,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             var gridLogic = CubeGridLogic.GetCubeGridLogicByEntityId(message.EntityId);
 
-            Utils.Log(gridLogic?.GridClass?.Name);
+            Utils.Log("NAME:" + gridLogic?.GridClass?.Name);
 
             var entity = MyAPIGateway.Entities.GetEntityById(message.EntityId);
 
