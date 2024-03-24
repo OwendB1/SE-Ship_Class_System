@@ -79,7 +79,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
             catch (Exception e)
             {
-                Utils.Log("Comms::HandleChangeGridClassMessage deserialise message error", 3);
+                Utils.Log("Comms::HandleChangeGridClassMessage deserialize message error", 3);
                 Utils.LogException(e);
                 return;
             }
