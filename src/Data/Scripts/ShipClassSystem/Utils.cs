@@ -63,9 +63,19 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return Convert.ToString(block.BlockDefinition.TypeId).Replace("MyObjectBuilder_", "");
         }
 
+        public static string GetBlockId(IMySlimBlock block)
+        {
+            return Convert.ToString(block.GetObjectBuilder().TypeId).Replace("MyObjectBuilder_", "");
+        }
+
         public static string GetBlockSubtypeId(IMyCubeBlock block)
         {
             return Convert.ToString(block.BlockDefinition.SubtypeId);
+        }
+
+        public static string GetBlockSubtypeId(IMySlimBlock block)
+        {
+            return Convert.ToString(block.GetObjectBuilder().SubtypeId);
         }
 
         public static CubeGridLogic GetGridLogic(this IMyCubeGrid grid)

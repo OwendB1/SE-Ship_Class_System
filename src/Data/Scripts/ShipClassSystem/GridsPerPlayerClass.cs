@@ -36,7 +36,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 if (idx == -1)
                     Utils.Log(
-                        $"GridsPerPlayerClass::IsGridWithinPlayerLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
+                        $"GridsPerPlayerClass::IsGridWithinPlayerLimits: Grid not stored within player limits data {gridLogic.Entity.EntityId}",
                         2);
 
                 return idx <= numAllowedGrids;
