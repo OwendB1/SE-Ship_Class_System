@@ -10,7 +10,7 @@ using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    public static class BeaconGUI
+    public static class CockpitGUI
     {
         private static int _waitTicks;
         private static bool _controlsAdded;
@@ -31,23 +31,23 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             // Create Drop Down Menu and add the control to the grid controller's terminal
             // Different comboboxes available depending on grid type
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassLargeStatic",
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
                 SetComboboxContentLargeStatic,
                 block => block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassLargeMobile",
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
                 SetComboboxContentLargeGridMobile,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCombobox("SetGridClassSmall",
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
                 SetComboboxContentSmall,
                 block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
 
-            MyAPIGateway.TerminalControls.AddControl<IMyBeacon>(GetCheckbox("SetIsMainGrid", _ => true));
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCheckbox("SetIsMainGrid", _ => true));
 
             List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
+            MyAPIGateway.TerminalControls.GetControls<IMyCockpit>(out controls);
 
-            foreach (var control in controls.Where(control => ControlsToHideIfForceBroadcast.Contains(control.Id)))
-                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfClassNotForceBroadcast);
+            //foreach (var control in controls.Where(control => ControlsToHideIfForceBroadcast.Contains(control.Id)))
+            //    control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfClassNotForceBroadcast);
         }
 
         private static bool VisibleIfClassNotForceBroadcast(IMyTerminalBlock block)
@@ -57,7 +57,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static IMyTerminalControlCheckbox GetCheckbox(string name, Func<IMyTerminalBlock, bool> isVisible)
         {
-            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyBeacon>(name);
+            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyCockpit>(name);
             combobox.Visible = isVisible;
             combobox.Enabled = isVisible;
             combobox.Title = MyStringId.GetOrCompute("Main grid?");
@@ -72,7 +72,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static IMyTerminalControlCombobox GetCombobox(string name,
             Action<List<MyTerminalControlComboBoxItem>> setComboboxContent, Func<IMyTerminalBlock, bool> isVisible)
         {
-            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, IMyBeacon>(name);
+            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, IMyCockpit>(name);
             combobox.Visible = isVisible;
             combobox.Enabled = isVisible;
             combobox.Title = MyStringId.GetOrCompute("Grid class");
@@ -115,13 +115,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (cubeGridLogic != null)
             {
                 Utils.Log(
-                    $"BeaconGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
+                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
                 ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, cubeGridLogic.GridClassId, key);
             }
             else
             {
-                Utils.Log("BeaconGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
+                Utils.Log("CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
             }
         }
 
@@ -138,13 +138,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (cubeGridLogic != null)
             {
                 Utils.Log(
-                    $"BeaconGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
+                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
                 ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key, cubeGridLogic.IsMainGrid);
             }
             else
             {
-                Utils.Log("BeaconGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
+                Utils.Log("CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
             }
         }
     }

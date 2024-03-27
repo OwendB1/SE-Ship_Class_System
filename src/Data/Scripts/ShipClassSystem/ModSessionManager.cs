@@ -35,7 +35,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             base.UpdateAfterSimulation();
 
-            BeaconGUI.AddControls(ModContext);
+            CockpitGUI.AddControls(ModContext);
         }
 
         public static string[] GetIgnoredFactionTags()

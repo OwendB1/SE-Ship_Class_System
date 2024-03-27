@@ -35,8 +35,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (_beacon.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
-
-            _beacon.AppendingCustomInfo += AppendingCustomInfo;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
         }
 
@@ -45,7 +43,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.UpdateAfterSimulation100();
 
             UpdateBeacon();
-
+            /*
             try // only for non-critical code
             {
                 // ideally you want to refresh this only when necessary but this is a good compromise to only refresh it if player is in the terminal.
@@ -55,13 +53,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
                 //TODO only run this if grid check results actually change
-                _beacon.RefreshCustomInfo();
-                _beacon.SetDetailedInfoDirty();
+               // _beacon.RefreshCustomInfo();
+                _//beacon.SetDetailedInfoDirty();
             }
             catch (Exception e)
             {
                 Utils.LogException(e);
-            }
+            }*/
         }
 
         public void UpdateBeacon()
@@ -83,82 +81,5 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }*/
         }
 
-        private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder sb)
-        {
-            // NOTE: don't Clear() the StringBuilder, it's the same instance given to all mods.
-
-            try // only for non-critical code
-            {
-                var gridLogic = block.GetGridLogic();
-
-                if (gridLogic == null)
-                {
-                    Utils.Log("Updating Beacon detailed info failed, grid is missing CubeGridLogic", 3);
-                    return;
-                }
-
-                var gridClass = gridLogic.GridClass;
-                var concreteGrid = _beacon.CubeGrid as MyCubeGrid;
-                if (gridClass == null || concreteGrid == null) return;
-
-                var infoBuilder = new StringBuilder();
-                infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
-
-                FormatRangeCheckResult("Blocks", infoBuilder, gridClass.MinBlocks, gridClass.MaxBlocks, concreteGrid.BlocksCount);
-                FormatMaxCheckResult("Mass", infoBuilder, gridClass.MaxMass, concreteGrid.Mass);
-                FormatMaxCheckResult("PCU", infoBuilder, gridClass.MaxPCU, concreteGrid.BlocksPCU);
-
-                if (gridClass.BlockLimits != null)
-                    foreach (var blockLimit in gridClass.BlockLimits)
-                    {
-                        var relevantBlocks = gridLogic.Blocks.Where(b => blockLimit.BlockTypes
-                            .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) && 
-                                       bl.TypeId == Utils.GetBlockId(b))).ToList();
-                        FormatBlockLimitCheckResult(infoBuilder, blockLimit, relevantBlocks);
-                    }
-                        
-
-                infoBuilder.Append("\nApplied Modifiers: \n\n");
-
-                foreach (var modifierValue in GridLogic.Modifiers.GetModifierValues())
-                    infoBuilder.Append($"{modifierValue.Name}: {modifierValue.Value}\n");
-
-                sb.Append(infoBuilder);
-            }
-            catch (Exception e)
-            {
-                Utils.LogException(e);
-            }
-        }
-
-        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<IMyCubeBlock> blocks)
-        {
-            sb.Append($"{blockLimit.Name}: {blocks.Count}/{blockLimit.MaxCount}{(blocks.Count <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
-        }
-
-        private static void FormatMaxCheckResult(string name, StringBuilder sb, float max,float value)
-        {
-            if (max > 0)
-                sb.Append($"{name}: {value}/{max}{(value <= max ? "\n" : " (fail)\n")}");
-        }
-
-        private static void FormatMaxCheckResult(string name, StringBuilder sb, int max, int value)
-        {
-            if (max > 0)
-                sb.Append($"{name}: {value}/{max}{(value <= max ? "\n" : " (fail)\n")}");
-        }
-
-        private static void FormatRangeCheckResult(string name, StringBuilder sb, int min, int max, int value)
-        {
-            if (min < 1 && max < 1) return;
-            var passed = value <= max && value >= min;
-            var range = min > 0 && max > 0
-                ? $"{min} - {max}"
-                : min > 0
-                    ? $">= {min}"
-                    : $"<= {max}";
-
-            sb.Append($"{name}: {value}/{range}{(passed ? "\n" : " (fail)\n")}");
-        }
     }
 }
