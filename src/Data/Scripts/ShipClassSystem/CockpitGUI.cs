@@ -14,7 +14,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         private static int _waitTicks;
         private static bool _controlsAdded;
-        private static readonly string[] ControlsToHideIfForceBroadcast = { "Radius", "HudText" };
+        private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall", "SetIsMainGrid" };
 
         public static void AddControls(IMyModContext context)
         {
@@ -46,13 +46,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<IMyCockpit>(out controls);
 
-            //foreach (var control in controls.Where(control => ControlsToHideIfForceBroadcast.Contains(control.Id)))
-            //    control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfClassNotForceBroadcast);
+            foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
+                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
         }
 
-        private static bool VisibleIfClassNotForceBroadcast(IMyTerminalBlock block)
+        private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)
         {
-            return !(block.GetGridLogic()?.GridClass?.ForceBroadCast ?? false);
+            var cockpit = block as IMyCockpit;
+            return cockpit?.IsMainCockpit ?? false;
         }
 
         private static IMyTerminalControlCheckbox GetCheckbox(string name, Func<IMyTerminalBlock, bool> isVisible)

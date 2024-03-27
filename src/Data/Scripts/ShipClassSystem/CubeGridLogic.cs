@@ -9,14 +9,13 @@ using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Network;
 using VRage.ModAPI;
-using VRage.Network;
 using VRage.ObjectBuilders;
 using VRage.Sync;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_CubeGrid), false)]
-    public class CubeGridLogic : MyGameLogicComponent, IMyEventProxy
+    public class CubeGridLogic : MyGameLogicComponent
     {
         private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         private static readonly List<CubeGridLogic> AllCubeGridLogics = new List<CubeGridLogic>();
