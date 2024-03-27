@@ -77,7 +77,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
-            // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
             base.Init(objectBuilder);
 
             _grid = (IMyCubeGrid)Entity;
