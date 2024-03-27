@@ -29,10 +29,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             new GridsPerPlayerClassManager(ModSessionManager.Instance.Config);
 
         // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private MySync<long, SyncDirection.FromServer> _gridClassSync = null;
+        private MySync<long, SyncDirection.FromServer> _gridClassSync;
 
         // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private MySync<bool, SyncDirection.FromServer> _gridTypeSync = null;
+        private MySync<bool, SyncDirection.FromServer> _gridTypeSync;
 
         private IMyCubeGrid _grid;
 
@@ -42,7 +42,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             set
             {
                 _gridTypeSync.Value = value;
-                if (!Constants.IsServer) OnMainGridChanged(_gridTypeSync);
             }
         }
 
@@ -60,13 +59,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
                 if (!withinFactionLimit || !withinPlayerLimit) return;
 
+                var concreteGrid = _grid as MyCubeGrid;
+                if (concreteGrid == null) return;
+                if (concreteGrid.BlocksCount > ModSessionManager.GetGridClassById(value).MaxBlocks) return;
+                if (concreteGrid.BlocksPCU > ModSessionManager.GetGridClassById(value).MaxPCU) return;
+                if (concreteGrid.Mass > ModSessionManager.GetGridClassById(value).MaxMass) return;
+
                 if (!ModSessionManager.IsValidGridClass(value))
                     throw new Exception($"CubeGridLogic:: set GridClassId: invalid grid class id {value}");
 
                 Utils.Log($"CubeGridLogic::GridClassId setting grid class to {value}", 1);
 
                 _gridClassSync.Value = value;
-                if (!Constants.IsServer) OnGridClassChanged(_gridClassSync);
             }
         }
 
@@ -630,25 +634,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             var chosenMainGrid = potentialMainGrids.MaxBy(e => e.Value);
             return chosenMainGrid.Key;
-        }
-
-        public override bool IsSerialized()
-        {
-            // executed when the entity gets serialized (saved, blueprinted, streamed, etc) and asks all
-            //   its components whether to be serialized too or not (calling GetObjectBuilder())
-            if (_grid?.Physics == null) return base.IsSerialized();
-            if (!Constants.IsServer) return base.IsSerialized();
-            try
-            {
-                Entity.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
-            }
-            catch (Exception e)
-            {
-                Utils.Log($"Error serialising CubeGridLogic, {e.Message}");
-            }
-
-            // you cannot add custom OBs to the game so this should always return the base (which currently is always false).
-            return base.IsSerialized();
         }
     }
 }

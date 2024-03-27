@@ -9,7 +9,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class GridsPerPlayerClassManager
     {
         private readonly ModConfig _config;
-        private readonly GridsPerPlayerClass _perPlayer = new GridsPerPlayerClass();
+        private readonly Dictionary<long, Dictionary<long, List<long>>> _perPlayer = new Dictionary<long, Dictionary<long, List<long>>>();
 
         public GridsPerPlayerClassManager(ModConfig config)
         {
@@ -105,15 +105,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 
             return set;
-        }
-    }
-
-    [ProtoContract]
-    public class GridsPerPlayerClass : Dictionary<long, Dictionary<long, List<long>>>
-    {
-        public static GridsPerPlayerClass FromBytes(byte[] data)
-        {
-            return MyAPIGateway.Utilities.SerializeFromBinary<GridsPerPlayerClass>(data);
         }
     }
 }

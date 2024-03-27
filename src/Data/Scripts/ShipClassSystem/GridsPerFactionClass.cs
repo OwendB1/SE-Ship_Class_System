@@ -9,7 +9,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class GridsPerFactionClassManager
     {
         private readonly ModConfig _config;
-        private readonly GridsPerFactionClass _perFaction = new GridsPerFactionClass();
+        private readonly Dictionary<long, Dictionary<long, List<long>>> _perFaction = new Dictionary<long, Dictionary<long, List<long>>>();
 
         public GridsPerFactionClassManager(ModConfig config)
         {
@@ -19,33 +19,24 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public bool WillGridBeWithinFactionLimits(CubeGridLogic gridLogic, long newClassId)
         {
             if (!IsApplicableGrid(gridLogic)) return true;
-
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
-
             if (!_config.IsValidGridClassId(newClassId))
             {
                 Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Unknown grid class id {newClassId}", 2);
                 return false;
             }
-
             if (_perFaction.ContainsKey(factionId) && _perFaction[factionId].ContainsKey(newClassId))
             {
                 var numAllowedGrids = _config.GetGridClassById(newClassId).MaxPerFaction;
                 if (numAllowedGrids < 0) return true;
                 var idx = _perFaction[factionId][newClassId].IndexOf(gridLogic.Entity.EntityId);
                 if (idx == -1)
-                    Utils.Log(
-                        $"GridsPerFactionClass::IsGridWithinFactionLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}",
-                        2);
+                    Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}", 2);
                 Utils.Log($"{idx} | {numAllowedGrids}");
 
                 return idx <= numAllowedGrids;
             }
-
-            Utils.Log(
-                "GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data",
-                2);
-
+            Utils.Log("GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data", 2);
             return true;
         }
 
@@ -105,15 +96,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 
             return set;
-        }
-    }
-
-    [ProtoContract]
-    public class GridsPerFactionClass : Dictionary<long, Dictionary<long, List<long>>>
-    {
-        public static GridsPerFactionClass FromBytes(byte[] data)
-        {
-            return MyAPIGateway.Utilities.SerializeFromBinary<GridsPerFactionClass>(data);
         }
     }
 }
