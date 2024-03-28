@@ -17,14 +17,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
 
         public void RenderToSprites(List<MySprite> sprites, Vector2 topLeft, float width, Vector2 cellGap,
-            float scale = 1)
-        {
-            Vector2 ignored;
-
-            RenderToSprites(sprites, topLeft, width, cellGap, out ignored, scale);
-        }
-
-        public void RenderToSprites(List<MySprite> sprites, Vector2 topLeft, float width, Vector2 cellGap,
             out Vector2 positionAfter, float scale = 1)
         {
             //Calculate column widths & row heights
@@ -33,26 +25,22 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var rowHeights = new float[Rows.Count];
             float totalFreeSpaceWeight = 0;
             float minWidthRequired = 0;
-
             for (var colNum = 0; colNum < Columns.Count; colNum++)
             {
                 totalFreeSpaceWeight += Columns[colNum].FreeSpace;
-
                 for (var rowNum = 0; rowNum < Rows.Count; rowNum++)
                 {
                     var row = Rows[rowNum];
                     var cell = row[colNum];
-
+                    
                     if (cell.IsEmpty) continue;
                     columnContentWidths[colNum] = Math.Max(columnContentWidths[colNum],
                         TextUtils.GetTextWidth(cell.Value, scale));
                     rowHeights[rowNum] = Math.Max(rowHeights[rowNum], TextUtils.GetTextHeight(cell.Value, scale));
                 }
-
                 minWidthRequired += columnContentWidths[colNum] + (colNum > 0 ? cellGap.X : 0);
                 columnWidths[colNum] = columnContentWidths[colNum];
             }
-
             //distribute free space
             if (minWidthRequired < width && totalFreeSpaceWeight > 0)
             {
@@ -65,14 +53,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             var rowTopLeft = topLeft;
             var tableHeight = 0f;
-
             //render rows
             for (var rowNum = 0; rowNum < Rows.Count; rowNum++)
             {
                 var row = Rows[rowNum];
 
                 float rowX = 0;
-
                 for (var colNum = 0; colNum < Columns.Count; colNum++)
                 {
                     var cell = row[colNum];
@@ -106,7 +92,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 rowTopLeft += new Vector2(0, rowTotalHeight);
                 tableHeight += rowTotalHeight;
             }
-
             positionAfter = topLeft + new Vector2(0, tableHeight);
         }
     }

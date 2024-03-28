@@ -407,13 +407,13 @@
                         new BlockLimit
                         {
                             Name = "Welders",
-                            MaxCount = 20,
+                            MaxCount = 40,
                             BlockTypes = Welders
                         },
                         new BlockLimit
                         {
                             Name = "Grinders",
-                            MaxCount = 20,
+                            MaxCount = 40,
                             BlockTypes = Grinders
                         },
                         new BlockLimit
