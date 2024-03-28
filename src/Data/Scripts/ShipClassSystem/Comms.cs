@@ -86,10 +86,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             var gridLogic = CubeGridLogic.GetCubeGridLogicByEntityId(message.EntityId);
 
-            Utils.Log("NAME:" + gridLogic?.GridClass?.Name);
-
-            var entity = MyAPIGateway.Entities.GetEntityById(message.EntityId);
-
             if (gridLogic != null)
             {
                 if (ModSessionManager.IsValidGridClass(message.GridClassId))

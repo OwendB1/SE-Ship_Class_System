@@ -29,11 +29,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 var numAllowedGrids = _config.GetGridClassById(newClassId).MaxPerFaction;
                 if (numAllowedGrids < 0) return true;
-                var idx = _perFaction[factionId][newClassId].IndexOf(gridLogic.Entity.EntityId);
-                if (idx == -1)
-                    Utils.Log($"GridsPerFactionClass::IsGridWithinFactionLimits: Grid not stored within faction limits data {gridLogic.Entity.EntityId}", 2);
-                Utils.Log($"{idx} | {numAllowedGrids}");
-
+                var idx = _perFaction[factionId][newClassId].Count + 1;
                 return idx <= numAllowedGrids;
             }
             Utils.Log("GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data", 2);
@@ -42,7 +38,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log("GridsPerFactionClass::AddCubeGrid: start");
+            Utils.Log("GridsPerFactionClass::AddCubeGrid: {gridLogic.Entity.EntityId}");
             if (!IsApplicableGrid(gridLogic)) return;
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
@@ -59,9 +55,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (!perGridClass.ContainsKey(gridClassId))
             {
-                Utils.Log(
-                    $"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} in faction {factionId}",
-                    2);
+                Utils.Log($"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} in faction {factionId}", 2);
                 perGridClass[gridClassId] = new List<long>();
             }
 
@@ -82,11 +76,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             return _config.IgnoreFactionTags == null || gridLogic.OwningFaction == null ||
                    !_config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag);
-        }
-
-        public byte[] GetDataBytes()
-        {
-            return MyAPIGateway.Utilities.SerializeToBinary(_perFaction);
         }
 
         private Dictionary<long, List<long>> GetDefaultFactionGridsSet()

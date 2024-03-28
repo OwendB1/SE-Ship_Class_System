@@ -31,7 +31,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Config = ModConfig.LoadConfig();
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
-            MyAPIGateway.Entities.OnEntityAdd += OnEntityAdd;
         }
 
         public override void UpdateAfterSimulation()
@@ -39,13 +38,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.UpdateAfterSimulation();
 
             CockpitGUI.AddControls(ModContext);
-        }
-
-        private void OnEntityAdd(IMyEntity obj)
-        {
-            var grid = obj as IMyCubeGrid;
-            if (grid == null) return;
-            Utils.Log("ADD EVENT: " + grid.EntityId);
         }
 
         public static string[] GetIgnoredFactionTags()

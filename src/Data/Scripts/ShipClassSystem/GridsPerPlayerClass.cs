@@ -32,13 +32,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 var numAllowedGrids = _config.GetGridClassById(newClassId).MaxPerPlayer;
                 if (numAllowedGrids < 0) return true;
-                var idx = _perPlayer[playerId][newClassId].IndexOf(gridLogic.Entity.EntityId);
-
-                if (idx == -1)
-                    Utils.Log(
-                        $"GridsPerPlayerClass::IsGridWithinPlayerLimits: Grid not stored within player limits data {gridLogic.Entity.EntityId}",
-                        2);
-
+                var idx = _perPlayer[playerId][newClassId].Count + 1;
                 return idx <= numAllowedGrids;
             }
 
@@ -51,7 +45,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log("GridsPerPlayerClass::AddCubeGrid: start");
+            Utils.Log($"GridsPerPlayerClass::AddCubeGrid: {gridLogic.Entity.EntityId}");
             if (!IsApplicableGrid(gridLogic)) return;
             var playerId = gridLogic.MajorityOwningPlayerId;
             var gridClassId = gridLogic.GridClassId;
@@ -80,7 +74,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void Reset()
         {
-            foreach (var gridsEntry in _perPlayer.SelectMany(factionClassesEntry => factionClassesEntry.Value))
+            foreach (var gridsEntry in _perPlayer.SelectMany(classesEntry => classesEntry.Value))
                 gridsEntry.Value.Clear();
         }
 
@@ -92,11 +86,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return _config.IgnoreFactionTags == null || gridLogic.OwningFaction == null ||
                    !_config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag);
         }
-
-        public byte[] GetDataBytes()
-        {
-            return MyAPIGateway.Utilities.SerializeToBinary(_perPlayer);
-        }
+        
 
         private Dictionary<long, List<long>> GetDefaultPLayerGridsSet()
         {

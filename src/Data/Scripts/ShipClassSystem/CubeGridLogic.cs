@@ -18,7 +18,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class CubeGridLogic : MyGameLogicComponent
     {
         private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
-        private static readonly List<CubeGridLogic> AllCubeGridLogics = new List<CubeGridLogic>();
 
         public HashSet<IMyCubeBlock> Blocks;
 
@@ -60,10 +59,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 if (!withinFactionLimit || !withinPlayerLimit) return;
 
                 var concreteGrid = _grid as MyCubeGrid;
+                var maxBlocks = ModSessionManager.GetGridClassById(value).MaxBlocks;
+                var maxPCU = ModSessionManager.GetGridClassById(value).MaxPCU;
+                var maxMass = ModSessionManager.GetGridClassById(value).MaxMass;
                 if (concreteGrid == null) return;
-                if (concreteGrid.BlocksCount > ModSessionManager.GetGridClassById(value).MaxBlocks) return;
-                if (concreteGrid.BlocksPCU > ModSessionManager.GetGridClassById(value).MaxPCU) return;
-                if (concreteGrid.Mass > ModSessionManager.GetGridClassById(value).MaxMass) return;
+                if (maxBlocks > 1 && concreteGrid.BlocksCount > maxBlocks) return;
+                if (maxPCU > 1 && concreteGrid.BlocksPCU > maxPCU) return;
+                if (maxMass > 1 && concreteGrid.Mass > maxMass) return;
 
                 if (!ModSessionManager.IsValidGridClass(value))
                     throw new Exception($"CubeGridLogic:: set GridClassId: invalid grid class id {value}");
@@ -81,7 +83,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             base.Init(objectBuilder);
-
             _grid = (IMyCubeGrid)Entity;
             if (ModSessionManager.GetIgnoredFactionTags().Any(item => item == OwningFaction.Tag))
                 return;
@@ -107,7 +108,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (Blocks == null) return;
 
             // If subgrid then blacklist and add blocks to main grid
-
             if (!AddGridLogic(this)) return;
             
             if (Entity.Storage == null) Entity.Storage = new MyModStorageComponent();
@@ -241,6 +241,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             
             ApplyModifiers();
             UpdateGridsPerFactionClass();
+            UpdateGridsPerPlayerClass();
 
             foreach (var funcBlock in Blocks.OfType<IMyFunctionalBlock>())
             {
@@ -396,7 +397,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var gridLogicToBeRemoved = CubeGridLogics.FirstOrDefault(l => l.Key == grid2.EntityId);
             CubeGridLogics.Remove(gridLogicToBeRemoved.Key);
-            AllCubeGridLogics.RemoveAll(item => item == gridLogicToBeRemoved.Value);
         }
 
         private void FuncBlockOnEnabledChanged(IMyFunctionalBlock func)
@@ -514,25 +514,28 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public static void UpdateGridsPerFactionClass()
         {
             GridsPerFactionClassManager.Reset();
-            foreach (var gridLogic in AllCubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic);
+            foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
+        }
+
+        public static void UpdateGridsPerPlayerClass()
+        {
+            GridsPerPlayerClassManager.Reset();
+            foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
         }
 
         private bool AddGridLogic(CubeGridLogic gridLogic)
         {
+            Utils.Log("Try Add GridLogic for: " + gridLogic.Entity.EntityId);
             try
             {
                 if (gridLogic == null) throw new Exception("gridLogic cannot be null");
 
                 if (gridLogic._grid == null) throw new Exception("gridLogic.Grid cannot be null");
 
-                if (AllCubeGridLogics == null) throw new Exception("AllCubeGridLogics cannot be null");
-
                 if (GridsPerFactionClassManager == null)
                     throw new Exception("gridsPerFactionClassManager cannot be null");
 
                 if (CubeGridLogics == null) throw new Exception("CubeGridLogics cannot be null");
-
-                if (!AllCubeGridLogics.Contains(gridLogic)) AllCubeGridLogics.Add(gridLogic);
 
                 GridsPerFactionClassManager.AddCubeGrid(gridLogic);
                 GridsPerPlayerClassManager.AddCubeGrid(gridLogic);
@@ -594,7 +597,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static void RemoveGridLogic(CubeGridLogic gridLogic)
         {
             CubeGridLogics.Remove(gridLogic._grid.EntityId);
-            AllCubeGridLogics.RemoveAll(item => item == gridLogic);
         }
 
         private bool HasFunctioningBeaconIfNeeded()
