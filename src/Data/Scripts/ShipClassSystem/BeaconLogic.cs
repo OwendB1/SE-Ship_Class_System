@@ -1,12 +1,6 @@
 ﻿using Sandbox.Common.ObjectBuilders;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 

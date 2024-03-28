@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using VRage.Game;
 using VRage.Game.GUI.TextPanel;
 using VRage.Utils;
@@ -53,7 +54,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         };
 
         private readonly IMyTerminalBlock _terminalBlock;
-
+        private readonly CubeGridLogic _attachedLogic;
         private int _scrollTime;
 
         public GridStatusLCDScript(IMyTextSurface surface, IngameCubeBlock block, Vector2 size) : base(surface, block,
@@ -63,7 +64,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 (IMyTerminalBlock)block; // internal stored m_block is the ingame interface which has no events, so can't unhook later on, therefore this field is required.
             _terminalBlock.OnMarkForClose +=
                 BlockMarkedForClose; // required if you're gonna make use of Dispose() as it won't get called when block is removed or grid is cut/unloaded.
-
+            _attachedLogic = _terminalBlock.GetGridLogic();
             // Called when script is created.
             // This class is instanced per LCD that uses it, which means the same block can have multiple instances of this script aswell (e.g. a cockpit with all its screens set to use this script).
         }
@@ -109,7 +110,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private void Draw() // this is a custom method which is called in Run().
         {
             if (!Constants.IsClient) return;
-
+            Utils.Log("HIT1");
             var screenSize = Surface.SurfaceSize;
             var screenTopLeft = (Surface.TextureSize - screenSize) * 0.5f;
             var padding = new Vector2(10, 10);
@@ -148,7 +149,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             _headerTable.RenderToSprites(spritesToRender, screenTopLeft + padding, screenInnerWidth, new Vector2(15, 0),
                 out currentPosition, baseScale);
-
+            Utils.Log("HIT2");
             _gridResultsTable.Rows.Add(new Row
             {
                 new Cell("Blocks: "),
@@ -175,26 +176,30 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     new Cell(gridClass.MaxPCU.ToString())
                 });
 
-            //if (gridClass.BlockLimits != null)
-            //    foreach (var blockLimit in gridClass.BlockLimits)
-            //    {
-            //        _gridResultsTable.Rows.Add(new Row
-            //        {
-            //            new Cell($"{blockLimit.Name}:"),
-            //            new Cell(checkResults.Score.ToString()),
-            //            new Cell("/"),
-            //            new Cell(checkResults.Max.ToString(), checkResults.Passed ? successColor : failColor),
-            //            checkResults.Passed ? new Cell() : new Cell("X", failColor)
-            //        });
-            //    }
+            if (gridClass.BlockLimits != null)
+                foreach (var blockLimit in gridClass.BlockLimits)
+                {
+                    var relevantBlocks = _attachedLogic.Blocks.Where(b => blockLimit.BlockTypes
+                        .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) &&
+                                   bl.TypeId == Utils.GetBlockId(b))).ToList();
+
+                    _gridResultsTable.Rows.Add(new Row
+                    {
+                        new Cell($"{blockLimit.Name}:"),
+                        new Cell(relevantBlocks.ToString()),
+                        new Cell("/"),
+                        new Cell(blockLimit.MaxCount.ToString(CultureInfo.InvariantCulture), relevantBlocks.Count > blockLimit.MaxCount ? successColor : failColor),
+                        relevantBlocks.Count > blockLimit.MaxCount ? new Cell() : new Cell("X", failColor)
+                    });
+                }
 
             var gridResultsTableTopLeft = currentPosition + new Vector2(0, 5);
 
             _gridResultsTable.RenderToSprites(spritesToRender, gridResultsTableTopLeft, screenInnerWidth, cellGap,
                 out currentPosition, bodyScale);
-
+            Utils.Log("HIT3");
             //Applied modifiers
-            spritesToRender.Add(CreateLine("Applied modfiers", currentPosition + new Vector2(0, 5), out currentPosition,
+            spritesToRender.Add(CreateLine("Applied modifiers", currentPosition + new Vector2(0, 5), out currentPosition,
                 baseScale));
 
             _appliedModifiersTable.Clear();
@@ -210,7 +215,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             _appliedModifiersTable.RenderToSprites(spritesToRender, appliedModifiersTableTopLeft, screenInnerWidth,
                 cellGap, out currentPosition, bodyScale);
-
+            Utils.Log("HIT4");
             var scrollPosition = GetScrollPosition(currentPosition + padding);
 
             foreach (var t in spritesToRender)

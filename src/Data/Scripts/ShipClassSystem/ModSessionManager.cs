@@ -2,14 +2,12 @@
 using System;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRage.Network;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
-    public class ModSessionManager : MySessionComponentBase, IMyEventProxy
+    public class ModSessionManager : MySessionComponentBase
     {
         private Comms _comms;
 
@@ -31,13 +29,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Config = ModConfig.LoadConfig();
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
-        }
-
-        public override void UpdateAfterSimulation()
-        {
-            base.UpdateAfterSimulation();
-
-            CockpitGUI.AddControls(ModContext);
         }
 
         public static string[] GetIgnoredFactionTags()

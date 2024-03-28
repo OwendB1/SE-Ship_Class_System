@@ -152,6 +152,77 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
+        private bool AddGridLogic(CubeGridLogic gridLogic)
+        {
+            Utils.Log("Try Add GridLogic for: " + gridLogic.Entity.EntityId);
+            try
+            {
+                if (gridLogic == null) throw new Exception("gridLogic cannot be null");
+
+                if (gridLogic._grid == null) throw new Exception("gridLogic.Grid cannot be null");
+
+                if (GridsPerFactionClassManager == null)
+                    throw new Exception("gridsPerFactionClassManager cannot be null");
+
+                if (CubeGridLogics == null) throw new Exception("CubeGridLogics cannot be null");
+
+                GridsPerFactionClassManager.AddCubeGrid(gridLogic);
+                GridsPerPlayerClassManager.AddCubeGrid(gridLogic);
+                CubeGridLogics[gridLogic._grid.EntityId] = gridLogic;
+
+                var concreteGrid = gridLogic._grid as MyCubeGrid;
+                if (concreteGrid == null) return false;
+
+                foreach (var funcBlock in gridLogic.Blocks.OfType<IMyFunctionalBlock>())
+                {
+                    funcBlock.EnabledChanged += _ => gridLogic.FuncBlockOnEnabledChanged(funcBlock);
+                }
+
+                var id = GetMainCubeGridId();
+                _gridTypeSync.Value = id == _grid.EntityId;
+
+                //var entities = new HashSet<IMyEntity>();
+                //MyAPIGateway.Entities.GetEntities(entities, entity => entity is IMyCubeGrid);
+                //var cubeGrids = entities.Select(e => e as IMyCubeGrid).Where(g => g?.Physics != null).ToList();
+                //if (CubeGridLogics.Count == cubeGrids.Count)
+                //    RunAfterInitChecks();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Utils.Log("CubeGridLogic::AddGridLogic: caught error", 3);
+                Utils.LogException(e);
+                return false;
+            }
+        }
+
+        private void RunAfterInitChecks()
+        {
+            if (IsMainGrid)
+            {
+                var logics = GetLinkedCubeGridLogics();
+                foreach (var logic in logics)
+                {
+                    Blocks.UnionWith(logic.Blocks);
+                }
+            }
+
+            foreach (var block in Blocks)
+            {
+                var funcBlock = block as IMyFunctionalBlock;
+                if (funcBlock != null)
+                {
+                    EnforceFunctionalBlockPunishment(funcBlock);
+                }
+                else
+                {
+                    EnforceNonFunctionalBlockPunishment(block);
+                }
+            }
+            ApplyModifiers();
+        }
+
         public override void MarkForClose()
         {
             // called when entity is about to be removed for whatever reason (block destroyed, entity deleted, grid despawn because of sync range, etc)
@@ -521,77 +592,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             GridsPerPlayerClassManager.Reset();
             foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
-        }
-
-        private bool AddGridLogic(CubeGridLogic gridLogic)
-        {
-            Utils.Log("Try Add GridLogic for: " + gridLogic.Entity.EntityId);
-            try
-            {
-                if (gridLogic == null) throw new Exception("gridLogic cannot be null");
-
-                if (gridLogic._grid == null) throw new Exception("gridLogic.Grid cannot be null");
-
-                if (GridsPerFactionClassManager == null)
-                    throw new Exception("gridsPerFactionClassManager cannot be null");
-
-                if (CubeGridLogics == null) throw new Exception("CubeGridLogics cannot be null");
-
-                GridsPerFactionClassManager.AddCubeGrid(gridLogic);
-                GridsPerPlayerClassManager.AddCubeGrid(gridLogic);
-                CubeGridLogics[gridLogic._grid.EntityId] = gridLogic;
-
-                var concreteGrid = gridLogic._grid as MyCubeGrid;
-                if (concreteGrid == null) return false;
-
-                foreach (var funcBlock in gridLogic.Blocks.OfType<IMyFunctionalBlock>())
-                {
-                    funcBlock.EnabledChanged += _ => gridLogic.FuncBlockOnEnabledChanged(funcBlock);
-                }
-
-                var id = GetMainCubeGridId();
-                _gridTypeSync.Value = id == _grid.EntityId;
-
-                //var entities = new HashSet<IMyEntity>();
-                //MyAPIGateway.Entities.GetEntities(entities, entity => entity is IMyCubeGrid);
-                //var cubeGrids = entities.Select(e => e as IMyCubeGrid).Where(g => g?.Physics != null).ToList();
-                //if (CubeGridLogics.Count == cubeGrids.Count)
-                //    RunAfterInitChecks();
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Utils.Log("CubeGridLogic::AddGridLogic: caught error", 3);
-                Utils.LogException(e);
-                return false;
-            }
-        }
-
-        private void RunAfterInitChecks()
-        {
-            if (IsMainGrid)
-            {
-                var logics = GetLinkedCubeGridLogics();
-                foreach (var logic in logics)
-                {
-                    Blocks.UnionWith(logic.Blocks);
-                }
-            }
-
-            foreach (var block in Blocks)
-            {
-                var funcBlock = block as IMyFunctionalBlock;
-                if (funcBlock != null)
-                {
-                    EnforceFunctionalBlockPunishment(funcBlock);
-                }
-                else
-                {
-                    EnforceNonFunctionalBlockPunishment(block);
-                }
-            }
-            ApplyModifiers();
         }
 
         private static void RemoveGridLogic(CubeGridLogic gridLogic)

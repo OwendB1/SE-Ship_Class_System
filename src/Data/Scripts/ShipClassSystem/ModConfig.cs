@@ -136,10 +136,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         [ProtoMember(13)]
         public int MinBlocks = -1;
         [ProtoMember(14)]
-        public GridModifiers Modifiers = new GridModifiers();
+        public int MinPlayers = -1;
         [ProtoMember(15)]
-        public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
+        public GridModifiers Modifiers = new GridModifiers();
         [ProtoMember(16)]
+        public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
+        [ProtoMember(17)]
         public BlockLimit[] BlockLimits;
     }
 

@@ -32,7 +32,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var idx = _perFaction[factionId][newClassId].Count + 1;
                 return idx <= numAllowedGrids;
             }
-            Utils.Log("GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data", 2);
+            Utils.Log("GridsPerFactionClass::IsGridWithinFactionLimits: Faction or class not found in faction limits data", 1);
             return true;
         }
 
@@ -55,7 +55,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (!perGridClass.ContainsKey(gridClassId))
             {
-                Utils.Log($"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} in faction {factionId}", 2);
+                Utils.Log($"GridsPerFactionClass::AddCubeGrid: Missing list for grid class {gridClassId} in faction {factionId}", 1);
                 perGridClass[gridClassId] = new List<long>();
             }
 

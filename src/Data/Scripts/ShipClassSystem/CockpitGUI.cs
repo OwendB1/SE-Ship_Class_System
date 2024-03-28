@@ -1,53 +1,50 @@
-﻿using System;
+﻿using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sandbox.ModAPI;
-using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.Game;
-using VRage.Game.ModAPI;
+using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    public static class CockpitGUI
+    [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
+    public class CockpitGUI : MySessionComponentBase
     {
-        private static int _waitTicks;
-        private static bool _controlsAdded;
+        private readonly HashSet<long> _cockpits = new HashSet<long>();
         private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall", "SetIsMainGrid" };
 
-        public static void AddControls(IMyModContext context)
+        public override void BeforeStart()
         {
-            if (_controlsAdded) return;
+            MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
+        }
 
-            if (_waitTicks <
-                100) //TODO I don't know why I need this, but without it, I lose all vanilla controls on dedicated servers - I'm going to leave this for now
+        protected override void UnloadData()
+        {
+            MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
+        }
+
+        public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
+        {
+            if (!(block is IMyCockpit)) return;
+            if (!_cockpits.Contains(block.EntityId))
             {
-                _waitTicks++;
-                return;
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
+                    SetComboboxContentLargeStatic,
+                    cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
+                    SetComboboxContentLargeGridMobile,
+                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
+                    SetComboboxContentSmall,
+                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCheckbox("SetIsMainGrid", _ => true));
             }
-
-            _controlsAdded = true;
-
-            // Create Drop Down Menu and add the control to the grid controller's terminal
-            // Different comboboxes available depending on grid type
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
-                SetComboboxContentLargeStatic,
-                block => block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
-                SetComboboxContentLargeGridMobile,
-                block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
-                SetComboboxContentSmall,
-                block => !block.CubeGrid.IsStatic && block.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCheckbox("SetIsMainGrid", _ => true));
-
-            List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<IMyCockpit>(out controls);
-
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
                 control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
+            _cockpits.Add(block.EntityId);
         }
 
         private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)
