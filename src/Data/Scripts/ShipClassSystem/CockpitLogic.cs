@@ -15,27 +15,22 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Cockpit), false)]
     public class CockpitLogic : MyGameLogicComponent
     {
-        private IMyCockpit _Cockpit;
-        private CubeGridLogic GridLogic => _Cockpit?.GetGridLogic();
+        private IMyCockpit _cockpit;
+        private CubeGridLogic GridLogic => _cockpit?.GetGridLogic();
 
-        public override void Init(MyObjectBuilder_EntityBase objectBuilder)
+        public override void OnAddedToScene()
         {
             // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
-            base.Init(objectBuilder);
-
-            _Cockpit = (IMyCockpit)Entity;
-
-            NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
+            _cockpit = (IMyCockpit)Entity;
+            Entity.OnPhysicsChanged += InitializeLogic;
         }
 
-        public override void UpdateOnceBeforeFrame()
+        public void InitializeLogic(IMyEntity _)
         {
-            base.UpdateOnceBeforeFrame();
-
-            if (_Cockpit.CubeGrid?.Physics == null)
+            if (_cockpit.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
 
-            _Cockpit.AppendingCustomInfo += AppendingCustomInfo;
+            _cockpit.AppendingCustomInfo += AppendingCustomInfo;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
         }
 
@@ -43,38 +38,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             base.UpdateAfterSimulation100();
 
-            //UpdateCockpit();
-
-            try // only for non-critical code
+            try 
             {
-                // ideally you want to refresh this only when necessary but this is a good compromise to only refresh it if player is in the terminal.
-                // this check still doesn't mean you're looking at even the same grid's terminal as this block, for that there's other ways to check it if needed.
-                //TODO only if correct grid/block?
-                //"one way is to hook MyAPIGateway.TerminalControls.CustomControlGetter and store the block or entityId of that, and that is your last selected block (gets triggered per selected block including for multiple selected)"
-
                 if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
                 //TODO only run this if grid check results actually change
-                _Cockpit.RefreshCustomInfo();
-                _Cockpit.SetDetailedInfoDirty();
+                _cockpit.RefreshCustomInfo();
+                _cockpit.SetDetailedInfoDirty();
             }
             catch (Exception e)
             {
                 Utils.LogException(e);
             }
-        }
-
-        public void UpdateCockpit()
-        {
-            var gridClass =
-                GridLogic?.GridClass; //<this was returning null, either because Cockpit = null, or GetGridLogic isn't working
-
-            if (gridClass == null) return;
-
-            /*if(primaryOwnerId != -1)
-            {
-                Cockpit.own
-                Cockpit.OwnerId = primaryOwnerId;
-            }*/
         }
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder sb)
@@ -92,7 +66,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 }
 
                 var gridClass = gridLogic.GridClass;
-                var concreteGrid = _Cockpit.CubeGrid as MyCubeGrid;
+                var concreteGrid = _cockpit.CubeGrid as MyCubeGrid;
                 if (gridClass == null || concreteGrid == null) return;
 
                 var infoBuilder = new StringBuilder();

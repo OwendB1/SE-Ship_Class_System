@@ -212,7 +212,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             spritesToRender.Add(CreateLine("Applied modifiers", currentPosition + new Vector2(0, 5), out currentPosition));
 
             _appliedModifiersTable.Clear();
-
+            
             var appliedModifiersTableTopLeft = currentPosition + new Vector2(0, 5);
 
             foreach (var modifierValue in GridLogic.Modifiers.GetModifierValues())
@@ -224,19 +224,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             _appliedModifiersTable.RenderToSprites(spritesToRender, appliedModifiersTableTopLeft, screenInnerWidth,
                 cellGap, out currentPosition, bodyScale);
-
             var scrollPosition = GetScrollPosition(currentPosition + padding);
 
             foreach (var t in spritesToRender)
             {
                 var sprite = t;
-
-                Utils.Log($"{sprite.Position} | {scrollPosition}");
                 if (scrollPosition.Y != 0) sprite.Position = sprite.Position - scrollPosition;
-
                 frame.Add(sprite);
             }
-
             frame.Dispose(); // send sprites to the screen
         }
 

@@ -7,7 +7,7 @@ using VRage.Network;
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
-    public class ModSessionManager : MySessionComponentBase
+    public class ModSessionManager : MySessionComponentBase, IMyEventProxy
     {
         private Comms _comms;
 

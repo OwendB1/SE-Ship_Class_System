@@ -15,12 +15,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (Constants.IsServer) MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
-        public void SendChangeGridClassMessage(long entityId, long gridClassId, bool isMainGrid)
+        public void SendChangeGridClassMessage(long entityId, long gridClassId)
         {
             try
             {
                 var messageData = MyAPIGateway.Utilities.SerializeToBinary(new ChangeGridClassMessage
-                    { EntityId = entityId, GridClassId = gridClassId, IsMainGrid = isMainGrid });
+                    { EntityId = entityId, GridClassId = gridClassId });
                 var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
                     { Type = MessageType.ChangeGridClass, Data = messageData });
                 Utils.Log($"Comms::SendChangeGridClassMessage sending message to server {entityId}, {gridClassId}", 1);
@@ -94,7 +94,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         $"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}",
                         1);
                     gridLogic.GridClassId = message.GridClassId;
-                    gridLogic.IsMainGrid = message.IsMainGrid;
                 }
                 else
                 {
@@ -125,6 +124,5 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         [ProtoMember(1)] public long EntityId;
         [ProtoMember(2)] public long GridClassId;
-        [ProtoMember(3)] public bool IsMainGrid;
     }
 }

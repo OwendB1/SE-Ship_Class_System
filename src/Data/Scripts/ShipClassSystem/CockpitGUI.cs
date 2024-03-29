@@ -6,12 +6,13 @@ using System.Linq;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
+using VRage.Network;
 using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
-    public class CockpitGUI : MySessionComponentBase
+    public class CockpitGUI : MySessionComponentBase, IMyEventProxy
     {
         private readonly HashSet<long> _cockpits = new HashSet<long>();
         private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall", "SetIsMainGrid" };
@@ -40,7 +41,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
                     SetComboboxContentSmall,
                     cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCheckbox("SetIsMainGrid", _ => true));
             }
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
                 control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
@@ -51,20 +51,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var cockpit = block as IMyCockpit;
             return cockpit?.IsMainCockpit ?? false;
-        }
-
-        private static IMyTerminalControlCheckbox GetCheckbox(string name, Func<IMyTerminalBlock, bool> isVisible)
-        {
-            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyCockpit>(name);
-            combobox.Visible = isVisible;
-            combobox.Enabled = isVisible;
-            combobox.Title = MyStringId.GetOrCompute("Main grid?");
-            combobox.Tooltip = MyStringId.GetOrCompute("Set this to be the grid to the parent to other subgrids");
-            combobox.SupportsMultipleBlocks = false;
-            combobox.Getter = GetIsMainGrid;
-            combobox.Setter = SetIsMainGrid;
-
-            return combobox;
         }
 
         private static IMyTerminalControlCombobox GetCombobox(string name,
@@ -101,12 +87,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
-        private static bool GetIsMainGrid(IMyTerminalBlock block)
-        {
-            var cubeGridLogic = block.GetGridLogic();
-            return cubeGridLogic?.IsMainGrid ?? false;
-        }
-
         private static void SetIsMainGrid(IMyTerminalBlock block, bool key)
         {
             var cubeGridLogic = block.GetGridLogic();
@@ -115,7 +95,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, cubeGridLogic.GridClassId, key);
+                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, cubeGridLogic.GridClassId);
             }
             else
             {
@@ -138,7 +118,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key, cubeGridLogic.IsMainGrid);
+                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key);
             }
             else
             {
