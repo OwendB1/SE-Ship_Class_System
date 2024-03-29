@@ -18,15 +18,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private IMyCockpit _cockpit;
         private CubeGridLogic GridLogic => _cockpit?.GetGridLogic();
 
-        public override void OnAddedToScene()
+        public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
+            base.Init(objectBuilder);
+
             _cockpit = (IMyCockpit)Entity;
-            Entity.OnPhysicsChanged += InitializeLogic;
+
+            NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
         }
 
-        public void InitializeLogic(IMyEntity _)
+        public override void UpdateOnceBeforeFrame()
         {
+            base.UpdateOnceBeforeFrame();
+
             if (_cockpit.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
 
@@ -38,7 +43,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             base.UpdateAfterSimulation100();
 
-            try 
+            try // only for non-critical code
             {
                 if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
                 //TODO only run this if grid check results actually change
@@ -79,6 +84,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 if (gridClass.BlockLimits != null)
                     foreach (var blockLimit in gridClass.BlockLimits)
                     {
+                        if (gridLogic.Blocks == null) continue;
                         var relevantBlocks = gridLogic.Blocks.Where(b => blockLimit.BlockTypes
                             .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) && 
                                        bl.TypeId == Utils.GetBlockId(b))).ToList();

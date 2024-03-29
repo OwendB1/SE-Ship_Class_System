@@ -85,24 +85,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
 
             var gridLogic = CubeGridLogic.GetCubeGridLogicByEntityId(message.EntityId);
-
-            if (gridLogic != null)
+            if (gridLogic == null) return;
+            if (ModSessionManager.IsValidGridClass(message.GridClassId))
             {
-                if (ModSessionManager.IsValidGridClass(message.GridClassId))
-                {
-                    Utils.Log(
-                        $"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}",
-                        1);
-                    gridLogic.GridClassId = message.GridClassId;
-                }
-                else
-                {
-                    Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
-                }
+                Utils.Log(
+                    $"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}",
+                    1);
+                gridLogic.GridClassId = message.GridClassId;
             }
             else
             {
-                Utils.Log($"Comms::HandleChangeGridClassMessage: grid missing gridLogic, {message.EntityId}", 3);
+                Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
             }
         }
     }

@@ -41,6 +41,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
                     SetComboboxContentSmall,
                     cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+                
             }
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
                 control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
@@ -85,22 +86,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGrid
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
-        }
-
-        private static void SetIsMainGrid(IMyTerminalBlock block, bool key)
-        {
-            var cubeGridLogic = block.GetGridLogic();
-            if (cubeGridLogic != null)
-            {
-                Utils.Log(
-                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
-                    2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, cubeGridLogic.GridClassId);
-            }
-            else
-            {
-                Utils.Log("CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
-            }
         }
 
         private static long GetGridClass(IMyTerminalBlock block)

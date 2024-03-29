@@ -32,7 +32,7 @@
         };
 
         //vanilla large grid turrets
-        private static readonly BlockType[] LargeGridTurretWeapons =
+        private static readonly BlockType[] VanillaLargeGridTurretWeapons =
         {
             new BlockType("LargeMissileTurret"),
             new BlockType("LargeMissileTurret", "LargeBlockMediumCalibreTurret"),
@@ -216,7 +216,7 @@
         // Concatenated block types
 
         private static readonly BlockType[] StaticWeaponry = Utils.ConcatArrays(VanillaSmallGridFixedWeapons, VanillaLargeGridFixedWeapons, TIOStaticWeaponry);
-        private static readonly BlockType[] Turrets = Utils.ConcatArrays(VanillaLargeGridFixedWeapons, VanillaSmallGridTurretWeapons, TIOTurrets);
+        private static readonly BlockType[] Turrets = Utils.ConcatArrays(VanillaLargeGridTurretWeapons, VanillaSmallGridTurretWeapons, TIOTurrets);
         private static readonly BlockType[] Production = Utils.ConcatArrays(Refineries, Assemblers);
 
         // Block limits

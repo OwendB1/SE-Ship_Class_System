@@ -31,6 +31,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
         }
 
+        public override void UpdateAfterSimulation()
+        {
+            if (!Constants.IsServer || CubeGridLogic.ToBeInitialized.Count < 1) return;
+            var gridToInitialize = CubeGridLogic.ToBeInitialized.Dequeue();
+            gridToInitialize.InitializeLogic();
+        }
+
         public static string[] GetIgnoredFactionTags()
         {
             return Instance.Config.IgnoreFactionTags;

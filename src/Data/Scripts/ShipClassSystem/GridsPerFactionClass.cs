@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using ProtoBuf;
@@ -9,7 +10,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class GridsPerFactionClassManager
     {
         private readonly ModConfig _config;
-        private readonly Dictionary<long, Dictionary<long, List<long>>> _perFaction = new Dictionary<long, Dictionary<long, List<long>>>();
+        private readonly ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>> _perFaction = new ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>>();
 
         public GridsPerFactionClassManager(ModConfig config)
         {
@@ -38,11 +39,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log("GridsPerFactionClass::AddCubeGrid: {gridLogic.Entity.EntityId}");
+            Utils.Log($"GridsPerFactionClass::AddCubeGrid: {gridLogic.Entity.EntityId}");
             if (!IsApplicableGrid(gridLogic)) return;
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
-            Dictionary<long, List<long>> perGridClass;
+            ConcurrentDictionary<long, List<long>> perGridClass;
             if (!_perFaction.ContainsKey(factionId))
             {
                 perGridClass = GetDefaultFactionGridsSet();
@@ -78,9 +79,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                    !_config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag);
         }
 
-        private Dictionary<long, List<long>> GetDefaultFactionGridsSet()
+        private ConcurrentDictionary<long, List<long>> GetDefaultFactionGridsSet()
         {
-            var set = new Dictionary<long, List<long>>();
+            var set = new ConcurrentDictionary<long, List<long>>();
 
             foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 
