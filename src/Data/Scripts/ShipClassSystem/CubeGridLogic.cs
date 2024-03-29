@@ -561,7 +561,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var relevantLimits = GetRelevantLimits(block.SlimBlock);
                 foreach (var limit in relevantLimits)
                 {
-                    Utils.Log("MAIN: " + limit.Name);
                     var currentBlocks = BlocksPerLimit[limit];
                     if (currentBlocks.IndexOf(block) >= limit.MaxCount)
                     {
@@ -575,7 +574,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var relevantLimits = GetRelevantLimits(block.SlimBlock, mainLogic);
                 foreach (var limit in relevantLimits)
                 {
-                    Utils.Log("SUB: " + limit.Name + mainLogic.GridClass.Name);
                     var currentBlocks = mainLogic.BlocksPerLimit[limit];
                     if (currentBlocks.IndexOf(block) >= limit.MaxCount)
                     {

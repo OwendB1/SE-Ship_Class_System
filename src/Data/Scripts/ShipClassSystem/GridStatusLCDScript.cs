@@ -20,7 +20,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private readonly IMyTerminalBlock _terminalBlock;
         private int _scrollTime;
 
-        private static readonly float ScrollSpeed = 3; //pixels per update
+        private static readonly float ScrollSpeed = 10; //pixels per update
 
         private static readonly int
             ScrollPauseUpdates = 2; //how many updates to say paused at the start and end when scrolling
@@ -63,8 +63,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public GridStatusLCDScript(IMyTextSurface surface, IngameCubeBlock block, Vector2 size) : base(surface, block,
             size)
         {
-            _terminalBlock =
-                (IMyTerminalBlock)block; // internal stored m_block is the ingame interface which has no events, so can't unhook later on, therefore this field is required.
+            _terminalBlock = (IMyTerminalBlock)block; // internal stored m_block is the ingame interface which has no events, so can't unhook later on, therefore this field is required.
             _terminalBlock.OnMarkForClose +=
                 BlockMarkedForClose; // required if you're gonna make use of Dispose() as it won't get called when block is removed or grid is cut/unloaded.
 
@@ -117,7 +116,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var screenInnerWidth = Surface.SurfaceSize.X - padding.X * 2;
             var successColor = Color.Green;
             var failColor = Color.Red;
-            const float baseScale = 1.25f;
+            const float baseScale = 1;
             var bodyScale = baseScale * 13 / TextUtils.CharWidth;
 
             var frame = Surface.DrawFrame();
@@ -139,17 +138,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             _headerTable.Rows.Add(new Row
             {
                 new Cell("Class:"),
+                new Cell(""),
                 new Cell(GridClass.Name)
             });
 
             _headerTable.RenderToSprites(spritesToRender, screenTopLeft + padding, screenInnerWidth, new Vector2(15, 0),
-                out currentPosition, baseScale);
+                out currentPosition);
 
             //Render the results checklist
 
             if (GridClass.MaxBlocks > 1 || GridClass.MinBlocks > 1)
             {
-
                 var passed = (GridClass.MaxBlocks < 1 || Grid.BlocksCount <= GridClass.MaxBlocks) &&
                              (GridClass.MinBlocks < 1 || Grid.BlocksCount <= GridClass.MinBlocks);
                 var target = GridClass.MaxBlocks > 1 && GridClass.MinBlocks > 1
@@ -210,8 +209,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 out currentPosition, bodyScale);
 
             //Applied modifiers
-            spritesToRender.Add(CreateLine("Applied modifiers", currentPosition + new Vector2(0, 5), out currentPosition,
-                baseScale));
+            spritesToRender.Add(CreateLine("Applied modifiers", currentPosition + new Vector2(0, 5), out currentPosition));
 
             _appliedModifiersTable.Clear();
 
@@ -233,7 +231,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 var sprite = t;
 
-                if (scrollPosition.Y != 0) sprite.Position =- scrollPosition;
+                Utils.Log($"{sprite.Position} | {scrollPosition}");
+                if (scrollPosition.Y != 0) sprite.Position = sprite.Position - scrollPosition;
 
                 frame.Add(sprite);
             }

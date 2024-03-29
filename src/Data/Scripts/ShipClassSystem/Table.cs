@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    internal class Table
+    public class Table
     {
         public List<Column> Columns = new List<Column>();
 
@@ -96,18 +96,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
     }
 
-    internal class Column
+    public class Column
     {
         public TextAlignment Alignment = TextAlignment.LEFT;
         public float FreeSpace = 0;
         public string Name;
     }
 
-    internal class Row : List<Cell>
+    public class Row : List<Cell>
     {
     }
 
-    internal struct Cell
+    public struct Cell
     {
         public string Value;
         public Color Color;
