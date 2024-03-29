@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,7 +7,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class GridsPerPlayerClassManager
     {
         private readonly ModConfig _config;
-        private readonly ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>> _perPlayer = new ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>>();
+        private readonly Dictionary<long, Dictionary<long, List<long>>> _perPlayer = new Dictionary<long, Dictionary<long, List<long>>>();
 
         public GridsPerPlayerClassManager(ModConfig config)
         {
@@ -48,7 +47,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!IsApplicableGrid(gridLogic)) return;
             var playerId = gridLogic.MajorityOwningPlayerId;
             var gridClassId = gridLogic.GridClassId;
-            ConcurrentDictionary<long, List<long>> perGridClass;
+            Dictionary<long, List<long>> perGridClass;
             if (!_perPlayer.ContainsKey(playerId))
             {
                 perGridClass = GetDefaultPLayerGridsSet();
@@ -87,9 +86,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
         
 
-        private ConcurrentDictionary<long, List<long>> GetDefaultPLayerGridsSet()
+        private Dictionary<long, List<long>> GetDefaultPLayerGridsSet()
         {
-            var set = new ConcurrentDictionary<long, List<long>>();
+            var set = new Dictionary<long, List<long>>();
 
             foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 

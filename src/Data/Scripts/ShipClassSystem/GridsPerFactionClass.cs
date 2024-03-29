@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ProtoBuf;
-using Sandbox.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class GridsPerFactionClassManager
     {
         private readonly ModConfig _config;
-        private readonly ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>> _perFaction = new ConcurrentDictionary<long, ConcurrentDictionary<long, List<long>>>();
+        private readonly Dictionary<long, Dictionary<long, List<long>>> _perFaction = new Dictionary<long, Dictionary<long, List<long>>>();
 
         public GridsPerFactionClassManager(ModConfig config)
         {
@@ -43,7 +40,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!IsApplicableGrid(gridLogic)) return;
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
-            ConcurrentDictionary<long, List<long>> perGridClass;
+            Dictionary<long, List<long>> perGridClass;
             if (!_perFaction.ContainsKey(factionId))
             {
                 perGridClass = GetDefaultFactionGridsSet();
@@ -79,9 +76,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                    !_config.IgnoreFactionTags.Contains(gridLogic.OwningFaction.Tag);
         }
 
-        private ConcurrentDictionary<long, List<long>> GetDefaultFactionGridsSet()
+        private Dictionary<long, List<long>> GetDefaultFactionGridsSet()
         {
-            var set = new ConcurrentDictionary<long, List<long>>();
+            var set = new Dictionary<long, List<long>>();
 
             foreach (var gridClass in _config.GridClasses) set[gridClass.Id] = new List<long>();
 

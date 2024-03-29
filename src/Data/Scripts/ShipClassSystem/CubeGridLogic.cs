@@ -2,7 +2,6 @@
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
@@ -17,10 +16,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_CubeGrid), false)]
     public class CubeGridLogic : MyGameLogicComponent, IMyEventProxy
     {
-        private static readonly ConcurrentDictionary<long, CubeGridLogic> CubeGridLogics = new ConcurrentDictionary<long, CubeGridLogic>();
+        private static readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         public static Queue<CubeGridLogic> ToBeInitialized = new Queue<CubeGridLogic>();
 
-        public readonly ConcurrentDictionary<BlockLimit, List<IMyCubeBlock>> BlocksPerLimit = new ConcurrentDictionary<BlockLimit, List<IMyCubeBlock>>();
+        public readonly Dictionary<BlockLimit, List<IMyCubeBlock>> BlocksPerLimit = new Dictionary<BlockLimit, List<IMyCubeBlock>>();
         public HashSet<IMyCubeBlock> Blocks;
 
         private static readonly GridsPerFactionClassManager GridsPerFactionClassManager =
