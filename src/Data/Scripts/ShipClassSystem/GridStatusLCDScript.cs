@@ -16,14 +16,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [MyTextSurfaceScript("GridStatusLCDScript", "Grid class status")]
     internal class GridStatusLCDScript : MyTSSCommon
     {
-        public override ScriptUpdate NeedsUpdate => ScriptUpdate.Update100; // frequency that Run() is called.
+        public override ScriptUpdate NeedsUpdate => ScriptUpdate.Update10; // frequency that Run() is called.
         private readonly IMyTerminalBlock _terminalBlock;
         private int _scrollTime;
 
-        private static readonly float ScrollSpeed = 10; //pixels per update
+        private static readonly float ScrollSpeed = 3; //pixels per update
 
         private static readonly int
-            ScrollPauseUpdates = 2; //how many updates to say paused at the start and end when scrolling
+            ScrollPauseUpdates = 15; //how many updates to say paused at the start and end when scrolling
 
         private CubeGridLogic GridLogic => _terminalBlock?.GetGridLogic();
         private MyCubeGrid Grid => _terminalBlock?.CubeGrid as MyCubeGrid;
