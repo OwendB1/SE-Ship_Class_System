@@ -11,7 +11,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class BeaconLogic : MyGameLogicComponent
     {
         private IMyBeacon _beacon;
-        private CubeGridLogic GridLogic => _beacon?.GetGridLogic();
+        private CubeGridLogic GridLogic => _beacon?.GetMainGridLogic();
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {

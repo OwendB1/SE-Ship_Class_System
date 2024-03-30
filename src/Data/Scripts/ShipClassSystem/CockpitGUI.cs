@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Network;
 using VRage.Utils;
@@ -90,20 +91,20 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static long GetGridClass(IMyTerminalBlock block)
         {
-            var cubeGridLogic = block.GetGridLogic();
+            var cubeGridLogic = block.GetMainGridLogic();
             return cubeGridLogic?.GridClassId ?? 0;
         }
 
         private static void SetGridClass(IMyTerminalBlock block, long key)
         {
-            var cubeGridLogic = block.GetGridLogic();
+            var cubeGridLogic = block.GetMainGridLogic();
 
             if (cubeGridLogic != null)
             {
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(block.CubeGrid.EntityId, key);
+                ModSessionManager.Comms.SendChangeGridClassMessage(cubeGridLogic.Entity.EntityId, key);
             }
             else
             {

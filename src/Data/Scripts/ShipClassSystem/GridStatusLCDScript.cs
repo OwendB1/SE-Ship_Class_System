@@ -25,7 +25,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static readonly int
             ScrollPauseUpdates = 15; //how many updates to say paused at the start and end when scrolling
 
-        private CubeGridLogic GridLogic => _terminalBlock?.GetGridLogic();
+        private CubeGridLogic GridLogic => _terminalBlock?.GetMainGridLogic();
         private MyCubeGrid Grid => _terminalBlock?.CubeGrid as MyCubeGrid;
         private GridClass GridClass => GridLogic.GridClass;
 

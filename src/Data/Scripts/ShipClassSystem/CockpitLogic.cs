@@ -16,7 +16,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class CockpitLogic : MyGameLogicComponent
     {
         private IMyCockpit _cockpit;
-        private CubeGridLogic GridLogic => _cockpit?.GetGridLogic();
+        private CubeGridLogic GridLogic => _cockpit?.GetMainGridLogic();
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -62,7 +62,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             try // only for non-critical code
             {
-                var gridLogic = block.GetGridLogic();
+                var gridLogic = block.GetMainGridLogic();
 
                 if (gridLogic == null)
                 {

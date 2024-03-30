@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -78,24 +79,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return Convert.ToString(block.GetObjectBuilder().SubtypeId);
         }
 
-        public static CubeGridLogic GetGridLogic(this IMyCubeGrid grid)
+        public static CubeGridLogic GetMainGridLogic(this IMyCubeGrid grid)
         {
-            return grid.GameLogic?.GetAs<CubeGridLogic>();
+            List<IMyCubeGrid> subgrids;
+            var main = CubeGridLogic.GetMainCubeGrid(grid, out subgrids);
+            return main.GameLogic?.GetAs<CubeGridLogic>();
         }
 
-        public static CubeGridLogic GetGridLogic(this MyCubeGrid grid)
+        public static CubeGridLogic GetMainGridLogic(this IMyTerminalBlock block)
         {
-            return grid.GameLogic?.GetAs<CubeGridLogic>();
-        }
-
-        public static CubeGridLogic GetGridLogic(this IMyCubeBlock block)
-        {
-            return block.CubeGrid.GameLogic?.GetAs<CubeGridLogic>();
-        }
-
-        public static CubeGridLogic GetGridLogic(this IMyTerminalBlock block)
-        {
-            return block.CubeGrid.GameLogic?.GetAs<CubeGridLogic>();
+            List<IMyCubeGrid> subgrids;
+            var main = CubeGridLogic.GetMainCubeGrid(block.CubeGrid, out subgrids);
+            return main.GameLogic?.GetAs<CubeGridLogic>();
         }
 
         public static MyEntity GetControlledGrid()

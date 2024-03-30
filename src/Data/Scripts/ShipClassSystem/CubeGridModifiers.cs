@@ -94,7 +94,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var myBlock = target as IMySlimBlock;
             if (myBlock == null) return;
             var myGrid = myBlock.CubeGrid;
-            var myGridLogic = myGrid.GetGridLogic();
+            var myGridLogic = myGrid.GetMainGridLogic();
             if (myGridLogic == null) return;
             if (damageInfo.Type == MyDamageType.Bullet) { damageInfo.Amount *= myGridLogic.DamageModifiers.Bullet; }
             if (damageInfo.Type == MyDamageType.Rocket) { damageInfo.Amount *= myGridLogic.DamageModifiers.Rocket; }

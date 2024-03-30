@@ -52,7 +52,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var maxMass = ModSessionManager.GetGridClassById(value).MaxMass;
 
                 List<IMyCubeGrid> subgrids;
-                var main = GetMainCubeGrid(out subgrids);
+                var main = GetMainCubeGrid(_grid, out subgrids);
                 var concreteGrid = main as MyCubeGrid;
                 if (concreteGrid == null) return;
                 var actualBlocks = concreteGrid.BlocksCount;
@@ -92,13 +92,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 return;
 
             ToBeInitialized.Enqueue(this);
-
-
-            
-
-            //if (MyAPIGateway.Session.GameplayFrameCounter > 0)
-            //    InitializeLogic();
-            //else MyAPIGateway.Session.OnSessionReady += InitializeLogic;
         }
 
         public void InitializeLogic()
@@ -112,7 +105,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             
             List<IMyCubeGrid> subs;
             if (CubeGridLogics.ContainsKey(Entity.EntityId)) return;
-            if (GetMainCubeGrid(out subs).EntityId != _grid.EntityId) return;
+            if (GetMainCubeGrid(_grid, out subs).EntityId != _grid.EntityId) return;
             // ignore projected and other non-physical grids
             if (_grid?.Physics == null) return;
 
@@ -156,10 +149,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
 
             List<IMyCubeGrid> subgrids;
-            GetMainCubeGrid(out subgrids);
-            for (var i = 0; i < subgrids.Count; i++)
+            GetMainCubeGrid(_grid, out subgrids);
+            foreach (var subgrid in subgrids)
             {
-                var subgrid = subgrids[i];
                 subgrid.OnBlockOwnershipChanged += OnBlockOwnershipChanged;
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
@@ -169,10 +161,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Blocks.UnionWith(subgrid.GetFatBlocks<IMyCubeBlock>());
             }
 
-            for (var i = 0; i < GridClass.BlockLimits.Length; i++)
+            foreach (var blockLimit in GridClass.BlockLimits)
             {
-                var blockLimit = GridClass.BlockLimits[i];
-                var relevantBlocks = Blocks.Where(block => blockLimit.BlockTypes
+                var limit = blockLimit;
+                var relevantBlocks = Blocks.Where(block => limit.BlockTypes
                     .Any(t => t.SubtypeId == Utils.GetBlockSubtypeId(block) &&
                               t.TypeId == Utils.GetBlockId(block))).ToList();
                 BlocksPerLimit[blockLimit] = relevantBlocks;
@@ -485,14 +477,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             return GridClass.ForceBroadCast == false || Blocks.OfType<IMyFunctionalBlock>().Any(block => block is IMyBeacon && block.Enabled);
         }
 
-        private IMyCubeGrid GetMainCubeGrid(out List<IMyCubeGrid> subgrids)
+        public static IMyCubeGrid GetMainCubeGrid(IMyCubeGrid grid, out List<IMyCubeGrid> subgrids)
         {
-            var group = _grid.GetGridGroup(GridLinkTypeEnum.Mechanical);
+            var group = grid.GetGridGroup(GridLinkTypeEnum.Mechanical);
             var grids = new List<IMyCubeGrid>();
 
             group?.GetGrids(grids);
 
-            var concreteGrid = _grid as MyCubeGrid;
+            var concreteGrid = grid as MyCubeGrid;
             if (concreteGrid == null)
             {
                 Utils.Log("CONCRETE GRID IS NULL");
@@ -506,7 +498,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 biggestGrid = concrete;
             }
 
-            subgrids = grids.Where(grid => grid.EntityId != biggestGrid.EntityId).ToList();
+            subgrids = grids.Where(g => g.EntityId != biggestGrid.EntityId).ToList();
             return biggestGrid;
         }
 
