@@ -69,8 +69,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     throw new Exception($"CubeGridLogic:: set GridClassId: invalid grid class id {value}");
 
                 Utils.Log($"CubeGridLogic::GridClassId setting grid class to {value}", 1);
-
-                if (!GridClassHasChanged()) return;
                 _gridClassId = value;
             }
         }
