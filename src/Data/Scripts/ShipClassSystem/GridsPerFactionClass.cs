@@ -36,7 +36,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void AddCubeGrid(CubeGridLogic gridLogic)
         {
-            Utils.Log($"GridsPerFactionClass::AddCubeGrid: {gridLogic.Entity.EntityId}");
+            Utils.Log($"GridsPerFactionClass::AddCubeGrid: {gridLogic.Grid.EntityId}");
             if (!IsApplicableGrid(gridLogic)) return;
             var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
             var gridClassId = gridLogic.GridClassId;
@@ -57,8 +57,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 perGridClass[gridClassId] = new List<long>();
             }
 
-            if (!perGridClass[gridClassId].Contains(gridLogic.Entity.EntityId))
-                perGridClass[gridClassId].Add(gridLogic.Entity.EntityId);
+            if (!perGridClass[gridClassId].Contains(gridLogic.Grid.EntityId))
+                perGridClass[gridClassId].Add(gridLogic.Grid.EntityId);
         }
 
         public void Reset()

@@ -1,13 +1,13 @@
 ﻿using System;
 using ProtoBuf;
 using Sandbox.ModAPI;
+using VRage.Game.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     internal class Comms
     {
         private readonly ushort _commsId;
-
         public Comms(ushort id)
         {
             _commsId = id;
@@ -84,9 +84,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 return;
             }
 
-            var gridLogic = CubeGridLogic.GetCubeGridLogicByEntityId(message.EntityId);
+            var cubeGrid = MyAPIGateway.Entities.GetEntityById(message.EntityId) as IMyCubeGrid;
+            var gridLogic = cubeGrid.GetMainGridLogic();
             if (gridLogic == null) return;
-            if (ModSessionManager.IsValidGridClass(message.GridClassId))
+            if (ModSessionManager.Config.IsValidGridClassId(message.GridClassId))
             {
                 Utils.Log(
                     $"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}",

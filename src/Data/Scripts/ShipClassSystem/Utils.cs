@@ -1,26 +1,16 @@
-﻿using System;
+﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
-using VRageMath;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public static class Utils
     {
-        /*public static void ClientDebug(string msg)
-        {
-            if (Constants.IsClient && Settings.Debug)
-            {
-                MyAPIGateway.Utilities.ShowMessage("[[BSCS]]: ", msg);
-            }
-        }*/
-
         public static void ShowNotification(string msg, int disappearTime = 10000, string font = MyFontEnum.Red)
         {
             if (MyAPIGateway.Session?.Player != null)
@@ -43,20 +33,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public static void LogException(Exception e)
         {
             Log($"Exception message = {e.Message}, Stack trace:\n{e.StackTrace}", 3);
-        }
-
-        public static void SaveConfig<T>(string variableId, string filename, T data)
-        {
-            var saveText = MyAPIGateway.Utilities.SerializeToXML(data);
-
-            MyAPIGateway.Utilities.SetVariable(variableId, saveText);
-
-            Log($"Saving config file to: {filename}");
-
-            using (var file = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(string)))
-            {
-                file.Write(saveText);
-            }
         }
 
         public static string GetBlockId(IMyCubeBlock block)
@@ -82,41 +58,46 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public static CubeGridLogic GetMainGridLogic(this IMyCubeGrid grid)
         {
             List<IMyCubeGrid> subgrids;
-            var main = CubeGridLogic.GetMainCubeGrid(grid, out subgrids);
-            return main.GameLogic?.GetAs<CubeGridLogic>();
+            var main = GetMainCubeGrid(grid, out subgrids);
+
+            CubeGridLogic logic;
+            ModSessionManager.Instance.CubeGridLogics.TryGetValue(main.EntityId, out logic);
+            return logic;
         }
 
         public static CubeGridLogic GetMainGridLogic(this IMyTerminalBlock block)
         {
             List<IMyCubeGrid> subgrids;
-            var main = CubeGridLogic.GetMainCubeGrid(block.CubeGrid, out subgrids);
-            return main.GameLogic?.GetAs<CubeGridLogic>();
+            var main = GetMainCubeGrid(block.CubeGrid, out subgrids);
+
+            CubeGridLogic logic;
+            ModSessionManager.Instance.CubeGridLogics.TryGetValue(main.EntityId, out logic);
+            return logic;
         }
 
-        public static MyEntity GetControlledGrid()
+        public static IMyCubeGrid GetMainCubeGrid(IMyCubeGrid grid, out List<IMyCubeGrid> subgrids)
         {
-            try
-            {
-                if (MyAPIGateway.Session == null || MyAPIGateway.Session.Player == null) return null;
+            var group = grid.GetGridGroup(GridLinkTypeEnum.Mechanical);
+            var grids = new List<IMyCubeGrid>();
 
-                var controlledEntity = MyAPIGateway.Session.Player.Controller?.ControlledEntity?.Entity;
-                if (controlledEntity == null) return null;
+            group?.GetGrids(grids);
 
-                if (controlledEntity is IMyCockpit || controlledEntity is IMyRemoteControl)
-                    return (controlledEntity as IMyCubeBlock).CubeGrid as MyEntity;
-            }
-            catch (Exception e)
+            var concreteGrid = grid as MyCubeGrid;
+            if (concreteGrid == null)
             {
-                MyLog.Default.WriteLine($"Error in GetControlledGrid: {e}");
+                Log("CONCRETE GRID IS NULL");
+                subgrids = new List<IMyCubeGrid>();
+                return null;
             }
 
-            return null;
-        }
+            var biggestGrid = concreteGrid;
+            foreach (var concrete in grids.OfType<MyCubeGrid>().Where(concrete => concrete.BlocksCount > biggestGrid.BlocksCount))
+            {
+                biggestGrid = concrete;
+            }
 
-        public static MyEntity GetControlledCockpit(MyEntity controlledGrid)
-        {
-            var grid = controlledGrid as MyCubeGrid;
-            return grid?.GetFatBlocks().OfType<MyCockpit>().FirstOrDefault(cockpit => cockpit.WorldMatrix != null);
+            subgrids = grids.Where(g => g.EntityId != biggestGrid.EntityId).ToList();
+            return biggestGrid;
         }
 
         public static T[] ConcatArrays<T>(params T[][] p)
@@ -159,24 +140,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var charDiff = text.Length - text.Replace("\n", string.Empty).Length;
 
             return charDiff + 1;
-        }
-    }
-
-    public static class VectorUtils
-    {
-        public static Vector2 Round(this Vector2 vector)
-        {
-            return new Vector2((float)Math.Round(vector.X), (float)Math.Round(vector.Y));
-        }
-
-        public static Vector2 Floor(this Vector2 vector)
-        {
-            return new Vector2((float)Math.Floor(vector.X), (float)Math.Round(vector.Y));
-        }
-
-        public static Vector2 Ceiling(this Vector2 vector)
-        {
-            return new Vector2((float)Math.Ceiling(vector.X), (float)Math.Round(vector.Y));
         }
     }
 }

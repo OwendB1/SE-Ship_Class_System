@@ -3,8 +3,6 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 
-//TODO better unknown config handling
-
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     public class ModConfig
@@ -210,21 +208,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         [ProtoMember(3)] 
         public float MaxCount;
-
-        public bool IsLimitedBlock(IMyFunctionalBlock block, out float blockCountWeight)
-        {
-            blockCountWeight = 0;
-
-            foreach (var blockType in BlockTypes)
-                if (blockType.IsBlockOfType(block))
-                {
-                    blockCountWeight = blockType.CountWeight;
-
-                    return true;
-                }
-
-            return false;
-        }
     }
 
 
@@ -249,13 +232,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             TypeId = typeId;
             SubtypeId = subtypeId;
             CountWeight = countWeight;
-        }
-
-        public bool IsBlockOfType(IMyFunctionalBlock block)
-        {
-            return Utils.GetBlockId(block) == TypeId && (string.IsNullOrEmpty(SubtypeId) ||
-                                                         Convert.ToString(block.BlockDefinition.SubtypeId) ==
-                                                         SubtypeId);
         }
     }
 

@@ -4,9 +4,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using VRage.Game;
 using VRage.Game.GUI.TextPanel;
-using VRage.Utils;
 using VRageMath;
 using IngameCubeBlock = VRage.Game.ModAPI.Ingame.IMyCubeBlock;
 using IngameIMyEntity = VRage.Game.ModAPI.Ingame.IMyEntity;
@@ -265,12 +263,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         }
 
-        private MySprite CreateLine(string text, Vector2 position, float scale = 1)
-        {
-            Vector2 ignored;
-            return CreateLine(text, position, out ignored, scale);
-        }
-
         private MySprite CreateLine(string text, Vector2 position, out Vector2 positionAfter, float scale = 1)
         {
             var sprite = MySprite.CreateText(text, "Monospace", Color.White, scale, TextAlignment.LEFT);
@@ -284,7 +276,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void DrawError(Exception e)
         {
-            Utils.Log($"{e.Message}\n{e.StackTrace}", 3);
+            Utils.Log($"Failed to draw LCD: {e.Message}\n{e.StackTrace}");
 
             try // first try printing the error on the LCD
             {
@@ -306,13 +298,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
             catch (Exception e2)
             {
-                MyLog.Default.WriteLineAndConsole(
-                    $"Also failed to draw error on screen: {e2.Message}\n{e2.StackTrace}");
-
-                if (MyAPIGateway.Session?.Player != null)
-                    MyAPIGateway.Utilities.ShowNotification(
-                        $"[ ERROR: {GetType().FullName}: {e.Message} | Send SpaceEngineers.Log to mod author ]", 10000,
-                        MyFontEnum.Red);
+                Utils.Log($"Also failed to draw error on screen: {e2.Message}\n{e2.StackTrace}");
             }
         }
     }

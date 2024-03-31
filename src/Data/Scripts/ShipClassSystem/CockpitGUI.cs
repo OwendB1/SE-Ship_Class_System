@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Network;
 using VRage.Utils;
@@ -73,19 +72,19 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private static void SetComboboxContentLargeStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridStatic 
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.LargeGridStatic 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentLargeGridMobile(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.LargeGridMobile 
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.LargeGridMobile 
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentSmall(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.GetAllGridClasses() where gridLimit.SmallGrid
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.SmallGrid
                 select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
@@ -104,7 +103,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.SendChangeGridClassMessage(cubeGridLogic.Entity.EntityId, key);
+                ModSessionManager.Comms.SendChangeGridClassMessage(cubeGridLogic.Grid.EntityId, key);
             }
             else
             {

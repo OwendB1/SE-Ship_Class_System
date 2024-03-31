@@ -1,61 +1,57 @@
 ﻿using Sandbox.ModAPI;
-using System;
-using VRage.Game;
+using System.Collections.Generic;
 using VRage.Game.Components;
-using VRage.Network;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
-    public class ModSessionManager : MySessionComponentBase, IMyEventProxy
+    public class ModSessionManager : MySessionComponentBase
     {
-        private Comms _comms;
+        public static ModSessionManager Instance;
+        public readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
 
-        public ModConfig Config;
+        public static ModConfig Config;
 
-        public static ModSessionManager Instance { get; private set; }
+        private readonly Queue<IMyCubeGrid> _toBeInitialized = new Queue<IMyCubeGrid>();
+        private int _lastFrameInit;
+        internal static Comms Comms;
 
-        internal static Comms Comms => Instance._comms;
-
-        public override void Init(MyObjectBuilder_SessionComponent sessionComponent)
+        public override void LoadData()
         {
-            base.Init(sessionComponent);
-
-            Instance = this;
-
-            Utils.Log("Init");
-
-            _comms = new Comms(Settings.COMMS_MESSAGE_ID);
+            Comms = new Comms(Settings.COMMS_MESSAGE_ID);
             Config = ModConfig.LoadConfig();
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
-            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
+
+            MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
+            MyAPIGateway.Session.OnSessionReady += () => MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
+            Instance = this;
+        }
+
+        protected override void UnloadData()
+        {
+            MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
+            _toBeInitialized.Clear();
+            CubeGridLogics.Clear();
+            Instance = null;
+        }
+
+        private void EntityAdded(IMyEntity ent)
+        {
+            var grid = ent as IMyCubeGrid;
+            if (grid == null) return;
+            _toBeInitialized.Enqueue(grid);
+            _lastFrameInit = MyAPIGateway.Session.GameplayFrameCounter;
         }
 
         public override void UpdateAfterSimulation()
         {
-            if (!Constants.IsServer || CubeGridLogic.ToBeInitialized.Count < 1) return;
-            var gridToInitialize = CubeGridLogic.ToBeInitialized.Dequeue();
-            gridToInitialize.InitializeLogic();
-        }
-
-        public static string[] GetIgnoredFactionTags()
-        {
-            return Instance.Config.IgnoreFactionTags;
-        }
-
-        public static GridClass GetGridClassById(long gridClassId)
-        {
-            return Instance.Config.GetGridClassById(gridClassId);
-        }
-
-        public static GridClass[] GetAllGridClasses()
-        {
-            return Instance.Config.GridClasses ?? Array.Empty<GridClass>();
-        }
-
-        internal static bool IsValidGridClass(long gridClassId)
-        {
-            return Instance.Config.IsValidGridClassId(gridClassId);
+            var framesWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
+            if (_toBeInitialized.Count < 1 || framesWaited < 10) return;
+            var gridToInitialize = _toBeInitialized.Dequeue();
+            var logic = new CubeGridLogic();
+            logic.InitializeLogic(gridToInitialize);
         }
     }
 }
