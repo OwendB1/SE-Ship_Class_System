@@ -70,6 +70,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 Utils.Log($"CubeGridLogic::GridClassId setting grid class to {value}", 1);
                 _gridClassId = value;
+                GridClassHasChanged();
             }
         }
 
@@ -259,7 +260,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (!GridClass.LargeGridStatic && isStatic) grid.IsStatic = false;
         }
 
-        private bool GridClassHasChanged()
+        private void GridClassHasChanged()
         {
             Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
             ApplyModifiers();
@@ -283,7 +284,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
 
             Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
-            return true;
         }
 
         private void OnBlockAdded(IMySlimBlock obj)
