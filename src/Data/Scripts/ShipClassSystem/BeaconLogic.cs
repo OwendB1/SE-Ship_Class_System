@@ -19,7 +19,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             base.Init(objectBuilder);
 
             _beacon = (IMyBeacon)Entity;
-
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
         }
 

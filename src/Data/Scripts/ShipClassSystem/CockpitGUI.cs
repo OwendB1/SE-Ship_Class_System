@@ -29,7 +29,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            if (!(block is IMyCockpit)) return;
+            if (!Constants.IsClient) return;
+            var c = block as IMyCockpit;
+            if (c == null || c.IsMainCockpit) return;
             if (!_cockpits.Contains(block.EntityId))
             {
                 MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
@@ -44,7 +46,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 
             }
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
-                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
+                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit, true);
             _cockpits.Add(block.EntityId);
         }
 

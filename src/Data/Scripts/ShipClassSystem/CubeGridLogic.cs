@@ -39,7 +39,16 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var withinFactionLimit = _gridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
                 var withinPlayerLimit = _gridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
-                if (!withinFactionLimit || !withinPlayerLimit) return;
+                if (!withinFactionLimit)
+                {
+                    Utils.ShowNotification("Grid is not within allowed limit assigned to the faction!");
+                    return;
+                }
+                if (!withinPlayerLimit)
+                {
+                    Utils.ShowNotification("Grid is not within allowed limit assigned to the player!");
+                    return;
+                }
 
                 var gridClass = ModSessionManager.Config.GetGridClassById(value);
                 var maxBlocks = gridClass.MaxBlocks;
@@ -53,6 +62,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var actualBlocks = concreteGrid.BlocksCount;
                 var actualPCU = concreteGrid.BlocksPCU;
                 var actualMass = concreteGrid.Mass;
+
+                if (gridClass.LargeGridStatic && gridClass.LargeGridMobile == false && main.IsStatic == false)
+                {
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is supposed to be static!");
+                    return;
+                }
 
                 foreach (var concreteSubgrid in subgrids.OfType<MyCubeGrid>())
                 {
@@ -319,7 +334,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void OnBlockRemoved(IMySlimBlock obj)
         {
-            if (obj.FatBlock != null && HasFunctioningBeaconIfNeeded())
+            if (obj.FatBlock != null && HasFunctioningBeaconIfNeeded() == false)
             {
                 DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
                 foreach (var block in Blocks)
@@ -372,7 +387,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             var func = obj as IMyFunctionalBlock;
             if (func == null) return;
-            if (func is IMyBeacon && func.Enabled == false && HasFunctioningBeaconIfNeeded())
+            if (HasFunctioningBeaconIfNeeded() == false)
             {
                 DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
                 foreach (var block in Blocks)

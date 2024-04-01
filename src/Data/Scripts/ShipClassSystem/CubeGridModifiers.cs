@@ -11,6 +11,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         public static void ApplyModifiers(IMyCubeBlock block, GridModifiers modifiers)
         {
+            if (!Constants.IsServer) return;
             try
             {
                 var thruster = block as IMyThrust;
