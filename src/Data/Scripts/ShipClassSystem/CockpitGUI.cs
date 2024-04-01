@@ -4,50 +4,48 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.ModAPI;
-using VRage.Network;
 using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
-    public class CockpitGUI : MySessionComponentBase, IMyEventProxy
+    public static class CockpitGUI 
     {
-        private readonly HashSet<long> _cockpits = new HashSet<long>();
+        private static int _waitTicks;
+        private static bool _controlsAdded;
         private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall", "SetIsMainGrid" };
 
-        public override void BeforeStart()
+        public static void AddControls()
         {
-            MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
-        }
-
-        protected override void UnloadData()
-        {
-            MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
-        }
-
-        public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
-        {
-            if (!Constants.IsClient) return;
-            var c = block as IMyCockpit;
-            if (c == null || c.IsMainCockpit) return;
-            if (!_cockpits.Contains(block.EntityId))
+            if (_controlsAdded)
             {
-                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
-                    SetComboboxContentLargeStatic,
-                    cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
-                    SetComboboxContentLargeGridMobile,
-                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
-                    SetComboboxContentSmall,
-                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-                
+                return;
             }
+
+            if (_waitTicks < 100)
+            {
+                _waitTicks++;
+
+                return;
+            }
+            _controlsAdded = true;
+
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
+                SetComboboxContentLargeStatic,
+                cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
+                SetComboboxContentLargeGridMobile,
+                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
+                SetComboboxContentSmall,
+                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+
+            List<IMyTerminalControl> controls;
+            MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
+
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
-                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit, true);
-            _cockpits.Add(block.EntityId);
+                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
+            
         }
 
         private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)

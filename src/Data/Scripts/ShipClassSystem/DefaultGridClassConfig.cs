@@ -383,7 +383,6 @@
                         SingleStaticDrillLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
-                        NoStaticDrillLimit,
                         NoCollectorLimit,
                         NoGyroLimit,
                         new BlockLimit
@@ -493,7 +492,6 @@
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
-                        NoStaticDrillLimit,
                         NoCollectorLimit,
                         NoGyroLimit,
                         new BlockLimit

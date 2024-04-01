@@ -47,6 +47,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override void UpdateAfterSimulation()
         {
+            CockpitGUI.AddControls();
             var framesWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
             if (_toBeInitialized.Count < 1 || framesWaited < 10) return;
             var gridToInitialize = _toBeInitialized.Dequeue();

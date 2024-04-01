@@ -18,9 +18,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private GridsPerFactionClassManager _gridsPerFactionClassManager;
         private GridsPerPlayerClassManager _gridsPerPlayerClassManager;
 
-        // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        // private MySync<long, SyncDirection.FromServer> _gridClassSync;
-
         private Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
 
         private long _gridClassId;
@@ -115,18 +112,21 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
             //Load persisted grid class id from storage (if server)
-            string value;
-            if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
+            if (Constants.IsServer)
             {
-                long id;
-                var gridClassId = long.TryParse(value, out id) ? id : 0;
-                Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
-                _gridClassId = gridClassId;
-            }
-            else
-            {
-                _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
-                Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
+                string value;
+                if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
+                {
+                    long id;
+                    var gridClassId = long.TryParse(value, out id) ? id : 0;
+                    Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
+                    _gridClassId = gridClassId;
+                }
+                else
+                {
+                    _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
+                    Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
+                }
             }
 
             // If subgrid then blacklist and add blocks to main grid
@@ -137,7 +137,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Grid.OnIsStaticChanged += OnIsStaticChanged;
             Grid.OnBlockAdded += OnBlockAdded;
             Grid.OnBlockRemoved += OnBlockRemoved;
-            Grid.OnGridMerge += OnGridMerge;
             Grid.OnMarkForClose += GridMarkedForClose;
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
 
@@ -149,7 +148,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
-                subgrid.OnGridMerge += OnGridMerge;
 
                 Blocks.UnionWith(subgrid.GetFatBlocks<IMyCubeBlock>());
             }
@@ -377,12 +375,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private void OnGridMerge(IMyCubeGrid grid1, IMyCubeGrid grid2)
-        {
-            var gridLogicToBeRemoved = CubeGridLogics.FirstOrDefault(l => l.Key == grid2.EntityId);
-            CubeGridLogics.Remove(gridLogicToBeRemoved.Key);
-        }
-
         private void FuncBlockOnEnabledChanged(IMyTerminalBlock obj)
         {
             var func = obj as IMyFunctionalBlock;
@@ -443,7 +435,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Grid.OnIsStaticChanged -= OnIsStaticChanged;
             Grid.OnBlockAdded -= OnBlockAdded;
             Grid.OnBlockRemoved -= OnBlockRemoved;
-            Grid.OnGridMerge -= OnGridMerge;
 
             CubeGridLogics.Remove(gridLogic.Grid.EntityId);
         }
