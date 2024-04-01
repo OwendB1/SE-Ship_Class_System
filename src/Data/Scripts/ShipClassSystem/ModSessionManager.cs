@@ -25,13 +25,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
 
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
-            MyAPIGateway.Session.OnSessionReady += () => MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
+            MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             Instance = this;
         }
 
         protected override void UnloadData()
         {
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
+            MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
             _toBeInitialized.Clear();
             CubeGridLogics.Clear();
             Instance = null;
@@ -43,6 +44,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (grid == null) return;
             _toBeInitialized.Enqueue(grid);
             _lastFrameInit = MyAPIGateway.Session.GameplayFrameCounter;
+        }
+
+        private void HookDamageHandler()
+        {
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler)
         }
 
         public override void UpdateAfterSimulation()
