@@ -35,8 +35,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var rawRefinery = block as MyCubeBlock;
                 if (rawRefinery?.CurrentAttachedUpgradeModules != null)
                 {
-                    var productivity = 2f;
-                    var effectiveness = 1f;
+                    var productivity = 2f * modifiers.RefineSpeed;
+                    var effectiveness = 1f * modifiers.RefineEfficiency;
                     foreach (var blockModule in rawRefinery.CurrentAttachedUpgradeModules.Select(module => module.Value.Block))
                     {
                         List<MyUpgradeModuleInfo> upgrades;
@@ -51,8 +51,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                                 break;
                         }
                     }
-                    refinery.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
-                    refinery.UpgradeValues["Effectiveness"] = effectiveness * modifiers.RefineEfficiency;
+                    refinery.UpgradeValues["Productivity"] = productivity;
+                    refinery.UpgradeValues["Effectiveness"] = effectiveness;
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 var rawAssembler = block as MyCubeBlock;
                 if (rawAssembler?.CurrentAttachedUpgradeModules != null)
                 {
-                    var productivity = 1f;
+                    var productivity = 1f * modifiers.AssemblerSpeed;
                     foreach (var blockModule in rawAssembler.CurrentAttachedUpgradeModules.Select(module => module.Value.Block))
                     {
                         List<MyUpgradeModuleInfo> upgrades;
@@ -76,7 +76,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         if (blockModule.BlockDefinition.SubtypeId == "LargeProductivityModule")
                             productivity += upgrades[0].Modifier * modifiers.AssemblerSpeed;
                     }
-                    assembler.UpgradeValues["Productivity"] = productivity * modifiers.AssemblerSpeed;
+                    assembler.UpgradeValues["Productivity"] = productivity;
                 }
                 else
                 {
