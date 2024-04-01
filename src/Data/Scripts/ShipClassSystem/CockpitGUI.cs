@@ -17,35 +17,34 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static void AddControls()
         {
-            if (_controlsAdded)
-            {
-                return;
-            }
-
             if (_waitTicks < 100)
             {
                 _waitTicks++;
-
                 return;
             }
-            _controlsAdded = true;
+            _waitTicks = 0;
 
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
-                SetComboboxContentLargeStatic,
-                cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
-                SetComboboxContentLargeGridMobile,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
-                SetComboboxContentSmall,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+            if (!_controlsAdded)
+            {
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
+                    SetComboboxContentLargeStatic,
+                    cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
+                    SetComboboxContentLargeGridMobile,
+                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+                MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
+                    SetComboboxContentSmall,
+                    cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+                _controlsAdded = true;
+            }
+            else
+            {
+                List<IMyTerminalControl> controls;
+                MyAPIGateway.TerminalControls.GetControls<IMyCockpit>(out controls);
 
-            List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<IMyBeacon>(out controls);
-
-            foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
-                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
-            
+                foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
+                    control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
+            }
         }
 
         private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)

@@ -48,7 +48,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void HookDamageHandler()
         {
-            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler)
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(99, CubeGridModifiers.GridClassDamageHandler);
         }
 
         public override void UpdateAfterSimulation()
