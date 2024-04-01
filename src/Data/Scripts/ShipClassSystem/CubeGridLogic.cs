@@ -111,22 +111,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (Blocks == null) return;
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
-            //Load persisted grid class id from storage (if server)
-            if (Constants.IsServer)
+            string value;
+            if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
             {
-                string value;
-                if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
-                {
-                    long id;
-                    var gridClassId = long.TryParse(value, out id) ? id : 0;
-                    Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
-                    _gridClassId = gridClassId;
-                }
-                else
-                {
-                    _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
-                    Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
-                }
+                long id;
+                var gridClassId = long.TryParse(value, out id) ? id : 0;
+                Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
+                _gridClassId = gridClassId;
+            }
+            else
+            {
+                _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
+                Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
             }
 
             // If subgrid then blacklist and add blocks to main grid
