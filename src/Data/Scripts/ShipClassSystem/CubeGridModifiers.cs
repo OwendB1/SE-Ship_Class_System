@@ -1,8 +1,11 @@
-﻿using Sandbox.Game.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Linq;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
@@ -12,81 +15,85 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public static void ApplyModifiers(IMyCubeBlock block, GridModifiers modifiers)
         {
             if (!Constants.IsServer) return;
-            try
+            var thruster = block as IMyThrust;
+            if (thruster != null)
             {
-                var thruster = block as IMyThrust;
-                if (thruster != null)
-                {
-                    thruster.ThrustMultiplier = modifiers.ThrusterForce;
-                    thruster.PowerConsumptionMultiplier = 1f / modifiers.ThrusterEfficiency;
-                }
+                thruster.ThrustMultiplier = modifiers.ThrusterForce;
+                thruster.PowerConsumptionMultiplier = 1f / modifiers.ThrusterEfficiency;
+            }
 
-                var gyro = block as IMyGyro;
-                if (gyro != null)
-                {
-                    gyro.GyroStrengthMultiplier = modifiers.GyroForce;
-                    gyro.PowerConsumptionMultiplier = 1f / modifiers.GyroEfficiency;
-                }
+            var gyro = block as IMyGyro;
+            if (gyro != null)
+            {
+                gyro.GyroStrengthMultiplier = modifiers.GyroForce;
+                gyro.PowerConsumptionMultiplier = 1f / modifiers.GyroEfficiency;
+            }
 
-                var refinery = block as IMyRefinery;
-                if (refinery != null)
+            var refinery = block as IMyRefinery;
+            if (refinery != null)
+            {
+                var rawRefinery = block as MyCubeBlock;
+                if (rawRefinery?.CurrentAttachedUpgradeModules != null)
                 {
-                    var rawRefinery = block as MyCubeBlock;
-                    if (rawRefinery?.CurrentAttachedUpgradeModules != null)
+                    var productivity = 2f;
+                    var effectiveness = 1f;
+                    foreach (var blockModule in rawRefinery.CurrentAttachedUpgradeModules.Select(module => module.Value.Block))
                     {
-                        var productivity = 1f;
-                        var effectiveness = 1f;
-                        foreach (var module in rawRefinery.CurrentAttachedUpgradeModules)
+                        List<MyUpgradeModuleInfo> upgrades;
+                        blockModule.GetUpgradeList(out upgrades);
+                        switch (blockModule.BlockDefinition.SubtypeId)
                         {
-                            if (module.Value.Block.UpgradeValues["Productivity"] > 0f)
-                                productivity += module.Value.Block.UpgradeValues["Productivity"];
-                            else
-                            if (module.Value.Block.UpgradeValues["Effectiveness"] > 0f)
-                                effectiveness += module.Value.Block.UpgradeValues["Effectiveness"];
+                            case "LargeProductivityModule":
+                                productivity += upgrades[0].Modifier * modifiers.RefineSpeed;
+                                break;
+                            case "LargeEffectivenessModule":
+                                effectiveness += upgrades[0].Modifier * modifiers.RefineEfficiency;
+                                break;
                         }
-                        refinery.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
-                        refinery.UpgradeValues["Effectiveness"] = effectiveness * modifiers.RefineEfficiency;
                     }
-                    else
-                    {
-                        refinery.UpgradeValues["Productivity"] = modifiers.RefineSpeed;
-                        refinery.UpgradeValues["Effectiveness"] = modifiers.RefineEfficiency;
-                    }
+                    refinery.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
+                    refinery.UpgradeValues["Effectiveness"] = effectiveness * modifiers.RefineEfficiency;
                 }
-
-                var assembler = block as IMyAssembler;
-                if (assembler != null)
+                else
                 {
-                    assembler.UpgradeValues["Productivity"] *= modifiers.AssemblerSpeed;
-                    var rawAssembler = block as MyCubeBlock;
-                    if (rawAssembler?.CurrentAttachedUpgradeModules != null)
-                    {
-                        var productivity = rawAssembler.CurrentAttachedUpgradeModules
-                            .Where(module => module.Value.Block.UpgradeValues["Productivity"] > 0f)
-                            .Sum(module => module.Value.Block.UpgradeValues["Productivity"]);
-                        assembler.UpgradeValues["Productivity"] = productivity * modifiers.RefineSpeed;
-                    }
-                    else
-                    {
-                        assembler.UpgradeValues["Productivity"] = modifiers.AssemblerSpeed;
-                    }
-                }
-
-                var reactor = block as IMyReactor;
-                if (reactor != null)
-                {
-                    reactor.PowerOutputMultiplier = modifiers.PowerProducersOutput;
-                }
-
-                var drill = block as IMyShipDrill;
-                if (drill != null)
-                {
-                    drill.DrillHarvestMultiplier = modifiers.DrillHarvestMultiplier;
+                    refinery.UpgradeValues["Productivity"] = modifiers.RefineSpeed;
+                    refinery.UpgradeValues["Effectiveness"] = modifiers.RefineEfficiency;
                 }
             }
-            catch
+
+            var assembler = block as IMyAssembler;
+            if (assembler != null)
             {
-                Utils.Log("Could not set modifier, most likely due to server closure.");
+                assembler.UpgradeValues["Productivity"] *= modifiers.AssemblerSpeed;
+                var rawAssembler = block as MyCubeBlock;
+                if (rawAssembler?.CurrentAttachedUpgradeModules != null)
+                {
+                    var productivity = 1f;
+                    foreach (var blockModule in rawAssembler.CurrentAttachedUpgradeModules.Select(module => module.Value.Block))
+                    {
+                        List<MyUpgradeModuleInfo> upgrades;
+                        blockModule.GetUpgradeList(out upgrades);
+                        if (blockModule.BlockDefinition.SubtypeId == "LargeProductivityModule")
+                            productivity += upgrades[0].Modifier * modifiers.AssemblerSpeed;
+                    }
+                    assembler.UpgradeValues["Productivity"] = productivity * modifiers.AssemblerSpeed;
+                }
+                else
+                {
+                    assembler.UpgradeValues["Productivity"] = modifiers.AssemblerSpeed;
+                }
+            }
+
+            var reactor = block as IMyReactor;
+            if (reactor != null)
+            {
+                reactor.PowerOutputMultiplier = modifiers.PowerProducersOutput;
+            }
+
+            var drill = block as IMyShipDrill;
+            if (drill != null)
+            {
+                drill.DrillHarvestMultiplier = modifiers.DrillHarvestMultiplier;
             }
         }
 

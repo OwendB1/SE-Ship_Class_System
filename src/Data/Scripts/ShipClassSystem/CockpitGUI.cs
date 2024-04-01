@@ -17,7 +17,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static void AddControls()
         {
-            if (_waitTicks < 100)
+            if (_waitTicks < 1000)
             {
                 _waitTicks++;
                 return;

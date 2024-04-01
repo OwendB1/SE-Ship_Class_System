@@ -272,13 +272,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private void GridClassHasChanged()
         {
             Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
-            ApplyModifiers();
 
             _gridsPerFactionClassManager.Reset();
             foreach (var gridLogic in CubeGridLogics) _gridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
             _gridsPerPlayerClassManager.Reset();
             foreach (var gridLogic in CubeGridLogics) _gridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
-
+            Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
             foreach (var blockLimit in GridClass.BlockLimits)
             {
                 var relevantBlocks = Blocks.Where(block => blockLimit.BlockTypes
@@ -291,8 +290,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 EnforceFunctionalBlockPunishment(funcBlock);
             }
-
-            Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
+            ApplyModifiers();
         }
 
         private void OnBlockAdded(IMySlimBlock obj)

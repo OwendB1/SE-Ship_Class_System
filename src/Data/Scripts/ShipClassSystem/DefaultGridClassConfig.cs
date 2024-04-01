@@ -595,7 +595,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoStaticDrillLimit,
@@ -703,7 +702,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
@@ -797,7 +795,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
@@ -891,7 +888,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
@@ -994,7 +990,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
@@ -1097,7 +1092,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
@@ -1210,7 +1204,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoDrillsLimit,
                         NoStaticDrillLimit,
@@ -1316,6 +1309,113 @@
                 },
                 new GridClass
                 {
+                    Id = 17,
+                    Name = "Carrier",
+                    LargeGridStatic = true,
+                    LargeGridMobile = true,
+                    MaxBlocks = 12000,
+                    MaxPerFaction = 2,
+                    MaxPerPlayer = 1,
+                    Modifiers = new GridModifiers
+                    {
+                        PowerProducersOutput = 1.5f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoCollectorLimit,
+                        NoSafeZoneLimit,
+                        NoDrillsLimit,
+                        NoStaticDrillLimit,
+                        NoCollectorLimit,
+                        NoSuperLaserLimit,
+                        new BlockLimit
+                        {
+                            Name = "Assemblers",
+                            MaxCount = 6,
+                            BlockTypes = Assemblers,
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Refineries",
+                            MaxCount = 6,
+                            BlockTypes = Refineries
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 300,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Small Hydrogen Tanks",
+                            MaxCount = 20,
+                            BlockTypes = SmallHydrogenTanks
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Large Hydrogen Tanks",
+                            MaxCount = 30,
+                            BlockTypes = LargeHydrogenTanks
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Small Cargo Containers",
+                            MaxCount = 40,
+                            BlockTypes = SmallCargoContainers
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Large Cargo Containers",
+                            MaxCount = 12,
+                            BlockTypes = LargeCargoContainers
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Gyros",
+                            MaxCount = 300,
+                            BlockTypes = Gyros
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Turrets",
+                            MaxCount = 40,
+                            BlockTypes = Turrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Static Weaponry",
+                            MaxCount = 0,
+                            BlockTypes = StaticWeaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Railgun Turrets",
+                            MaxCount = 4,
+                            BlockTypes = TIORailgunTurrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Battleship Turrets",
+                            MaxCount = 4,
+                            BlockTypes = TIOBattleshipTurrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Welders",
+                            MaxCount = 10,
+                            BlockTypes = Welders
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Grinders",
+                            MaxCount = 10,
+                            BlockTypes = Grinders
+                        }
+                    }
+                },
+                new GridClass
+                {
                     Id = 20,
                     Name = "Utility",
                     SmallGrid = true,
@@ -1341,7 +1441,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoStaticDrillLimit,
@@ -1443,7 +1542,6 @@
                     BlockLimits = new[]
                     {
                         NoCollectorLimit,
-                        NoStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
