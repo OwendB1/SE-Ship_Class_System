@@ -81,21 +81,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var grids = new List<IMyCubeGrid>();
 
             group?.GetGrids(grids);
+            grids = grids.Where(g => g?.Physics != null).ToList();
 
-            var concreteGrid = grid as MyCubeGrid;
-            if (concreteGrid == null)
-            {
-                Log("CONCRETE GRID IS NULL");
-                subgrids = new List<IMyCubeGrid>();
-                return null;
-            }
-
-            var biggestGrid = concreteGrid;
-            foreach (var concrete in grids.OfType<MyCubeGrid>().Where(concrete => concrete.BlocksCount > biggestGrid.BlocksCount))
-            {
-                biggestGrid = concrete;
-            }
-
+            var biggestGrid = grids.OfType<MyCubeGrid>().MaxBy(concrete => concrete.BlocksCount);
             subgrids = grids.Where(g => g.EntityId != biggestGrid.EntityId).ToList();
             return biggestGrid;
         }

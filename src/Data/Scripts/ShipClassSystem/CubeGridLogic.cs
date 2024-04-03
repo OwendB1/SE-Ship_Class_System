@@ -4,24 +4,27 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ProtoBuf;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
+    [ProtoContract]
     public class CubeGridLogic
     {
+        public CubeGridLogic(long gridClassId = 0)
+        {
+            _gridClassId = gridClassId;
+        }
+
         public readonly Dictionary<BlockLimit, List<IMyCubeBlock>> BlocksPerLimit = new Dictionary<BlockLimit, List<IMyCubeBlock>>();
         public readonly HashSet<IMyCubeBlock> Blocks = new HashSet<IMyCubeBlock>();
-
-        private GridsPerFactionClassManager _gridsPerFactionClassManager;
-        private GridsPerPlayerClassManager _gridsPerPlayerClassManager;
 
         private Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
 
         private long _gridClassId;
-
         public IMyCubeGrid Grid;
 
         public IMyFaction OwningFaction => GetOwningFaction();
@@ -33,8 +36,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             get { return _gridClassId; }
             set
             {
-                var withinFactionLimit = _gridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
-                var withinPlayerLimit = _gridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
+                var withinFactionLimit = GridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
+                var withinPlayerLimit = GridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
                 if (!withinFactionLimit)
                 {
@@ -90,17 +93,21 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public GridModifiers Modifiers => GridClass.Modifiers;
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
 
-        public void InitializeLogic(IMyCubeGrid grid)
+        public void Initialize(IMyCubeGrid grid)
         {
             Grid = grid;
+            if (ModSessionManager.Instance.CubeGridLogics.ContainsKey(Grid.EntityId) && 
+                _gridClassId == DefaultGridClassConfig.DefaultGridClassDefinition.Id) return;
             if (Grid?.Physics == null) return;
-            Utils.Log($"Init Logic: {Grid.EntityId}");
-
             List<IMyCubeGrid> subs;
-            if (Utils.GetMainCubeGrid(Grid, out subs).EntityId != Grid.EntityId) return;
+            var main = Utils.GetMainCubeGrid(Grid, out subs);
+            if (main.EntityId != Grid.EntityId)
+            {
+                var logic = new CubeGridLogic();
+                logic.Initialize(main);
+                return;
+            }
 
-            _gridsPerFactionClassManager = new GridsPerFactionClassManager(ModSessionManager.Config);
-            _gridsPerPlayerClassManager = new GridsPerPlayerClassManager(ModSessionManager.Config);
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
             {
@@ -108,33 +115,27 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 if (config.IgnoreFactionTags.Contains(OwningFaction.Tag)) return;
             }
             Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>());
-            if (Blocks == null) return;
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
-            string value;
-            if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
+            if (_gridClassId == 0)
             {
-                long id;
-                var gridClassId = long.TryParse(value, out id) ? id : 0;
-                Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
-                _gridClassId = gridClassId;
-            }
-            else
-            {
-                _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
-                Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
+                string value;
+                if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
+                {
+                    long id;
+                    var gridClassId = long.TryParse(value, out id) ? id : 0;
+                    Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
+                    _gridClassId = gridClassId;
+                }
+                else
+                {
+                    _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
+                    Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
+                }
             }
 
             // If subgrid then blacklist and add blocks to main grid
             if (!AddGridLogic()) return;
-
-            //Init event handlers
-            Grid.OnBlockOwnershipChanged += OnBlockOwnershipChanged;
-            Grid.OnIsStaticChanged += OnIsStaticChanged;
-            Grid.OnBlockAdded += OnBlockAdded;
-            Grid.OnBlockRemoved += OnBlockRemoved;
-            Grid.OnMarkForClose += GridMarkedForClose;
-            MyAPIGateway.Session.Factions.FactionStateChanged += FactionsOnFactionStateChanged;
 
             List<IMyCubeGrid> subgrids;
             Utils.GetMainCubeGrid(Grid, out subgrids);
@@ -178,12 +179,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 if (this == null) throw new Exception("gridLogic cannot be null");
                 if (Grid == null) throw new Exception("gridLogic.Grid cannot be null");
-                if (_gridsPerFactionClassManager == null)
-                    throw new Exception("gridsPerFactionClassManager cannot be null");
                 if (CubeGridLogics == null) throw new Exception("CubeGridLogics cannot be null");
 
-                _gridsPerFactionClassManager.AddCubeGrid(this);
-                _gridsPerPlayerClassManager.AddCubeGrid(this);
+                Utils.Log($"Adding Logic: {Grid.EntityId} | {Grid.CustomName}");
+
+                GridsPerFactionClassManager.AddCubeGrid(this);
+                GridsPerPlayerClassManager.AddCubeGrid(this);
                 CubeGridLogics[Grid.EntityId] = this;
 
                 var concreteGrid = Grid as MyCubeGrid;
@@ -273,10 +274,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
 
-            _gridsPerFactionClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) _gridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
-            _gridsPerPlayerClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) _gridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
+            GridsPerFactionClassManager.Reset();
+            foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
+            GridsPerPlayerClassManager.Reset();
+            foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
             Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
             foreach (var blockLimit in GridClass.BlockLimits)
             {
@@ -388,7 +389,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if ((action != MyFactionStateChange.FactionMemberAcceptJoin &&
                  action != MyFactionStateChange.FactionMemberLeave &&
                  action != MyFactionStateChange.FactionMemberKick) || Grid.BigOwners[0] != playerId) return;
-            if (!_gridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, GridClassId)) GridClassId = 0;
+            if (!GridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, GridClassId)) GridClassId = 0;
         }
 
         private void EnforceFunctionalBlockPunishment(IMyFunctionalBlock block)

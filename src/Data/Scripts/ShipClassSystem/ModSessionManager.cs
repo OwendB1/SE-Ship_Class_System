@@ -10,12 +10,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class ModSessionManager : MySessionComponentBase
     {
         public static ModSessionManager Instance;
-        public readonly Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
-
         public static ModConfig Config;
 
-        private readonly Queue<IMyCubeGrid> _toBeInitialized = new Queue<IMyCubeGrid>();
+        public Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
+        public readonly Queue<IMyCubeGrid> ToBeInitialized = new Queue<IMyCubeGrid>();
+
         private int _lastFrameInit;
+        private bool _cubeGridsRequested;
         internal static Comms Comms;
 
         public override void LoadData()
@@ -24,25 +25,33 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Config = ModConfig.LoadConfig();
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
 
-            MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
-            MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
+            if (Constants.IsServer)
+            {
+                MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
+                MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
+            }
             Instance = this;
         }
 
         protected override void UnloadData()
         {
-            MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
-            MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
-            _toBeInitialized.Clear();
+            if (Constants.IsServer)
+            {
+                MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
+                MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
+                ToBeInitialized.Clear();
+            }
             CubeGridLogics.Clear();
-            Instance = null;
+            GridsPerFactionClassManager.Reset();
+            GridsPerPlayerClassManager.Reset();
+            //Instance = null;
         }
 
         private void EntityAdded(IMyEntity ent)
         {
             var grid = ent as IMyCubeGrid;
             if (grid == null) return;
-            _toBeInitialized.Enqueue(grid);
+            ToBeInitialized.Enqueue(grid);
             _lastFrameInit = MyAPIGateway.Session.GameplayFrameCounter;
         }
 
@@ -54,11 +63,26 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public override void UpdateAfterSimulation()
         {
             CockpitGUI.AddControls();
-            var framesWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
-            if (_toBeInitialized.Count < 1 || framesWaited < 10) return;
-            var gridToInitialize = _toBeInitialized.Dequeue();
-            var logic = new CubeGridLogic();
-            logic.InitializeLogic(gridToInitialize);
+            var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
+            if (ToBeInitialized.Count > 1 && initWaited > 10)
+            {
+                if (Constants.IsServer)
+                {
+                    var gridToInitialize = ToBeInitialized.Dequeue();
+                    var logic = new CubeGridLogic();
+                    logic.Initialize(gridToInitialize);
+                }
+                else
+                {
+                    var gridToInitialize = ToBeInitialized.Dequeue();
+                    var logic = CubeGridLogics[gridToInitialize.EntityId];
+                    logic.Initialize(gridToInitialize);
+                }
+            }
+
+            if (!Constants.IsClient || _cubeGridsRequested || MyAPIGateway.Session.GameplayFrameCounter < 300) return;
+            Comms.RequestCubeGrids();
+            _cubeGridsRequested = true;
         }
     }
 }

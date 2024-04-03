@@ -13,7 +13,7 @@ using VRage.ObjectBuilders;
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Cockpit), false)]
-    public class CockpitLogic : MyGameLogicComponent
+    public class CockpitInfo : MyGameLogicComponent
     {
         private IMyCockpit _cockpit;
         private CubeGridLogic GridLogic => _cockpit?.GetMainGridLogic();
@@ -22,6 +22,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
             base.Init(objectBuilder);
+            if (!Constants.IsClient) return;
 
             _cockpit = (IMyCockpit)Entity;
 
@@ -31,6 +32,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public override void UpdateOnceBeforeFrame()
         {
             base.UpdateOnceBeforeFrame();
+            if (!Constants.IsClient) return;
 
             if (_cockpit.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
@@ -66,6 +68,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
                 if (gridLogic == null)
                 {
+                    List<IMyCubeGrid> subs;
+                    Utils.Log($"CO: {block.CubeGrid.EntityId} | {Utils.GetMainCubeGrid(block.CubeGrid, out subs).EntityId}");
                     Utils.Log("Updating MyCockpit detailed info failed, grid is missing CubeGridLogic", 3);
                     return;
                 }

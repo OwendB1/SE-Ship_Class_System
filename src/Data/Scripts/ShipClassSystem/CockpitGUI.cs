@@ -17,7 +17,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static void AddControls()
         {
-            if (_waitTicks < 1000)
+            if (!Constants.IsClient) return;
+            if (_waitTicks < 2000)
             {
                 _waitTicks++;
                 return;
@@ -100,7 +101,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (cubeGridLogic != null)
             {
                 Utils.Log(
-                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
+                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {cubeGridLogic.Grid.EntityId}, grid class id = {key}",
                     2);
                 ModSessionManager.Comms.SendChangeGridClassMessage(cubeGridLogic.Grid.EntityId, key);
             }

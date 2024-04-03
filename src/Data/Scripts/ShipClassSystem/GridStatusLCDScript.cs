@@ -89,7 +89,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             try
             {
                 base.Run(); // do not remove
-
+                if (!Constants.IsClient) return;
                 /*// hold L key to see how the error is shown, remove this after you've played around with it =)
                 if (MyAPIGateway.Input.IsKeyPress(VRage.Input.MyKeys.L))
                     throw new Exception("Oh noes an error :}");*/
