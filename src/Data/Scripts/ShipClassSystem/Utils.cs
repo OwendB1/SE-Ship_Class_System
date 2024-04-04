@@ -35,12 +35,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Log($"Exception message = {e.Message}, Stack trace:\n{e.StackTrace}", 3);
         }
 
-        public static string GetBlockId(IMyCubeBlock block)
+        public static string GetBlockTypeId(IMyCubeBlock block)
         {
             return Convert.ToString(block.BlockDefinition.TypeId).Replace("MyObjectBuilder_", "");
         }
 
-        public static string GetBlockId(IMySlimBlock block)
+        public static string GetBlockTypeId(IMySlimBlock block)
         {
             return Convert.ToString(block.GetObjectBuilder().TypeId).Replace("MyObjectBuilder_", "");
         }

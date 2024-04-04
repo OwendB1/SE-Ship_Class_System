@@ -23,7 +23,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             Comms = new Comms(Settings.COMMS_MESSAGE_ID);
             Config = ModConfig.LoadConfig();
-            ModConfig.SaveConfig(Config, Constants.ConfigFilename);
+            if (Config == null)
+                ModConfig.SaveConfig(DefaultGridClassConfig.DefaultModConfig, Constants.ConfigFilename);
 
             if (Constants.IsServer)
             {
@@ -35,6 +36,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         protected override void UnloadData()
         {
+            ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             if (Constants.IsServer)
             {
                 MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;

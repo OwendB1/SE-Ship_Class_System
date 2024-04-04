@@ -9,4 +9,5 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=logics/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=subgrid/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=subgrids/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Vals/@EntryIndexedValue">True</s:Boolean>
 	</wpf:ResourceDictionary>

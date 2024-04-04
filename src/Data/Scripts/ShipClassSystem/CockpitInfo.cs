@@ -45,7 +45,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             base.UpdateAfterSimulation100();
 
-            try // only for non-critical code
+            try
             {
                 if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
                 //TODO only run this if grid check results actually change
@@ -60,9 +60,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder sb)
         {
-            // NOTE: don't Clear() the StringBuilder, it's the same instance given to all mods.
-
-            try // only for non-critical code
+            try
             {
                 var gridLogic = block.GetMainGridLogic();
 
@@ -89,10 +87,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     foreach (var blockLimit in gridClass.BlockLimits)
                     {
                         if (gridLogic.Blocks == null) continue;
-                        var relevantBlocks = gridLogic.Blocks.Where(b => blockLimit.BlockTypes
-                            .Any(bl => bl.SubtypeId == Utils.GetBlockSubtypeId(b) && 
-                                       bl.TypeId == Utils.GetBlockId(b))).ToList();
-                        FormatBlockLimitCheckResult(infoBuilder, blockLimit, relevantBlocks);
+                        var countWeight = gridLogic.BlocksPerLimit[blockLimit].Sum(l => l.Value);
+                        FormatBlockLimitCheckResult(infoBuilder, blockLimit, countWeight);
                     }
                         
 
@@ -109,9 +105,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, IReadOnlyCollection<IMyCubeBlock> blocks)
+        private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, double countWeight)
         {
-            sb.Append($"{blockLimit.Name}: {blocks.Count}/{blockLimit.MaxCount}{(blocks.Count <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
+            sb.Append($"{blockLimit.Name}: {countWeight}/{blockLimit.MaxCount}{(countWeight <= blockLimit.MaxCount ? "\n" : " (fail)\n")}");
         }
 
         private static void FormatMaxCheckResult(string name, StringBuilder sb, float max,float value)

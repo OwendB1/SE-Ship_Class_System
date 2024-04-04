@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using VRage.Game.GUI.TextPanel;
 using VRageMath;
 using IngameCubeBlock = VRage.Game.ModAPI.Ingame.IMyCubeBlock;
@@ -190,14 +191,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (GridClass.BlockLimits != null)
                 foreach (var blockLimit in GridLogic.BlocksPerLimit)
                 {
+                    var countWeight = blockLimit.Value.Sum(l => l.Value);
                     _gridResultsTable.Rows.Add(new Row
                     {
                         new Cell($"{blockLimit.Key.Name}:"),
-                        new Cell(blockLimit.Value.Count.ToString()),
+                        new Cell(countWeight.ToString(CultureInfo.InvariantCulture)),
                         new Cell("/"),
                         new Cell(blockLimit.Key.MaxCount.ToString(CultureInfo.InvariantCulture),
-                            blockLimit.Value.Count <= blockLimit.Key.MaxCount ? successColor : failColor),
-                        blockLimit.Value.Count <= blockLimit.Key.MaxCount ? new Cell() : new Cell("X", failColor)
+                            countWeight <= blockLimit.Key.MaxCount ? successColor : failColor),
+                        countWeight <= blockLimit.Key.MaxCount ? new Cell() : new Cell("X", failColor)
                     });
                 }
 

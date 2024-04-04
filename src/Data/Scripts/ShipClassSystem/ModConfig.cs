@@ -67,7 +67,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public static ModConfig LoadConfig()
         {
-            var config = DefaultGridClassConfig.DefaultModConfig;
+            ModConfig config = null;
             try
             {
                 if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Constants.ConfigFilename, typeof(ModConfig)))
@@ -76,16 +76,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     var myText = reader.ReadToEnd();
                     reader.Close();
                     config = MyAPIGateway.Utilities.SerializeFromXML<ModConfig>(myText);
-                    if (config == null) { throw new Exception("Word Settings Empty! :(.... \n ...Fixed!"); }
                 }
-
             }
             catch (Exception x)
             {
-                config = DefaultGridClassConfig.DefaultModConfig;
                 MyAPIGateway.Utilities.ShowMessage("Debug", $"ConfigLoad crashed because...\n{x.Message}");
             }
-
             return config;
         }
 
