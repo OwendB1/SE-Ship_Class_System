@@ -117,7 +117,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>());
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
-            if (_gridClassId == 0)
+            if (Constants.IsServer)
             {
                 string value;
                 if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
@@ -419,7 +419,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                         if (func != null) func.Enabled = false;
                         else
                         {
-                            var slim = block.SlimBlock;
+                            var slim = limitBlock.Key.SlimBlock;
                             var targetIntegrity = slim.MaxIntegrity * 0.2;
                             var damageRequired = slim.Integrity - targetIntegrity;
 
