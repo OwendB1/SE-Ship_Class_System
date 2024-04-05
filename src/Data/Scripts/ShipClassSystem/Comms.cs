@@ -28,8 +28,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     { EntityId = entityId, GridClassId = gridClassId });
                 var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
                     { Type = MessageType.ChangeGridClass, Data = messageData });
-                if (Constants.IsClient) MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
-                MyAPIGateway.Multiplayer.SendMessageToOthers(_commsId, message);
+                MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
             }
             catch (Exception e)
             {
@@ -78,7 +77,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
             catch (Exception e)
             {
-                Utils.Log("Comms::HandleChangeGridClassMessage deserialize message error", 3);
+                Utils.Log("Comms::HandleChangeGridClassMessage: deserialize message error", 3);
                 Utils.LogException(e);
                 return;
             }
@@ -90,6 +89,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 Utils.Log($"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}", 1);
                 gridLogic.GridClassId = message.GridClassId;
+                if (!Constants.IsServer || gridLogic.GridClassId != message.GridClassId) return;
+                Utils.Log("Comms::HandleChangeGridClassMessage: Sending change to others");
+                var msg = MyAPIGateway.Utilities.SerializeToBinary(new Message
+                    { Type = MessageType.ChangeGridClass, Data = data });
+                MyAPIGateway.Multiplayer.SendMessageToOthers(_commsId, msg);
             }
             else Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
         }
