@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ProtoBuf;
+﻿using ProtoBuf;
 using Sandbox.ModAPI;
+using System;
 using VRage.Game.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
@@ -13,13 +11,15 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public Comms(ushort id)
         {
             _commsId = id;
-            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
-        public void SendChangeGridClassMessage(long entityId, long gridClassId)
+        public void Discard()
+        {
+            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+        }
+
+        public void ChangeGridClass(long entityId, long gridClassId)
         {
             if (!Constants.IsClient) return;
             try
@@ -28,47 +28,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     { EntityId = entityId, GridClassId = gridClassId });
                 var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
                     { Type = MessageType.ChangeGridClass, Data = messageData });
-                MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
+                if (Constants.IsClient) MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
+                MyAPIGateway.Multiplayer.SendMessageToOthers(_commsId, message);
             }
             catch (Exception e)
             {
                 Utils.Log("Comms::SendChangeGridClassMessage error", 3);
-                Utils.LogException(e);
-            }
-        }
-
-        public void SendUpdateCubeGridLogics(Dictionary<long,CubeGridLogic> logics, ulong recipient)
-        {
-            if (!Constants.IsServer) return;
-            try
-            {
-                var list = logics.Select(l => new GridMessage { EntityId = l.Key, GridClassId = l.Value.GridClassId }).ToList();
-                var messageData = MyAPIGateway.Utilities.SerializeToBinary(new UpdateCubeGridLogicsMessage
-                    { CubeGrids = list });
-                var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
-                    { Type = MessageType.UpdateCubeGridLogics, Data = messageData });
-                MyAPIGateway.Multiplayer.SendMessageTo(_commsId, message, recipient);
-            }
-            catch (Exception e)
-            {
-                Utils.Log("Comms::SendUpdateCubeGridLogics error", 3);
-                Utils.LogException(e);
-            }
-        }
-
-        public void RequestCubeGrids()
-        {
-            if (!Constants.IsClient) return;
-            try
-            {
-                var messageData = MyAPIGateway.Utilities.SerializeToBinary(MyAPIGateway.Multiplayer.MyId);
-                var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
-                    { Type = MessageType.RequestCubeGrids, Data = messageData });
-                MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
-            }
-            catch (Exception e)
-            {
-                Utils.Log("Comms::RequestCubeGrids error", 3);
                 Utils.LogException(e);
             }
         }
@@ -95,16 +60,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             switch (message.Type)
             {
                 case MessageType.ChangeGridClass:
-                    if (!Constants.IsServer) return;
-                    HandleChangeGridClassMessage(message.Data);
-                    break;
-                case MessageType.UpdateCubeGridLogics:
-                    if (!Constants.IsClient || ModSessionManager.Instance.CubeGridLogics.Count > 0) return;
-                    HandleUpdateCubeGridLogics(message.Data);
-                    break;
-                case MessageType.RequestCubeGrids:
-                    if (!Constants.IsServer) return;
-                    HandleRequestCubeGrids(message.Data);
+                    HandleChangeGridClass(message.Data);
                     break;
                 default:
                     Utils.Log("Comms::MessageHandler: Unknown message type", 2);
@@ -112,7 +68,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        private void HandleChangeGridClassMessage(byte[] data)
+        private void HandleChangeGridClass(byte[] data)
         {
             GridMessage message;
 
@@ -130,7 +86,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             var cubeGrid = MyAPIGateway.Entities.GetEntityById(message.EntityId) as IMyCubeGrid;
             var gridLogic = cubeGrid.GetMainGridLogic();
             if (gridLogic == null) return;
-
             if (ModSessionManager.Config.IsValidGridClassId(message.GridClassId))
             {
                 Utils.Log($"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}", 1);
@@ -138,55 +93,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
             else Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
         }
-
-        private void HandleUpdateCubeGridLogics(byte[] data)
-        {
-            UpdateCubeGridLogicsMessage message;
-
-            try
-            {
-                message = MyAPIGateway.Utilities.SerializeFromBinary<UpdateCubeGridLogicsMessage>(data);
-            }
-            catch (Exception e)
-            {
-                Utils.Log("Comms::HandleChangeGridClassMessage deserialize message error", 3);
-                Utils.LogException(e);
-                return;
-            }
-
-            if (message.CubeGrids == null) return;
-            foreach (var gridMessage in message.CubeGrids)
-            {
-                ModSessionManager.Instance.CubeGridLogics.Add(gridMessage.EntityId, new CubeGridLogic(gridMessage.GridClassId));
-                var grid = MyAPIGateway.Entities.GetEntityById(gridMessage.EntityId) as IMyCubeGrid;
-                if (grid == null) continue;
-                ModSessionManager.Instance.ToBeInitialized.Enqueue(grid);
-            }
-        }
-
-        private void HandleRequestCubeGrids(byte[] data)
-        {
-            ulong recipient;
-
-            try
-            {
-                recipient = MyAPIGateway.Utilities.SerializeFromBinary<ulong>(data);
-            }
-            catch (Exception e)
-            {
-                Utils.Log("Comms::HandleChangeGridClassMessage deserialize message error", 3);
-                Utils.LogException(e);
-                return;
-            }
-            SendUpdateCubeGridLogics(ModSessionManager.Instance.CubeGridLogics, recipient);
-        }
     }
 
     internal enum MessageType
     {
-        ChangeGridClass,
-        UpdateCubeGridLogics,
-        RequestCubeGrids
+        ChangeGridClass
     }
 
     [ProtoContract]
@@ -201,11 +112,5 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         [ProtoMember(1)] public long EntityId;
         [ProtoMember(2)] public long GridClassId;
-    }
-
-    [ProtoContract]
-    internal struct UpdateCubeGridLogicsMessage
-    {
-        [ProtoMember(1)] public List<GridMessage> CubeGrids;
     }
 }

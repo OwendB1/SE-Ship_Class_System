@@ -13,7 +13,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     {
         public static void ShowNotification(string msg, int disappearTime = 10000, string font = MyFontEnum.Red)
         {
-            if (MyAPIGateway.Session?.Player != null)
+            if (!Constants.IsServer)
                 MyAPIGateway.Utilities.ShowNotification(msg, disappearTime, font);
         }
 

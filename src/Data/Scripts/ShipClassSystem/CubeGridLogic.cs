@@ -14,11 +14,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     [ProtoContract]
     public class CubeGridLogic
     {
-        public CubeGridLogic(long gridClassId = 0)
-        {
-            _gridClassId = gridClassId;
-        }
-
         public readonly Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>> BlocksPerLimit = new Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>>();
         public readonly HashSet<IMyCubeBlock> Blocks = new HashSet<IMyCubeBlock>();
 
@@ -117,21 +112,18 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>());
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
-            if (Constants.IsServer)
+            string value;
+            if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
             {
-                string value;
-                if (Grid.Storage.TryGetValue(Constants.GridClassStorageGUID, out value))
-                {
-                    long id;
-                    var gridClassId = long.TryParse(value, out id) ? id : 0;
-                    Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
-                    _gridClassId = gridClassId;
-                }
-                else
-                {
-                    _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
-                    Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
-                }
+                long id;
+                var gridClassId = long.TryParse(value, out id) ? id : 0;
+                Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
+                _gridClassId = gridClassId;
+            }
+            else
+            {
+                _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
+                Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
             }
 
             // If subgrid then blacklist and add blocks to main grid
@@ -285,6 +277,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
             EnforceBlockPunishment();
             ApplyModifiers();
+            //ModSessionManager.Comms.ChangeGridClassFromServer(Grid.EntityId, GridClassId);
         }
 
         private void OnBlockAdded(IMySlimBlock obj)

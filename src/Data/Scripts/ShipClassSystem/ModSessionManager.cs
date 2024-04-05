@@ -1,5 +1,6 @@
 ﻿using Sandbox.ModAPI;
 using System.Collections.Generic;
+using Sandbox.Game.Entities.Character;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -16,7 +17,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public readonly Queue<IMyCubeGrid> ToBeInitialized = new Queue<IMyCubeGrid>();
 
         private int _lastFrameInit;
-        private bool _cubeGridsRequested;
         internal static Comms Comms;
 
         public override void LoadData()
@@ -25,27 +25,21 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             Config = ModConfig.LoadConfig();
             if (Config == null)
                 ModConfig.SaveConfig(DefaultGridClassConfig.DefaultModConfig, Constants.ConfigFilename);
-
-            if (Constants.IsServer)
-            {
-                MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
-                MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
-            }
+            MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
+            MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             Instance = this;
         }
 
         protected override void UnloadData()
         {
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
-            if (Constants.IsServer)
-            {
-                MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
-                MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
-                ToBeInitialized.Clear();
-            }
+            MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
+            MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
+            ToBeInitialized.Clear();
             CubeGridLogics.Clear();
             GridsPerFactionClassManager.Reset();
             GridsPerPlayerClassManager.Reset();
+            Comms.Discard();
             //Instance = null;
         }
 
@@ -66,25 +60,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         {
             CockpitGUI.AddControls();
             var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
-            if (ToBeInitialized.Count > 1 && initWaited > 10)
-            {
-                if (Constants.IsServer)
-                {
-                    var gridToInitialize = ToBeInitialized.Dequeue();
-                    var logic = new CubeGridLogic();
-                    logic.Initialize(gridToInitialize);
-                }
-                else
-                {
-                    var gridToInitialize = ToBeInitialized.Dequeue();
-                    var logic = CubeGridLogics[gridToInitialize.EntityId];
-                    logic.Initialize(gridToInitialize);
-                }
-            }
-
-            if (!Constants.IsClient || _cubeGridsRequested || MyAPIGateway.Session.GameplayFrameCounter < 300) return;
-            Comms.RequestCubeGrids();
-            _cubeGridsRequested = true;
+            if (ToBeInitialized.Count <= 1 || initWaited <= 10) return;
+            var gridToInitialize = ToBeInitialized.Dequeue();
+            var logic = new CubeGridLogic();
+            logic.Initialize(gridToInitialize);
         }
     }
 }
