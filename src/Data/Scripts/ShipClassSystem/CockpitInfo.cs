@@ -1,4 +1,5 @@
 ﻿using Sandbox.Common.ObjectBuilders;
+using Sandbox.Engine.Utils;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
@@ -60,49 +61,36 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder sb)
         {
-            try
-            {
-                var gridLogic = block.GetMainGridLogic();
+            var gridLogic = block.GetMainGridLogic();
+            if (gridLogic == null) return;
 
-                if (gridLogic == null)
+            var gridClass = gridLogic.GridClass;
+            var concreteGrid = _cockpit.CubeGrid as MyCubeGrid;
+            if (gridClass == null || concreteGrid == null) return;
+
+            var infoBuilder = new StringBuilder();
+            infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
+
+            FormatRangeCheckResult("Blocks", infoBuilder, gridClass.MinBlocks, gridClass.MaxBlocks, concreteGrid.BlocksCount);
+            FormatMaxCheckResult("Mass", infoBuilder, gridClass.MaxMass, concreteGrid.Mass);
+            FormatMaxCheckResult("PCU", infoBuilder, gridClass.MaxPCU, concreteGrid.BlocksPCU);
+
+            if (gridClass.BlockLimits != null)
+                foreach (var blockLimit in gridClass.BlockLimits)
                 {
-                    List<IMyCubeGrid> subs;
-                    Utils.Log($"CO: {block.CubeGrid.EntityId} | {Utils.GetMainCubeGrid(block.CubeGrid, out subs).EntityId}");
-                    Utils.Log("Updating MyCockpit detailed info failed, grid is missing CubeGridLogic", 3);
-                    return;
+                    if (gridLogic.Blocks == null) continue;
+                    var countWeight = gridLogic.BlocksPerLimit[blockLimit].Sum(l => l.Value);
+                    FormatBlockLimitCheckResult(infoBuilder, blockLimit, countWeight);
                 }
+                    
 
-                var gridClass = gridLogic.GridClass;
-                var concreteGrid = _cockpit.CubeGrid as MyCubeGrid;
-                if (gridClass == null || concreteGrid == null) return;
+            infoBuilder.Append("\nApplied Modifiers: \n\n");
 
-                var infoBuilder = new StringBuilder();
-                infoBuilder.Append($"\nClass: {gridClass.Name} \n\n");
+            foreach (var modifierValue in GridLogic.Modifiers.GetModifierValues())
+                infoBuilder.Append($"{modifierValue.Name}: {modifierValue.Value}\n");
 
-                FormatRangeCheckResult("Blocks", infoBuilder, gridClass.MinBlocks, gridClass.MaxBlocks, concreteGrid.BlocksCount);
-                FormatMaxCheckResult("Mass", infoBuilder, gridClass.MaxMass, concreteGrid.Mass);
-                FormatMaxCheckResult("PCU", infoBuilder, gridClass.MaxPCU, concreteGrid.BlocksPCU);
-
-                if (gridClass.BlockLimits != null)
-                    foreach (var blockLimit in gridClass.BlockLimits)
-                    {
-                        if (gridLogic.Blocks == null) continue;
-                        var countWeight = gridLogic.BlocksPerLimit[blockLimit].Sum(l => l.Value);
-                        FormatBlockLimitCheckResult(infoBuilder, blockLimit, countWeight);
-                    }
-                        
-
-                infoBuilder.Append("\nApplied Modifiers: \n\n");
-
-                foreach (var modifierValue in GridLogic.Modifiers.GetModifierValues())
-                    infoBuilder.Append($"{modifierValue.Name}: {modifierValue.Value}\n");
-
-                sb.Append(infoBuilder);
-            }
-            catch (Exception e)
-            {
-                Utils.LogException(e);
-            }
+            sb.Append(infoBuilder);
+            
         }
 
         private static void FormatBlockLimitCheckResult(StringBuilder sb, BlockLimit blockLimit, double countWeight)

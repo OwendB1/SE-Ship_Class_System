@@ -90,13 +90,13 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private static void SetGridClass(IMyTerminalBlock block, long key)
         {
             var cubeGridLogic = block.GetMainGridLogic();
-
             if (cubeGridLogic != null)
             {
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {cubeGridLogic.Grid.EntityId}, grid class id = {key}",
                     2);
                 ModSessionManager.Comms.ChangeGridClass(cubeGridLogic.Grid.EntityId, key);
+                cubeGridLogic.GridClassId = key;
             }
             else
             {

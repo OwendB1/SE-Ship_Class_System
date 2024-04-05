@@ -70,10 +70,22 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                     actualPCU += concreteSubgrid.BlocksPCU;
                     actualMass += concreteSubgrid.Mass;
                 }
-                
-                if (maxBlocks > 1 && actualBlocks > maxBlocks) return;
-                if (maxPCU > 1 && actualPCU > maxPCU) return;
-                if (maxMass > 1 && actualMass > maxMass) return;
+
+                if (maxBlocks > 1 && actualBlocks > maxBlocks)
+                {
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualBlocks - maxBlocks} blocks over the limit!");
+                    return;
+                }
+                if (maxPCU > 1 && actualPCU > maxPCU)
+                {
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualPCU - maxPCU} PCU over the limit!");
+                    return;
+                }
+                if (maxMass > 1 && actualMass > maxMass)
+                {
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualMass - maxMass} KG over the limit!");
+                    return;
+                }
 
                 if (!ModSessionManager.Config.IsValidGridClassId(value))
                     throw new Exception($"CubeGridLogic:: set GridClassId: invalid grid class id {value}");
