@@ -200,9 +200,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        public void GridMarkedForClose(IMyEntity ent)
+        public void GridMarkedForClose()
         {
-            if (ent.EntityId != Grid.EntityId) return;
             try
             {
                 // called when entity is about to be removed for whatever reason (block destroyed, entity deleted, grid despawn because of sync range, etc)

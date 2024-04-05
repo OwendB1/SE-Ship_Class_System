@@ -576,6 +576,101 @@
                 },
                 new GridClass
                 {
+                    Id = 3,
+                    Name = "Sentry",
+                    LargeGridStatic = true,
+                    MaxBlocks = 200,
+                    ForceBroadCast = false,
+                    MaxPerFaction = 20,
+                    MaxPerPlayer = 4,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 0,
+                        GyroForce = 0,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 3
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Environment = 0.5f,
+                        Bullet = 0.5f,
+                        Explosion = 0.5f,
+                        Rocket = 0.5f,
+                        Energy = 0.5f,
+                        Kinetic = 0.5f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoSafeZoneLimit,
+                        NoCollectorLimit,
+                        NoStaticDrillLimit,
+                        NoSuperLaserLimit,
+                        NoDrillsLimit,
+                        NoCollectorLimit,
+                        NoGyroLimit,
+                        NoShipToolsLimit,
+                        NoProductionLimit,
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 40,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Small Hydrogen Tanks",
+                            MaxCount = 0,
+                            BlockTypes = SmallHydrogenTanks
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Large Hydrogen Tanks",
+                            MaxCount = 4,
+                            BlockTypes = LargeHydrogenTanks
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Small Cargo Containers",
+                            MaxCount = 6,
+                            BlockTypes = SmallCargoContainers
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Large Cargo Containers",
+                            MaxCount = 1,
+                            BlockTypes = LargeCargoContainers
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Turrets",
+                            MaxCount = 10,
+                            BlockTypes = Turrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Static Weaponry",
+                            MaxCount = 10,
+                            BlockTypes = StaticWeaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Railgun Turrets",
+                            MaxCount = 2,
+                            BlockTypes = TIORailgunTurrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Battleship Turrets",
+                            MaxCount = 2,
+                            BlockTypes = TIOBattleshipTurrets
+                        }
+                    }
+                },
+                new GridClass
+                {
                     Id = 10,
                     Name = "Support",
                     LargeGridStatic = true,

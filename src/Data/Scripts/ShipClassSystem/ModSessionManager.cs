@@ -34,6 +34,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
             MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
+            foreach (var logic in CubeGridLogics)
+            {
+                logic.Value.GridMarkedForClose();
+            }
             ToBeInitialized.Clear();
             CubeGridLogics.Clear();
             GridsPerFactionClassManager.Reset();
