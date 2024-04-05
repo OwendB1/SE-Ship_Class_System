@@ -1,6 +1,5 @@
 ﻿using Sandbox.ModAPI;
 using System.Collections.Generic;
-using Sandbox.Game.Entities.Character;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
