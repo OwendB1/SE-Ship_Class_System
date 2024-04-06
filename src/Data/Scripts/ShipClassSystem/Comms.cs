@@ -11,12 +11,14 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public Comms(ushort id)
         {
             _commsId = id;
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            if (Constants.IsServer)
+                MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
         public void Discard()
         {
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            if (Constants.IsServer)
+                MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
         public void ChangeGridClass(long entityId, long gridClassId)

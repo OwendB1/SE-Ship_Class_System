@@ -195,7 +195,7 @@
 
         private static readonly BlockType[] TIORailgunTurrets =
         {
-            new BlockType("ConveyorSorter", "MK1_Railgun_Block"),
+            new BlockType("ConveyorSorter", "MK1Railgun_Block"),
             new BlockType("ConveyorSorter", "MK2_Railgun_Block"),
             new BlockType("ConveyorSorter", "MK3_Railgun_Block"),
         };
@@ -771,6 +771,18 @@
                             Name = "Static Weaponry",
                             MaxCount = 0,
                             BlockTypes = StaticWeaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Railgun Turrets",
+                            MaxCount = 0,
+                            BlockTypes = TIORailgunTurrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Battleship Turrets",
+                            MaxCount = 0,
+                            BlockTypes = TIOBattleshipTurrets
                         }
                     }
                 },
@@ -1612,6 +1624,18 @@
                             Name = "Static Weaponry",
                             MaxCount = 0,
                             BlockTypes = StaticWeaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Railgun Turrets",
+                            MaxCount = 0,
+                            BlockTypes = TIORailgunTurrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "TIO Battleship Turrets",
+                            MaxCount = 0,
+                            BlockTypes = TIOBattleshipTurrets
                         }
                     }
                 },
