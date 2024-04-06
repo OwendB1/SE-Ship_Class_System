@@ -82,22 +82,29 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 return;
             }
 
-            var entity = MyAPIGateway.Entities.GetEntityById(message.EntityId);
-            if (entity == null) return;
-            var cubeGrid = entity as IMyCubeGrid;
-            var gridLogic = cubeGrid?.GetMainGridLogic();
-            if (gridLogic == null) return;
-            if (ModSessionManager.Config.IsValidGridClassId(message.GridClassId))
+            try
             {
-                Utils.Log($"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}", 1);
-                gridLogic.GridClassId = message.GridClassId;
-                if (!Constants.IsServer || gridLogic.GridClassId != message.GridClassId) return;
-                Utils.Log("Comms::HandleChangeGridClassMessage: Sending change to others");
-                var msg = MyAPIGateway.Utilities.SerializeToBinary(new Message
-                    { Type = MessageType.ChangeGridClass, Data = data });
-                MyAPIGateway.Multiplayer.SendMessageToOthers(_commsId, msg);
+                var entity = MyAPIGateway.Entities.GetEntityById(message.EntityId);
+                if (entity == null) return;
+                var cubeGrid = entity as IMyCubeGrid;
+                var gridLogic = cubeGrid?.GetMainGridLogic();
+                if (gridLogic == null) return;
+                if (ModSessionManager.Config.IsValidGridClassId(message.GridClassId))
+                {
+                    Utils.Log($"Comms::HandleChangeGridClassMessage: Setting grid class id for {message.EntityId} to {message.GridClassId}", 1);
+                    gridLogic.GridClassId = message.GridClassId;
+                    if (!Constants.IsServer || gridLogic.GridClassId != message.GridClassId) return;
+                    Utils.Log("Comms::HandleChangeGridClassMessage: Sending change to others");
+                    var msg = MyAPIGateway.Utilities.SerializeToBinary(new Message
+                        { Type = MessageType.ChangeGridClass, Data = data });
+                    MyAPIGateway.Multiplayer.SendMessageToOthers(_commsId, msg);
+                }
+                else Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
             }
-            else Utils.Log($"Comms::HandleChangeGridClassMessage: Unknown grid class ID {message.GridClassId}", 3);
+            catch (Exception e)
+            {
+                Utils.LogException(e);
+            }
         }
     }
 

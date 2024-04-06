@@ -61,9 +61,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override void UpdateAfterSimulation()
         {
-            CockpitGUI.AddControls();
             var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
             if (ToBeInitialized.Count <= 1 || initWaited <= 10) return;
+            if (Constants.IsClient && MyAPIGateway.Session.ControlledObject == null) return;
             var gridToInitialize = ToBeInitialized.Dequeue();
             var logic = new CubeGridLogic();
             logic.Initialize(gridToInitialize);

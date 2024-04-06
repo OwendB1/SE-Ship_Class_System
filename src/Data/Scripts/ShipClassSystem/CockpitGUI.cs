@@ -4,41 +4,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.ModAPI;
+using VRage.Network;
 using VRage.Utils;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    public static class CockpitGUI 
+    [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
+    public class CockpitGUI : MySessionComponentBase, IMyEventProxy
     {
-        private static int _waitTicks;
-        private static bool _controlsAdded;
-        private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall", "SetIsMainGrid" };
-
-        public static void AddControls()
+        private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall" };
+        public override void BeforeStart()
         {
-            if (_controlsAdded || !Constants.IsClient) return;
-            if (_waitTicks < 120)
-            {
-                _waitTicks++;
-                return;
-            }
-            
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeStatic",
-                SetComboboxContentLargeStatic,
+            MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
+        }
+
+        protected override void UnloadData()
+        {
+            MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
+        }
+
+        public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
+        {
+            if (!(block is IMyCockpit)) return;
+            if (controls.Any(control => ControlsToHideIfNotMainCockpit.Contains(control.Id))) return;
+            controls.Add(GetCombobox("SetGridClassLargeStatic", SetComboboxContentLargeStatic,
                 cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassLargeMobile",
-                SetComboboxContentLargeGridMobile,
+            controls.Add(GetCombobox("SetGridClassLargeMobile", SetComboboxContentLargeGridMobile,
                 cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            MyAPIGateway.TerminalControls.AddControl<IMyCockpit>(GetCombobox("SetGridClassSmall",
-                SetComboboxContentSmall,
+            controls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
                 cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-            
-            List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<IMyCockpit>(out controls);
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
                 control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
-            _controlsAdded = true;
         }
 
         private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)
@@ -59,26 +57,28 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             combobox.Getter = GetGridClass;
             combobox.Setter = SetGridClass;
             combobox.ComboBoxContent = setComboboxContent;
-
             return combobox;
         }
 
         private static void SetComboboxContentLargeStatic(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.LargeGridStatic 
-                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses
+                          where gridLimit.LargeGridStatic
+                          select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentLargeGridMobile(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.LargeGridMobile 
-                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses
+                          where gridLimit.LargeGridMobile
+                          select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static void SetComboboxContentSmall(List<MyTerminalControlComboBoxItem> list)
         {
-            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses where gridLimit.SmallGrid
-                select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
+            list.AddRange(from gridLimit in ModSessionManager.Config.GridClasses
+                          where gridLimit.SmallGrid
+                          select new MyTerminalControlComboBoxItem { Key = gridLimit.Id, Value = MyStringId.GetOrCompute(gridLimit.Name) });
         }
 
         private static long GetGridClass(IMyTerminalBlock block)
@@ -93,10 +93,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             if (cubeGridLogic != null)
             {
                 Utils.Log(
-                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {cubeGridLogic.Grid.EntityId}, grid class id = {key}",
+                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
                 ModSessionManager.Comms.ChangeGridClass(cubeGridLogic.Grid.EntityId, key);
-                cubeGridLogic.GridClassId = key;
             }
             else
             {
@@ -105,12 +104,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         }
     }
 
-    //From Digi's examples: https://github.com/THDigi/SE-ModScript-Examples/blob/master/Data/Scripts/Examples/TerminalControls/Hiding/TerminalChainedDelegate.cs
     public class TerminalChainedDelegate
     {
         private readonly bool CheckOR;
         private readonly Func<IMyTerminalBlock, bool> CustomFunc;
-
         private readonly Func<IMyTerminalBlock, bool> OriginalFunc;
 
         private TerminalChainedDelegate(Func<IMyTerminalBlock, bool> originalFunc,
