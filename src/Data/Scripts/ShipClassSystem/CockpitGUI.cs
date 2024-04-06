@@ -15,9 +15,17 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
     public class CockpitGUI : MySessionComponentBase, IMyEventProxy
     {
         private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall" };
+        private readonly List<IMyTerminalControl> _cockpitControls = new List<IMyTerminalControl>();
         public override void BeforeStart()
         {
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
+
+            _cockpitControls.Add(GetCombobox("SetGridClassLargeStatic", SetComboboxContentLargeStatic,
+                cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            _cockpitControls.Add(GetCombobox("SetGridClassLargeMobile", SetComboboxContentLargeGridMobile,
+                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            _cockpitControls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
+                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
         }
 
         protected override void UnloadData()
@@ -28,13 +36,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             if (!(block is IMyCockpit)) return;
-            if (controls.Any(control => ControlsToHideIfNotMainCockpit.Contains(control.Id))) return;
-            controls.Add(GetCombobox("SetGridClassLargeStatic", SetComboboxContentLargeStatic,
-                cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            controls.Add(GetCombobox("SetGridClassLargeMobile", SetComboboxContentLargeGridMobile,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            controls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+            if (controls.Any(control => _cockpitControls.Contains(control))) return;
+            controls.AddRange(_cockpitControls);
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
                 control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
         }

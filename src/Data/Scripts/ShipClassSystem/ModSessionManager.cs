@@ -21,9 +21,12 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         public override void LoadData()
         {
             Comms = new Comms(Settings.COMMS_MESSAGE_ID);
-            Config = ModConfig.LoadConfig();
-            if (Config == null)
-                ModConfig.SaveConfig(DefaultGridClassConfig.DefaultModConfig, Constants.ConfigFilename);
+            if (Constants.IsServer)
+            {
+                Config = ModConfig.LoadConfig();
+                if (Config == null)
+                    ModConfig.SaveConfig(DefaultGridClassConfig.DefaultModConfig, Constants.ConfigFilename);
+            } else Comms.RequestConfig();
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             Instance = this;
@@ -31,7 +34,8 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         protected override void UnloadData()
         {
-            ModConfig.SaveConfig(Config, Constants.ConfigFilename);
+            if (Constants.IsServer)
+                ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
             MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
             //foreach (var logic in CubeGridLogics)
@@ -61,6 +65,7 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public override void UpdateAfterSimulation()
         {
+            if (Config == null) return;
             var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
             if (ToBeInitialized.Count <= 1 || initWaited <= 10) return;
             if (Constants.IsClient && MyAPIGateway.Session.ControlledObject == null) return;

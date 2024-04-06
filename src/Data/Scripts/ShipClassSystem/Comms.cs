@@ -37,6 +37,23 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
+        public void RequestConfig()
+        {
+            if (!Constants.IsClient) return;
+            try
+            {
+                var messageData = MyAPIGateway.Utilities.SerializeToBinary(MyAPIGateway.Multiplayer.MyId);
+                var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
+                    { Type = MessageType.RequestConfig, Data = messageData });
+                MyAPIGateway.Multiplayer.SendMessageToServer(_commsId, message);
+            }
+            catch (Exception e)
+            {
+                Utils.Log("Comms::SendChangeGridClassMessage error", 3);
+                Utils.LogException(e);
+            }
+        }
+
         private void MessageHandler(ushort handlerId, byte[] data, ulong playerId, bool unknown)
         {
             Utils.Log($"Comms::MessageHandler recieved message length = {data.Length}", 1);
@@ -61,16 +78,53 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 case MessageType.ChangeGridClass:
                     HandleChangeGridClass(message.Data);
                     break;
+                case MessageType.RequestConfig:
+                    HandleRequestConfig(message.Data);
+                    break;
+                case MessageType.Config:
+                    HandleConfig(message.Data);
+                    break;
                 default:
                     Utils.Log("Comms::MessageHandler: Unknown message type", 2);
                     break;
             }
         }
 
+        private void HandleRequestConfig(byte[] data)
+        {
+            ulong recipient;
+            try
+            {
+                recipient = MyAPIGateway.Utilities.SerializeFromBinary<ulong>(data);
+            }
+            catch (Exception e)
+            {
+                Utils.Log("Comms::HandleRequestConfig: deserialize message error", 3);
+                Utils.LogException(e);
+                return;
+            }
+            var configData = MyAPIGateway.Utilities.SerializeToBinary(ModSessionManager.Config);
+            var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
+                { Type = MessageType.Config, Data = configData });
+            MyAPIGateway.Multiplayer.SendMessageTo(_commsId, message, recipient);
+        }
+
+        private void HandleConfig(byte[] data)
+        {
+            try
+            {
+                ModSessionManager.Config = MyAPIGateway.Utilities.SerializeFromBinary<ModConfig>(data);
+            }
+            catch (Exception e)
+            {
+                Utils.Log("Comms::HandleConfig: deserialize message error", 3);
+                Utils.LogException(e);
+            }
+        }
+
         private void HandleChangeGridClass(byte[] data)
         {
             GridMessage message;
-
             try
             {
                 message = MyAPIGateway.Utilities.SerializeFromBinary<GridMessage>(data);
@@ -110,7 +164,9 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
     internal enum MessageType
     {
-        ChangeGridClass
+        ChangeGridClass,
+        RequestConfig,
+        Config
     }
 
     [ProtoContract]
