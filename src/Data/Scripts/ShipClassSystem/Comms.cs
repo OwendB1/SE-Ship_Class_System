@@ -82,8 +82,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
                 return;
             }
 
-            var cubeGrid = MyAPIGateway.Entities.GetEntityById(message.EntityId) as IMyCubeGrid;
-            var gridLogic = cubeGrid.GetMainGridLogic();
+            var entity = MyAPIGateway.Entities.GetEntityById(message.EntityId);
+            if (entity == null) return;
+            var cubeGrid = entity as IMyCubeGrid;
+            var gridLogic = cubeGrid?.GetMainGridLogic();
             if (gridLogic == null) return;
             if (ModSessionManager.Config.IsValidGridClassId(message.GridClassId))
             {

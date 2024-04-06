@@ -4,14 +4,11 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ProtoBuf;
 using VRage.Game;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 
 namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 {
-    [ProtoContract]
     public class CubeGridLogic
     {
         public readonly Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>> BlocksPerLimit = new Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>>();
