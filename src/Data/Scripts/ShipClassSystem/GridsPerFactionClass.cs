@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     public static class GridsPerFactionClassManager
     {

@@ -3,7 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     [ProtoContract]
     public class ModConfig
@@ -11,13 +11,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
 
         [ProtoMember(1)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-
         [ProtoMember(2)] private GridClass[] _gridClasses;
         [ProtoMember(3)] public string[] IgnoreFactionTags = Array.Empty<string>();
-
         [ProtoMember(4)] public bool IncludeAiFactions = false;
 
-        [ProtoMember(5)]
         public GridClass DefaultGridClass
         {
             get { return _defaultGridClass; }
@@ -28,7 +25,6 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             }
         }
 
-        [ProtoMember(6)]
         public GridClass[] GridClasses
         {
             get { return _gridClasses; }

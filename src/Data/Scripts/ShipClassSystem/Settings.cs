@@ -1,4 +1,4 @@
-﻿namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+﻿namespace ShipClassSystem
 {
     public static class Settings
     {

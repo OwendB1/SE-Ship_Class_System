@@ -9,7 +9,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Cockpit), false)]
     public class CockpitInfo : MyGameLogicComponent

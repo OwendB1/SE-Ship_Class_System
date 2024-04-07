@@ -4,7 +4,7 @@ using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class ModSessionManager : MySessionComponentBase
@@ -25,7 +25,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
             {
                 Config = ModConfig.LoadConfig();
                 if (Config == null)
-                    ModConfig.SaveConfig(DefaultGridClassConfig.DefaultModConfig, Constants.ConfigFilename);
+                {
+                    Config = DefaultGridClassConfig.DefaultModConfig;
+                    ModConfig.SaveConfig(Config, Constants.ConfigFilename);
+                }
             } else Comms.RequestConfig();
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;

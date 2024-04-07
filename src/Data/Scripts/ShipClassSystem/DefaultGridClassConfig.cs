@@ -1,4 +1,4 @@
-﻿namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+﻿namespace ShipClassSystem
 {
     internal static class DefaultGridClassConfig
     {

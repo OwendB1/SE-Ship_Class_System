@@ -7,7 +7,7 @@ using VRage.Game.ModAPI;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     public static class CubeGridModifiers
     {

@@ -9,7 +9,7 @@ using VRage.ModAPI;
 using VRage.Network;
 using VRage.Utils;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
     public class CockpitGUI : MySessionComponentBase, IMyEventProxy

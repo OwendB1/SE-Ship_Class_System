@@ -7,7 +7,7 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     public static class Utils
     {
@@ -82,6 +82,11 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
             group?.GetGrids(grids);
             grids = grids.Where(g => g?.Physics != null).ToList();
+            if (!grids.Any())
+            {
+                subgrids = grids;
+                return grid;
+            }
 
             var biggestGrid = grids.OfType<MyCubeGrid>().MaxBy(concrete => concrete.BlocksCount);
             subgrids = grids.Where(g => g.EntityId != biggestGrid.EntityId).ToList();

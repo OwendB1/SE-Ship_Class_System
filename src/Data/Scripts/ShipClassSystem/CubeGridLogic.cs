@@ -7,7 +7,7 @@ using System.Linq;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     public class CubeGridLogic
     {

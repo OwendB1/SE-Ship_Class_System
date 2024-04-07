@@ -3,7 +3,7 @@ using Sandbox.ModAPI;
 using System;
 using VRage.Game.ModAPI;
 
-namespace ShipClassSystem.Data.Scripts.ShipClassSystem
+namespace ShipClassSystem
 {
     internal class Comms
     {
@@ -16,6 +16,10 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         public void Discard()
         {
+            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
@@ -111,9 +115,16 @@ namespace ShipClassSystem.Data.Scripts.ShipClassSystem
 
         private void HandleConfig(byte[] data)
         {
+            Utils.Log($"Comms::HandleConfig: Received config in bytearray with length of {data.Length}");
             try
             {
-                ModSessionManager.Config = MyAPIGateway.Utilities.SerializeFromBinary<ModConfig>(data);
+                var config = MyAPIGateway.Utilities.SerializeFromBinary<ModConfig>(data);
+                ModSessionManager.Config = DefaultGridClassConfig.DefaultModConfig;
+                if (config.GridClasses.Length < 1) return;
+                ModSessionManager.Config.GridClasses = config.GridClasses;
+                ModSessionManager.Config.IgnoreFactionTags = config.IgnoreFactionTags;
+                ModSessionManager.Config.IncludeAiFactions = config.IncludeAiFactions;
+                ModSessionManager.Config.DefaultGridClass = config.DefaultGridClass;
             }
             catch (Exception e)
             {
