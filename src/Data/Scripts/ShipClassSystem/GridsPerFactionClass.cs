@@ -55,6 +55,17 @@ namespace ShipClassSystem
                 perGridClass[gridClassId].Add(gridLogic.Grid.EntityId);
         }
 
+        public static void RemoveCubeGrid(CubeGridLogic gridLogic)
+        {
+            if (!IsApplicableGrid(gridLogic)) return;
+            var factionId = gridLogic.OwningFaction?.FactionId ?? -1;
+            var gridClassId = gridLogic.GridClassId;
+            if (!PerFaction.ContainsKey(factionId)) return;
+            var perGridClass = PerFaction[factionId];
+            if (!perGridClass.ContainsKey(gridClassId)) return;
+            perGridClass[gridClassId].Remove(gridLogic.Grid.EntityId);
+        }
+
         public static void Reset()
         {
             foreach (var gridsEntry in PerFaction.SelectMany(factionClassesEntry => factionClassesEntry.Value))

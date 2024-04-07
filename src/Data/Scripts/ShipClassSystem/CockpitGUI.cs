@@ -102,7 +102,7 @@ namespace ShipClassSystem
             }
             else
             {
-                Utils.Log("CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null", 3);
+                Utils.Log($"CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null on {block.EntityId}", 3);
             }
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 
 namespace ShipClassSystem
 {
@@ -97,12 +98,13 @@ namespace ShipClassSystem
         public GridModifiers Modifiers => GridClass.Modifiers;
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
 
-        public void Initialize(IMyCubeGrid grid)
+        public void Initialize(IMyEntity entity)
         {
-            Grid = grid;
+            Grid = entity as IMyCubeGrid;
+            if (Grid == null) return;
             if (ModSessionManager.Instance.CubeGridLogics.ContainsKey(Grid.EntityId) && 
                 _gridClassId == DefaultGridClassConfig.DefaultGridClassDefinition.Id) return;
-            if (Grid?.Physics == null) return;
+            
             List<IMyCubeGrid> subs;
             var main = Utils.GetMainCubeGrid(Grid, out subs);
             if (main.EntityId != Grid.EntityId)
@@ -111,6 +113,12 @@ namespace ShipClassSystem
                 logic.Initialize(main);
                 return;
             }
+
+            //Init event handlers
+            Grid.OnBlockOwnershipChanged += OnBlockOwnershipChanged;
+            Grid.OnIsStaticChanged += OnIsStaticChanged;
+            Grid.OnBlockAdded += OnBlockAdded;
+            Grid.OnBlockRemoved += OnBlockRemoved;
 
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
@@ -186,6 +194,7 @@ namespace ShipClassSystem
                 foreach (var funcBlock in Blocks.OfType<IMyFunctionalBlock>())
                 {
                     funcBlock.EnabledChanged += FuncBlockOnEnabledChanged;
+                    funcBlock.OnUpgradeValuesChanged += OnUpgradeValuesChanged;
                 }
                 return true;
             }
@@ -197,7 +206,26 @@ namespace ShipClassSystem
             }
         }
 
-        public void GridMarkedForClose()
+        private void FuncBlockOnEnabledChanged(IMyTerminalBlock obj)
+        {
+            var func = obj as IMyFunctionalBlock;
+            if (func == null) return;
+            if (HasFunctioningBeaconIfNeeded() == false)
+            {
+                DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
+                foreach (var block in Blocks)
+                    CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
+            }
+            if (func.Enabled)
+                EnforceBlockPunishment(func);
+        }
+
+        private void OnUpgradeValuesChanged()
+        {
+            ApplyModifiers();
+        }
+
+        public void RemoveGridLogic()
         {
             try
             {
@@ -206,8 +234,16 @@ namespace ShipClassSystem
                 foreach (var funcBlock in Blocks.OfType<IMyFunctionalBlock>())
                 {
                     funcBlock.EnabledChanged -= FuncBlockOnEnabledChanged;
+                    funcBlock.OnUpgradeValuesChanged -= OnUpgradeValuesChanged;
                 }
-                RemoveGridLogic(this);
+                Grid.OnBlockOwnershipChanged -= OnBlockOwnershipChanged;
+                Grid.OnIsStaticChanged -= OnIsStaticChanged;
+                Grid.OnBlockAdded -= OnBlockAdded;
+                Grid.OnBlockRemoved -= OnBlockRemoved;
+
+                CubeGridLogics.Remove(Grid.EntityId);
+                GridsPerFactionClassManager.RemoveCubeGrid(this);
+                GridsPerPlayerClassManager.RemoveCubeGrid(this);
             }
             catch (Exception e)
             {
@@ -215,12 +251,12 @@ namespace ShipClassSystem
             }
         }
 
-        private void ApplyModifiers()
+        private void ApplyModifiers(GridModifiers modifiers = null)
         {
             DamageModifiers = GridClass.DamageModifiers;
             foreach (var block in from block in Blocks let terminalBlock = block as IMyTerminalBlock where terminalBlock != null select block)
             {
-                CubeGridModifiers.ApplyModifiers(block, Modifiers);
+                CubeGridModifiers.ApplyModifiers(block, modifiers ?? Modifiers);
             }
         }
 
@@ -319,9 +355,7 @@ namespace ShipClassSystem
             var funcBlock = obj.FatBlock as IMyFunctionalBlock;
             if (funcBlock != null)
                 funcBlock.EnabledChanged += FuncBlockOnEnabledChanged;
-
-            if (obj.FatBlock != null)
-                CubeGridModifiers.ApplyModifiers(obj.FatBlock, Modifiers);
+            ApplyModifiers();
         }
 
         private void OnBlockRemoved(IMySlimBlock obj)
@@ -334,6 +368,7 @@ namespace ShipClassSystem
                     CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
                 }
             }
+            else DamageModifiers = GridClass.DamageModifiers;
 
             var relevantLimits = GetRelevantLimits(obj);
             foreach (var limit in relevantLimits)
@@ -349,25 +384,12 @@ namespace ShipClassSystem
                 GridClassId = 0;
             }
             Blocks.Remove(obj.FatBlock as IMyFunctionalBlock);
+            ApplyModifiers();
         }
 
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
         {
             EnforceBlockPunishment();
-        }
-
-        private void FuncBlockOnEnabledChanged(IMyTerminalBlock obj)
-        {
-            var func = obj as IMyFunctionalBlock;
-            if (func == null) return;
-            if (HasFunctioningBeaconIfNeeded() == false)
-            {
-                DamageModifiers = DefaultGridClassConfig.DefaultGridDamageModifiers2X;
-                foreach (var block in Blocks)
-                    CubeGridModifiers.ApplyModifiers(block, DefaultGridClassConfig.DefaultGridModifiers);
-            }
-            if (func.Enabled)
-                EnforceBlockPunishment(func);
         }
 
         private void FactionsOnFactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
@@ -387,9 +409,8 @@ namespace ShipClassSystem
                 {
                     var limitBlocks = BlocksPerLimit[limit];
                     var countWeight = limitBlocks.Sum(l => l.Value);
-                    var countForSpecificBlock = limit.BlockTypes.First(l =>
-                        l.TypeId == Utils.GetBlockTypeId(block) && l.SubtypeId == Utils.GetBlockSubtypeId(block)).CountWeight;
-                    if (!(countWeight + countForSpecificBlock > limit.MaxCount)) continue;
+                    Utils.Log($"Block check: {limit.Name} | {countWeight} | {limit.MaxCount}");
+                    if (countWeight < limit.MaxCount) continue;
                     var func = block as IMyFunctionalBlock;
                     if (func != null) func.Enabled = false;
                     else
@@ -415,7 +436,7 @@ namespace ShipClassSystem
                     foreach (var limitBlock in limitBlocks)
                     {
                         countWeight += limitBlock.Value;
-                        if (!(countWeight > limit.MaxCount)) continue;
+                        if (countWeight < limit.MaxCount) continue;
                         var func = limitBlock.Key as IMyFunctionalBlock;
                         if (func != null) func.Enabled = false;
                         else
@@ -434,16 +455,6 @@ namespace ShipClassSystem
                 }
             }
             
-        }
-
-        private void RemoveGridLogic(CubeGridLogic gridLogic)
-        {
-            Grid.OnBlockOwnershipChanged -= OnBlockOwnershipChanged;
-            Grid.OnIsStaticChanged -= OnIsStaticChanged;
-            Grid.OnBlockAdded -= OnBlockAdded;
-            Grid.OnBlockRemoved -= OnBlockRemoved;
-
-            CubeGridLogics.Remove(gridLogic.Grid.EntityId);
         }
 
         private bool HasFunctioningBeaconIfNeeded()

@@ -13,7 +13,6 @@ namespace ShipClassSystem
     {
         public static void ApplyModifiers(IMyCubeBlock block, GridModifiers modifiers)
         {
-            if (!Constants.IsServer) return;
             var thruster = block as IMyThrust;
             if (thruster != null)
             {
@@ -34,20 +33,23 @@ namespace ShipClassSystem
                 var rawRefinery = block as MyCubeBlock;
                 if (rawRefinery?.CurrentAttachedUpgradeModules != null)
                 {
-                    var productivity = 2f * modifiers.RefineSpeed;
+                    var productivity = refinery.UpgradeValues["Productivity"] > 0 ? 2f * modifiers.RefineSpeed : modifiers.RefineSpeed;
                     var effectiveness = 1f * modifiers.RefineEfficiency;
                     foreach (var blockModule in rawRefinery.CurrentAttachedUpgradeModules.Select(module => module.Value.Block))
                     {
                         List<MyUpgradeModuleInfo> upgrades;
                         blockModule.GetUpgradeList(out upgrades);
-                        switch (blockModule.BlockDefinition.SubtypeId)
+                        foreach (var upgrade in upgrades)
                         {
-                            case "LargeProductivityModule":
-                                productivity += upgrades[0].Modifier * modifiers.RefineSpeed;
-                                break;
-                            case "LargeEffectivenessModule":
-                                effectiveness += upgrades[0].Modifier * modifiers.RefineEfficiency;
-                                break;
+                            switch (upgrade.UpgradeType)
+                            {
+                                case "Productivity":
+                                    productivity += upgrade.Modifier * modifiers.RefineSpeed;
+                                    break;
+                                case "Effectiveness":
+                                    effectiveness += upgrade.Modifier * modifiers.RefineEfficiency;
+                                    break;
+                            }
                         }
                     }
                     refinery.UpgradeValues["Productivity"] = productivity;
@@ -55,7 +57,7 @@ namespace ShipClassSystem
                 }
                 else
                 {
-                    refinery.UpgradeValues["Productivity"] = modifiers.RefineSpeed;
+                    refinery.UpgradeValues["Productivity"] = refinery.UpgradeValues["Productivity"] > 0 ? 2f * modifiers.RefineSpeed : modifiers.RefineSpeed;
                     refinery.UpgradeValues["Effectiveness"] = modifiers.RefineEfficiency;
                 }
             }

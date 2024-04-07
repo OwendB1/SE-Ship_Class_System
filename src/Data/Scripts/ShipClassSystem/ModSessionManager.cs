@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -13,7 +14,7 @@ namespace ShipClassSystem
         public static ModConfig Config;
 
         public Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
-        public readonly Queue<IMyCubeGrid> ToBeInitialized = new Queue<IMyCubeGrid>();
+        public readonly Queue<IMyEntity> ToBeInitialized = new Queue<IMyEntity>();
 
         private int _lastFrameInit;
         internal static Comms Comms;
@@ -31,6 +32,7 @@ namespace ShipClassSystem
                 }
             } else Comms.RequestConfig();
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
+            MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             Instance = this;
         }
@@ -56,9 +58,16 @@ namespace ShipClassSystem
         private void EntityAdded(IMyEntity ent)
         {
             var grid = ent as IMyCubeGrid;
+            if (grid == null && MyAPIGateway.Session.GameplayFrameCounter < 100) return;
+            ToBeInitialized.Enqueue(ent);
+        }
+
+        private void EntityRemoved(IMyEntity ent)
+        {
+            var grid = ent as IMyCubeGrid;
             if (grid == null) return;
-            ToBeInitialized.Enqueue(grid);
-            _lastFrameInit = MyAPIGateway.Session.GameplayFrameCounter;
+            if (CubeGridLogics.ContainsKey(grid.EntityId))
+                CubeGridLogics[grid.EntityId].RemoveGridLogic();
         }
 
         private void HookDamageHandler()
@@ -70,11 +79,11 @@ namespace ShipClassSystem
         {
             if (Config == null) return;
             var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
-            if (ToBeInitialized.Count <= 1 || initWaited <= 10) return;
+            if (ToBeInitialized.Count <= 1 || initWaited < 60) return;
             if (Constants.IsClient && MyAPIGateway.Session.ControlledObject == null) return;
-            var gridToInitialize = ToBeInitialized.Dequeue();
+            var target = ToBeInitialized.Dequeue();
             var logic = new CubeGridLogic();
-            logic.Initialize(gridToInitialize);
+            logic.Initialize(target);
         }
     }
 }

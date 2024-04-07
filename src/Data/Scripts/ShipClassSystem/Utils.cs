@@ -79,7 +79,7 @@ namespace ShipClassSystem
         {
             var group = grid.GetGridGroup(GridLinkTypeEnum.Mechanical);
             var grids = new List<IMyCubeGrid>();
-
+            
             group?.GetGrids(grids);
             grids = grids.Where(g => g?.Physics != null).ToList();
             if (!grids.Any())
