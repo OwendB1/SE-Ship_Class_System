@@ -15,7 +15,7 @@ namespace ShipClassSystem
         public readonly Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>> BlocksPerLimit = new Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>>();
         public readonly HashSet<IMyCubeBlock> Blocks = new HashSet<IMyCubeBlock>();
 
-        private Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
+        private static Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
 
         private long _gridClassId;
         public IMyCubeGrid Grid;
@@ -410,7 +410,7 @@ namespace ShipClassSystem
                     var limitBlocks = BlocksPerLimit[limit];
                     var countWeight = limitBlocks.Sum(l => l.Value);
                     Utils.Log($"Block check: {limit.Name} | {countWeight} | {limit.MaxCount}");
-                    if (countWeight < limit.MaxCount) continue;
+                    if (countWeight <= limit.MaxCount) continue;
                     var func = block as IMyFunctionalBlock;
                     if (func != null) func.Enabled = false;
                     else
@@ -431,12 +431,13 @@ namespace ShipClassSystem
             {
                 foreach (var limit in GridClass.BlockLimits)
                 {
+                    if (!BlocksPerLimit.ContainsKey(limit)) return;
                     var limitBlocks = BlocksPerLimit[limit];
                     double countWeight = 0;
                     foreach (var limitBlock in limitBlocks)
                     {
                         countWeight += limitBlock.Value;
-                        if (countWeight < limit.MaxCount) continue;
+                        if (countWeight <= limit.MaxCount) continue;
                         var func = limitBlock.Key as IMyFunctionalBlock;
                         if (func != null) func.Enabled = false;
                         else
