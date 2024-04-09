@@ -126,7 +126,7 @@ namespace ShipClassSystem
                 if (!config.IncludeAiFactions && OwningFaction.IsEveryoneNpc()) return;
                 if (config.IgnoreFactionTags.Contains(OwningFaction.Tag)) return;
             }
-            Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>());
+            Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>().Where(b => b.Physics != null));
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
             string value;
@@ -155,7 +155,7 @@ namespace ShipClassSystem
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
 
-                Blocks.UnionWith(subgrid.GetFatBlocks<IMyCubeBlock>());
+                Blocks.UnionWith(subgrid.GetFatBlocks<IMyCubeBlock>().Where(b => b.Physics != null));
             }
 
             foreach (var blockLimit in GridClass.BlockLimits)
@@ -326,6 +326,7 @@ namespace ShipClassSystem
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
+            if (obj.FatBlock.Physics == null) return;
             var concreteGrid = Grid as MyCubeGrid;
             if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
             {
@@ -373,6 +374,7 @@ namespace ShipClassSystem
             var relevantLimits = GetRelevantLimits(obj);
             foreach (var limit in relevantLimits)
             {
+                if (!BlocksPerLimit.ContainsKey(limit)) return;
                 var index = BlocksPerLimit[limit].FindIndex(b => b.Key == obj.FatBlock);
                 if (index >= 0)
                     BlocksPerLimit[limit].RemoveAt(index);
@@ -402,6 +404,7 @@ namespace ShipClassSystem
 
         private void EnforceBlockPunishment(IMyCubeBlock block = null)
         {
+            
             if (block != null)
             {
                 var relevantLimits = GetRelevantLimits(block.SlimBlock);

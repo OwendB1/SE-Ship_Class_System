@@ -128,7 +128,8 @@
         {
             new BlockType("Drill", "AdvancedStaticDrill"),
             new BlockType("Drill", "StaticDrill"),
-            new BlockType("Drill", "BasicStaticDrill")
+            new BlockType("Drill", "BasicStaticDrill"),
+            new BlockType("Drill", "StoneStaticDrill")
         };
 
         private static readonly BlockType[] Collectors =
