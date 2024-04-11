@@ -13,7 +13,7 @@ namespace ShipClassSystem
     public class CubeGridLogic
     {
         public readonly Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>> BlocksPerLimit = new Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>>();
-        public readonly HashSet<IMyCubeBlock> Blocks = new HashSet<IMyCubeBlock>();
+        public readonly HashSet<MyCubeBlock> Blocks = new HashSet<MyCubeBlock>();
 
         private static Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
 
@@ -126,7 +126,7 @@ namespace ShipClassSystem
                 if (!config.IncludeAiFactions && OwningFaction.IsEveryoneNpc()) return;
                 if (config.IgnoreFactionTags.Contains(OwningFaction.Tag)) return;
             }
-            Blocks.UnionWith(Grid.GetFatBlocks<IMyCubeBlock>().Where(b => b.Physics != null));
+            Blocks.UnionWith(Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
 
             if (Grid.Storage == null) Grid.Storage = new MyModStorageComponent();
             string value;
@@ -155,7 +155,7 @@ namespace ShipClassSystem
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
 
-                Blocks.UnionWith(subgrid.GetFatBlocks<IMyCubeBlock>().Where(b => b.Physics != null));
+                Blocks.UnionWith(Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
 
             foreach (var blockLimit in GridClass.BlockLimits)
@@ -326,7 +326,8 @@ namespace ShipClassSystem
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
-            if (obj.FatBlock.Physics == null) return;
+            var concreteBlock = obj.FatBlock as MyCubeBlock;
+            if (concreteBlock?.IsPreview == true) return;
             var concreteGrid = Grid as MyCubeGrid;
             if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
             {
@@ -351,7 +352,7 @@ namespace ShipClassSystem
                 BlocksPerLimit[limit].Add(new KeyValuePair<IMyCubeBlock, double>(obj.FatBlock, countForSpecificBlock));
             }
 
-            Blocks.Add(obj.FatBlock);
+            Blocks.Add(obj.FatBlock as MyCubeBlock);
 
             var funcBlock = obj.FatBlock as IMyFunctionalBlock;
             if (funcBlock != null)
@@ -385,7 +386,7 @@ namespace ShipClassSystem
             {
                 GridClassId = 0;
             }
-            Blocks.Remove(obj.FatBlock as IMyFunctionalBlock);
+            Blocks.Remove(obj.FatBlock as MyCubeBlock);
             ApplyModifiers();
         }
 
