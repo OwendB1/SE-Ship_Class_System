@@ -178,7 +178,7 @@
             new BlockType("ConveyorSorter", "MK2BattleshipGun_Block"),
             new BlockType("ConveyorSorter", "MK3BattleshipGun_Block"),
 
-            new BlockType("ConveyorSorter", "MK1_Railgun_Block"),
+            new BlockType("ConveyorSorter", "MK1Railgun_Block"),
             new BlockType("ConveyorSorter", "MK2_Railgun_Block"),
             new BlockType("ConveyorSorter", "MK3_Railgun_Block"),
 

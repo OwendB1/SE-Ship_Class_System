@@ -119,6 +119,7 @@ namespace ShipClassSystem
             Grid.OnIsStaticChanged += OnIsStaticChanged;
             Grid.OnBlockAdded += OnBlockAdded;
             Grid.OnBlockRemoved += OnBlockRemoved;
+            Grid.OnGridMerge += OnGridMerge;
 
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
@@ -155,7 +156,7 @@ namespace ShipClassSystem
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
 
-                Blocks.UnionWith(Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
+                Blocks.UnionWith(subgrid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
 
             foreach (var blockLimit in GridClass.BlockLimits)
@@ -170,6 +171,13 @@ namespace ShipClassSystem
                 }
                 BlocksPerLimit[blockLimit] = blockVals;
             }
+
+            foreach (var funcBlock in Blocks.OfType<IMyFunctionalBlock>())
+            {
+                funcBlock.EnabledChanged += FuncBlockOnEnabledChanged;
+                funcBlock.OnUpgradeValuesChanged += OnUpgradeValuesChanged;
+            }
+
             EnforceBlockPunishment();
             ApplyModifiers();
         }
@@ -189,14 +197,7 @@ namespace ShipClassSystem
                 CubeGridLogics[Grid.EntityId] = this;
 
                 var concreteGrid = Grid as MyCubeGrid;
-                if (concreteGrid == null) return false;
-
-                foreach (var funcBlock in Blocks.OfType<IMyFunctionalBlock>())
-                {
-                    funcBlock.EnabledChanged += FuncBlockOnEnabledChanged;
-                    funcBlock.OnUpgradeValuesChanged += OnUpgradeValuesChanged;
-                }
-                return true;
+                return concreteGrid != null;
             }
             catch (Exception e)
             {
@@ -240,6 +241,7 @@ namespace ShipClassSystem
                 Grid.OnIsStaticChanged -= OnIsStaticChanged;
                 Grid.OnBlockAdded -= OnBlockAdded;
                 Grid.OnBlockRemoved -= OnBlockRemoved;
+                Grid.OnGridMerge -= OnGridMerge;
 
                 CubeGridLogics.Remove(Grid.EntityId);
                 GridsPerFactionClassManager.RemoveCubeGrid(this);
@@ -260,35 +262,21 @@ namespace ShipClassSystem
             }
         }
 
-        private long GetMajorityOwner()
+        private static void OnGridMerge(IMyCubeGrid main, IMyCubeGrid sub)
         {
-            return Grid.BigOwners.FirstOrDefault();
-        }
+            if (!CubeGridLogics.ContainsKey(sub.EntityId) ||
+                !CubeGridLogics.ContainsKey(main.EntityId)) return;
 
-        private IMyFaction GetOwningFaction()
-        {
-            switch (Grid.BigOwners.Count)
-            {
-                case 0:
-                    return null;
-                case 1:
-                    return MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
-            }
+            CubeGridLogics[sub.EntityId].RemoveGridLogic();
+            var mainLogic = CubeGridLogics[main.EntityId];
 
-            var ownersPerFaction = new Dictionary<IMyFaction, int>();
+            sub.OnBlockOwnershipChanged += mainLogic.OnBlockOwnershipChanged;
+            sub.OnIsStaticChanged += mainLogic.OnIsStaticChanged;
+            sub.OnBlockAdded += mainLogic.OnBlockAdded;
+            sub.OnBlockRemoved += mainLogic.OnBlockRemoved;
 
-            //Find the faction with the most owners
-            foreach (var ownerFaction in Grid.BigOwners.Select(owner => MyAPIGateway.Session.Factions.TryGetPlayerFaction(owner)).Where(ownerFaction => ownerFaction != null))
-            {
-                if (!ownersPerFaction.ContainsKey(ownerFaction))
-                    ownersPerFaction[ownerFaction] = 1;
-                else
-                    ownersPerFaction[ownerFaction]++;
-            }
-
-            return ownersPerFaction.Count == 0 ? null :
-                //new select the faction with the most owners
-                ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
+            mainLogic.Blocks.Clear();
+            mainLogic.Blocks.UnionWith(mainLogic.Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
         }
 
         //Event handlers
@@ -307,6 +295,8 @@ namespace ShipClassSystem
             GridsPerPlayerClassManager.Reset();
             foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
             Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
+
+            BlocksPerLimit.Clear();
             foreach (var blockLimit in GridClass.BlockLimits)
             {
                 var blockVals = new List<KeyValuePair<IMyCubeBlock, double>>();
@@ -321,13 +311,10 @@ namespace ShipClassSystem
             }
             EnforceBlockPunishment();
             ApplyModifiers();
-            //ModSessionManager.Comms.ChangeGridClassFromServer(Grid.EntityId, GridClassId);
         }
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
-            var concreteBlock = obj.FatBlock as MyCubeBlock;
-            if (concreteBlock?.IsPreview == true) return;
             var concreteGrid = Grid as MyCubeGrid;
             if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
             {
@@ -343,10 +330,17 @@ namespace ShipClassSystem
                 var countForSpecificBlock = limit.BlockTypes.First(l =>
                     l.TypeId == Utils.GetBlockTypeId(obj) && l.SubtypeId == Utils.GetBlockSubtypeId(obj)).CountWeight;
 
+                Utils.Log($"{countWeight} | {countForSpecificBlock} | {limit.MaxCount}");
 
                 if (countWeight + countForSpecificBlock > limit.MaxCount)
                 {
                     Grid.RemoveBlock(obj);
+                    List<IMyCubeGrid> subs;
+                    Utils.GetMainCubeGrid(Grid, out subs);
+                    foreach (var subgrid in subs)
+                    {
+                        subgrid.RemoveBlock(obj);
+                    }
                     return;
                 }
                 BlocksPerLimit[limit].Add(new KeyValuePair<IMyCubeBlock, double>(obj.FatBlock, countForSpecificBlock));
@@ -405,7 +399,6 @@ namespace ShipClassSystem
 
         private void EnforceBlockPunishment(IMyCubeBlock block = null)
         {
-            
             if (block != null)
             {
                 var relevantLimits = GetRelevantLimits(block.SlimBlock);
@@ -471,6 +464,37 @@ namespace ShipClassSystem
         {
             return GridClass.BlockLimits.Where(limit => limit.BlockTypes
                 .Any(type => type.TypeId == Utils.GetBlockTypeId(block) && type.SubtypeId == Utils.GetBlockSubtypeId(block)));
+        }
+
+        private long GetMajorityOwner()
+        {
+            return Grid.BigOwners.FirstOrDefault();
+        }
+
+        private IMyFaction GetOwningFaction()
+        {
+            switch (Grid.BigOwners.Count)
+            {
+                case 0:
+                    return null;
+                case 1:
+                    return MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
+            }
+
+            var ownersPerFaction = new Dictionary<IMyFaction, int>();
+
+            //Find the faction with the most owners
+            foreach (var ownerFaction in Grid.BigOwners.Select(owner => MyAPIGateway.Session.Factions.TryGetPlayerFaction(owner)).Where(ownerFaction => ownerFaction != null))
+            {
+                if (!ownersPerFaction.ContainsKey(ownerFaction))
+                    ownersPerFaction[ownerFaction] = 1;
+                else
+                    ownersPerFaction[ownerFaction]++;
+            }
+
+            return ownersPerFaction.Count == 0 ? null :
+                //new select the faction with the most owners
+                ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
     }
 }
