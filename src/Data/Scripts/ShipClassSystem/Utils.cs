@@ -13,8 +13,7 @@ namespace ShipClassSystem
     {
         public static void ShowNotification(string msg, int disappearTime = 10000, string font = MyFontEnum.Red)
         {
-            if (!Constants.IsServer)
-                MyAPIGateway.Utilities.ShowNotification(msg, disappearTime, font);
+            if (Constants.IsClient) MyAPIGateway.Utilities.ShowNotification(msg, disappearTime, font);
         }
 
         public static void WriteToClient(string msg)
