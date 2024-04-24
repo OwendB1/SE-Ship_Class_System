@@ -1,8 +1,6 @@
 ﻿using ProtoBuf;
 using Sandbox.ModAPI;
 using System;
-using System.Drawing;
-using System.Windows.Interop;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
@@ -44,13 +42,13 @@ namespace ShipClassSystem
             }
         }
 
-        public void SendLogToClient(string logMessage, ulong userId)
-        {
-            var messageData = MyAPIGateway.Utilities.SerializeToBinary(logMessage);
-            var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
-                { Type = MessageType.ChangeGridClass, Data = messageData });
-            MyAPIGateway.Multiplayer.SendMessageTo(_commsId, message, userId);
-        }
+        //public void SendLogToClient(string logMessage, ulong userId)
+        //{
+        //    var messageData = MyAPIGateway.Utilities.SerializeToBinary(logMessage);
+        //    var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
+        //        { Type = MessageType.ChangeGridClass, Data = messageData });
+        //    MyAPIGateway.Multiplayer.SendMessageTo(_commsId, message, userId);
+        //}
 
         public void RequestConfig()
         {
@@ -99,31 +97,31 @@ namespace ShipClassSystem
                 case MessageType.Config:
                     HandleConfig(message.Data);
                     break;
-                case MessageType.LogMessage:
-                    HandleLogMessage(message.Data);
-                    break;
+                //case MessageType.LogMessage:
+                //    HandleLogMessage(message.Data);
+                //    break;
                 default:
                     Utils.Log("Comms::MessageHandler: Unknown message type", 2);
                     break;
             }
         }
 
-        private void HandleLogMessage(byte[] data)
-        {
-            string message;
-            try
-            {
-                message = MyAPIGateway.Utilities.SerializeFromBinary<string>(data);
-            }
-            catch (Exception e)
-            {
-                Utils.Log("Comms::HandleRequestConfig: deserialize message error", 3);
-                Utils.LogException(e);
-                return;
-            }
-            MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", message);
-            MyAPIGateway.Utilities.ShowNotification(message, 10000, MyFontEnum.Red);
-        }
+        //private void HandleLogMessage(byte[] data)
+        //{
+        //    string message;
+        //    try
+        //    {
+        //        message = MyAPIGateway.Utilities.SerializeFromBinary<string>(data);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Utils.Log("Comms::HandleRequestConfig: deserialize message error", 3);
+        //        Utils.LogException(e);
+        //        return;
+        //    }
+        //    MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", message);
+        //    MyAPIGateway.Utilities.ShowNotification(message, 10000, MyFontEnum.Red);
+        //}
 
         private void HandleRequestConfig(byte[] data)
         {

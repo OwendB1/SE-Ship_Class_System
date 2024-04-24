@@ -98,7 +98,9 @@ namespace ShipClassSystem
                 Utils.Log(
                     $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
-                ModSessionManager.Comms.ChangeGridClass(cubeGridLogic.Grid.EntityId, key);
+                cubeGridLogic.GridClassId = key;
+                if (!Constants.IsServer)
+                    ModSessionManager.Comms.ChangeGridClass(cubeGridLogic.Grid.EntityId, key);
             }
             else
             {

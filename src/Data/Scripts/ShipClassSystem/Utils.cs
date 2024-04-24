@@ -1,5 +1,4 @@
 ﻿using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
@@ -21,10 +20,10 @@ namespace ShipClassSystem
             }
             else if (Constants.IsServer)
             {
-                foreach (var recipientId in grid.GetGridRecipientIds())
-                {
-                    ModSessionManager.Comms.SendLogToClient(msg, recipientId);
-                }
+                //foreach (var recipientId in grid.GetGridRecipientIds())
+                //{
+                //    ModSessionManager.Comms.SendLogToClient(msg, recipientId);
+                //}
             }
         }
 
