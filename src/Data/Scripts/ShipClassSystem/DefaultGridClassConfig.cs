@@ -115,7 +115,8 @@
         private static readonly BlockType[] LargeCargoContainers =
         {
             new BlockType("CargoContainer", "SmallBlockLargeContainer"),
-            new BlockType("CargoContainer", "LargeBlockLargeContainer")
+            new BlockType("CargoContainer", "LargeBlockLargeContainer"),
+            new BlockType("CargoContainer", "LargeBlockLargeIndustrialContainer")
         };
 
         private static readonly BlockType[] Gyros =
