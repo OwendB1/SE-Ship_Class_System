@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
@@ -11,14 +12,20 @@ namespace ShipClassSystem
 {
     public static class Utils
     {
-        public static void ShowNotification(string msg, int disappearTime = 10000, string font = MyFontEnum.Red)
+        public static void ShowNotification(string msg, IMyCubeGrid grid, int disappearTime = 10000, string font = MyFontEnum.Red)
         {
-            if (Constants.IsClient) MyAPIGateway.Utilities.ShowNotification(msg, disappearTime, font);
-        }
-
-        public static void WriteToClient(string msg)
-        {
-            if (Constants.IsClient) MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", msg);
+            if (Constants.IsClient)
+            {
+                MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", msg);
+                MyAPIGateway.Utilities.ShowNotification(msg, disappearTime, font);
+            }
+            else if (Constants.IsServer)
+            {
+                foreach (var recipientId in grid.GetGridRecipientIds())
+                {
+                    ModSessionManager.Comms.SendLogToClient(msg, recipientId);
+                }
+            }
         }
 
         public static void Log(string msg, int logPriority = 0)
@@ -41,7 +48,7 @@ namespace ShipClassSystem
 
         public static string GetBlockTypeId(IMySlimBlock block)
         {
-            return Convert.ToString(block.BlockDefinition.GetObjectBuilder().TypeId).Replace("MyObjectBuilder_", "");
+            return Convert.ToString(block.BlockDefinition.Id.TypeId).Replace("MyObjectBuilder_", "");
         }
 
         public static string GetBlockSubtypeId(IMyCubeBlock block)
@@ -51,7 +58,7 @@ namespace ShipClassSystem
 
         public static string GetBlockSubtypeId(IMySlimBlock block)
         {
-            return Convert.ToString(block.BlockDefinition.GetObjectBuilder().SubtypeId);
+            return Convert.ToString(block.BlockDefinition.Id.SubtypeId);
         }
 
         public static CubeGridLogic GetMainGridLogic(this IMyCubeGrid grid)
@@ -103,6 +110,41 @@ namespace ShipClassSystem
             }
 
             return outputArray;
+        }
+
+        public static List<ulong> GetGridRecipientIds(this IMyCubeGrid grid)
+        {
+            var players = new List<IMyPlayer>();
+            MyAPIGateway.Multiplayer.Players.GetPlayers(players);
+            var owningFaction = grid.GetOwningFaction();
+            return players.Where(p => owningFaction.Members.Values.Any(mem => mem.PlayerId == p.IdentityId))
+                .Select(p => p.SteamUserId).ToList();
+        }
+
+        public static IMyFaction GetOwningFaction(this IMyCubeGrid grid)
+        {
+            switch (grid.BigOwners.Count)
+            {
+                case 0:
+                    return null;
+                case 1:
+                    return MyAPIGateway.Session.Factions.TryGetPlayerFaction(grid.BigOwners[0]);
+            }
+
+            var ownersPerFaction = new Dictionary<IMyFaction, int>();
+
+            //Find the faction with the most owners
+            foreach (var ownerFaction in grid.BigOwners.Select(owner => MyAPIGateway.Session.Factions.TryGetPlayerFaction(owner)).Where(ownerFaction => ownerFaction != null))
+            {
+                if (!ownersPerFaction.ContainsKey(ownerFaction))
+                    ownersPerFaction[ownerFaction] = 1;
+                else
+                    ownersPerFaction[ownerFaction]++;
+            }
+
+            return ownersPerFaction.Count == 0 ? null :
+                //new select the faction with the most owners
+                ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
     }
 

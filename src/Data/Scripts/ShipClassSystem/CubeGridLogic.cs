@@ -20,7 +20,7 @@ namespace ShipClassSystem
         private long _gridClassId;
         public IMyCubeGrid Grid;
 
-        public IMyFaction OwningFaction => GetOwningFaction();
+        public IMyFaction OwningFaction => Grid.GetOwningFaction();
 
         public long MajorityOwningPlayerId => GetMajorityOwner();
 
@@ -34,12 +34,12 @@ namespace ShipClassSystem
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
                 if (!withinFactionLimit)
                 {
-                    Utils.ShowNotification("Grid is not within allowed limit assigned to the faction!");
+                    Utils.ShowNotification("Grid is not within allowed limit assigned to the faction!", Grid);
                     return;
                 }
                 if (!withinPlayerLimit)
                 {
-                    Utils.ShowNotification("Grid is not within allowed limit assigned to the player!");
+                    Utils.ShowNotification("Grid is not within allowed limit assigned to the player!", Grid);
                     return;
                 }
 
@@ -58,7 +58,7 @@ namespace ShipClassSystem
 
                 if (gridClass.LargeGridStatic && gridClass.LargeGridMobile == false && main.IsStatic == false)
                 {
-                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is supposed to be static!");
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is supposed to be static!", Grid);
                     return;
                 }
 
@@ -71,17 +71,17 @@ namespace ShipClassSystem
 
                 if (maxBlocks > 1 && actualBlocks > maxBlocks)
                 {
-                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualBlocks - maxBlocks} blocks over the limit!");
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualBlocks - maxBlocks} blocks over the limit!", Grid);
                     return;
                 }
                 if (maxPCU > 1 && actualPCU > maxPCU)
                 {
-                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualPCU - maxPCU} PCU over the limit!");
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualPCU - maxPCU} PCU over the limit!", Grid);
                     return;
                 }
                 if (maxMass > 1 && actualMass > maxMass)
                 {
-                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualMass - maxMass} KG over the limit!");
+                    Utils.ShowNotification($"Can not set grid to class {gridClass.Name}, grid is {actualMass - maxMass} KG over the limit!", Grid);
                     return;
                 }
 
@@ -315,6 +315,7 @@ namespace ShipClassSystem
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
+            Utils.Log($"{Utils.GetBlockTypeId(obj)} | {Utils.GetBlockSubtypeId(obj)}");
             var concreteGrid = Grid as MyCubeGrid;
             if (concreteGrid?.BlocksCount > GridClass.MaxBlocks)
             {
@@ -469,32 +470,6 @@ namespace ShipClassSystem
         private long GetMajorityOwner()
         {
             return Grid.BigOwners.FirstOrDefault();
-        }
-
-        private IMyFaction GetOwningFaction()
-        {
-            switch (Grid.BigOwners.Count)
-            {
-                case 0:
-                    return null;
-                case 1:
-                    return MyAPIGateway.Session.Factions.TryGetPlayerFaction(Grid.BigOwners[0]);
-            }
-
-            var ownersPerFaction = new Dictionary<IMyFaction, int>();
-
-            //Find the faction with the most owners
-            foreach (var ownerFaction in Grid.BigOwners.Select(owner => MyAPIGateway.Session.Factions.TryGetPlayerFaction(owner)).Where(ownerFaction => ownerFaction != null))
-            {
-                if (!ownersPerFaction.ContainsKey(ownerFaction))
-                    ownersPerFaction[ownerFaction] = 1;
-                else
-                    ownersPerFaction[ownerFaction]++;
-            }
-
-            return ownersPerFaction.Count == 0 ? null :
-                //new select the faction with the most owners
-                ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
     }
 }
