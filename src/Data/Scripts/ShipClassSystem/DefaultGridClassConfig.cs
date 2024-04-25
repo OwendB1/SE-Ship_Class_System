@@ -129,7 +129,11 @@
         {
             new BlockType("Drill", "AdvancedStaticDrill"),
             new BlockType("Drill", "StaticDrill"),
-            new BlockType("Drill", "BasicStaticDrill"),
+            new BlockType("Drill", "BasicStaticDrill")
+        };
+
+        private static readonly BlockType[] StoneStaticResourceDrills =
+        {
             new BlockType("Drill", "StoneStaticDrill")
         };
 
@@ -245,10 +249,13 @@
             { Name = "Safe Zone", MaxCount = 1, BlockTypes = SafeZone };
 
         private static readonly BlockLimit NoStaticDrillLimit = new BlockLimit
-            { Name = "Static Resource Drill", MaxCount = 0, BlockTypes = StaticResourceDrills };
+            { Name = "Static Resource Drills", MaxCount = 0, BlockTypes = Utils.ConcatArrays(StaticResourceDrills, StoneStaticResourceDrills) };
 
-        private static readonly BlockLimit SingleStaticDrillLimit = new BlockLimit
-            { Name = "Static Resource Drill", MaxCount = 1, BlockTypes = StaticResourceDrills };
+        private static readonly BlockLimit StaticDrillLimit = new BlockLimit
+            { Name = "Static Resource Drills", MaxCount = 1, BlockTypes = StaticResourceDrills };
+
+        private static readonly BlockLimit StoneStaticDrillLimit = new BlockLimit
+            { Name = "Stone Static Resource Drill", MaxCount = 3, BlockTypes = StoneStaticResourceDrills };
 
         private static readonly BlockLimit NoCollectorLimit = new BlockLimit
             { Name = "Collector", MaxCount = 1, BlockTypes = Collectors };
@@ -382,7 +389,8 @@
                     {
                         SingleSafeZoneLimit,
                         SingleCollectorLimit,
-                        SingleStaticDrillLimit,
+                        StaticDrillLimit,
+                        StoneStaticDrillLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
                         NoCollectorLimit,
@@ -490,7 +498,8 @@
                     BlockLimits = new[]
                     {
                         SingleCollectorLimit,
-                        SingleStaticDrillLimit,
+                        StaticDrillLimit,
+                        StoneStaticDrillLimit,
                         NoSafeZoneLimit,
                         NoSuperLaserLimit,
                         NoDrillsLimit,
