@@ -92,6 +92,7 @@
         private static readonly BlockType[] LargeHydrogenTanks =
         {
             new BlockType("OxygenTank", "LargeHydrogenTank"),
+            new BlockType("OxygenTank", "LargeHydrogenTankIndustrial"),
             new BlockType("OxygenTank", "SmallHydrogenTank")
         };
 
