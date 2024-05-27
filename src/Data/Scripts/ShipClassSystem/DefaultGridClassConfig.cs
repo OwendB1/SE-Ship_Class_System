@@ -942,7 +942,7 @@
                         new BlockLimit
                         {
                             Name = "Small Cargo Containers",
-                            MaxCount = 6,
+                            MaxCount = 20,
                             BlockTypes = SmallCargoContainers
                         },
                         new BlockLimit

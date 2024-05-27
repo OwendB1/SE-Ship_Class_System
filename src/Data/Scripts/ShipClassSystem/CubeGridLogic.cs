@@ -326,6 +326,7 @@ namespace ShipClassSystem
             var relevantLimits = GetRelevantLimits(obj);
             foreach (var limit in relevantLimits)
             {
+                if (!BlocksPerLimit.ContainsKey(limit)) continue;
                 var limitBlocks = BlocksPerLimit[limit];
                 var countWeight = limitBlocks.Sum(b => b.Value);
                 var countForSpecificBlock = limit.BlockTypes.First(l =>
