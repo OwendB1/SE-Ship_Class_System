@@ -33,11 +33,13 @@ namespace ShipClassSystem
 
             if (logPriority >= Settings.CLIENT_OUTPUT_LOG_LEVEL)
                 MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);
+            if(ModSessionManager.Config.Debug_Mode){MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);}
         }
 
         public static void LogException(Exception e)
         {
             Log($"Exception message = {e.Message}, Stack trace:\n{e.StackTrace}", 3);
+            if(ModSessionManager.Config.Debug_Mode){MyAPIGateway.Utilities.ShowMessage("[Ship Classes] Exception:", $"{e.Message}\nStack trace:\n{e.StackTrace}");}
         }
 
         public static string GetBlockTypeId(IMyCubeBlock block)
@@ -145,6 +147,12 @@ namespace ShipClassSystem
                 //new select the faction with the most owners
                 ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
+        public static long GetGridOwner(IMyCubeGrid grid)
+        {
+            if (grid.BigOwners[0]==null){return grid.BigOwners[1];}
+            else{return grid.BigOwners[0];}
+        }
+
     }
 
     public static class TextUtils

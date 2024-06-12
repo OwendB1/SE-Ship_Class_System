@@ -5,30 +5,29 @@
         private static readonly BlockType[] VanillaSmallGridFixedWeapons =
         {
             new BlockType("SmallGatlingGun"),
+            new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2"),
+            new BlockType("SmallGatlingGun", "SmallBlockAutocannon"),
             new BlockType("SmallMissileLauncher"),
             new BlockType("SmallMissileLauncher", "SmallMissileLauncherWarfare2"),
             new BlockType("SmallMissileLauncherReload", "SmallMissileLauncherReload"),
             new BlockType("SmallMissileLauncherReload", "SmallBlockMediumCalibreGun"),
-            new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2"),
-            new BlockType("SmallGatlingGun", "SmallBlockAutocannon"),
-            new BlockType("ConveyorSorter", "SmallRailgun")
+            new BlockType("SmallMissileLauncherReload", "SmallRailgun"),   
         };
-
         //vanilla small grid turrets
         private static readonly BlockType[] VanillaSmallGridTurretWeapons =
         {
             new BlockType("LargeMissileTurret", "SmallBlockMediumCalibreTurret"),
             new BlockType("LargeMissileTurret", "AutoCannonTurret"),
             new BlockType("LargeMissileTurret", "SmallMissileTurret"),
-            new BlockType("LargeGatlingTurret", "SmallGatlingTurret")
+            new BlockType("LargeGatlingTurret", "SmallGatlingTurret"),
         };
 
         //vanilla large grid fixed weapons
         private static readonly BlockType[] VanillaLargeGridFixedWeapons =
         {
-            new BlockType("LargeGatlingTurret", "SmallGatlingTurret"),
+            new BlockType("SmallMissileLauncher", "LargeMissileLauncher"),
             new BlockType("SmallMissileLauncher", "LargeBlockLargeCalibreGun"),
-            new BlockType("ConveyorSorter", "LargeRailgun")
+            new BlockType("SmallMissileLauncherReload", "LargeRailgun"),
         };
 
         //vanilla large grid turrets
@@ -38,7 +37,7 @@
             new BlockType("LargeMissileTurret", "LargeBlockMediumCalibreTurret"),
             new BlockType("LargeMissileTurret", "LargeCalibreTurret"),
             new BlockType("LargeGatlingTurret"),
-            new BlockType("InteriorTurret",  "LargeInteriorTurret")
+            new BlockType("InteriorTurret",  "LargeInteriorTurret"),
         };
 
         //Tools
@@ -125,19 +124,6 @@
             new BlockType("Gyro", "SmallBlockGyro"),
             new BlockType("Gyro", "LargeBlockGyro")
         };
-
-        private static readonly BlockType[] StaticResourceDrills =
-        {
-            new BlockType("Drill", "AdvancedStaticDrill"),
-            new BlockType("Drill", "StaticDrill"),
-            new BlockType("Drill", "BasicStaticDrill")
-        };
-
-        private static readonly BlockType[] StoneStaticResourceDrills =
-        {
-            new BlockType("Drill", "StoneStaticDrill")
-        };
-
         private static readonly BlockType[] Collectors =
         {
             new BlockType("Collector", "Collector")
@@ -151,79 +137,31 @@
             new BlockType("Conveyor", "LargeBlockConveyorPipeJunction"),
             new BlockType("AirVent", "AirVentFull")
         };
-
-        //TIO
-        private static readonly BlockType[] TIOStaticWeaponry =
+                private static readonly BlockType[] VanillaRailguns =
         {
-            new BlockType("ConveyorSorter", "SG_Missile_Bay_Block"),
-            new BlockType("ConveyorSorter", "ThunderBoltGatlingGun_Block"),
-            new BlockType("ConveyorSorter", "SG_Flare_Block"),
-            new BlockType("ConveyorSorter", "VMLS_Block"),
-            new BlockType("ConveyorSorter", "FixedTorpedo_Block"),
-            new BlockType("ConveyorSorter", "SGTorpedoBayRight_Block"),
-            new BlockType("ConveyorSorter", "SGTorpedoBayLeft_Block"),
-            new BlockType("ConveyorSorter", "CoilgunFixedEnd_Block"),
-            new BlockType("ConveyorSorter", "CoilgunFixedStart_Block"),
-            new BlockType("ConveyorSorter", "CoilgunFixedCore_Block"),
-            new BlockType("ConveyorSorter", "Null_Point_Jump_Disruptor_Large"),
+            new BlockType("ConveyorSorter", "SmallRailgun"),
+            new BlockType("ConveyorSorter", "LargeRailgun")
         };
-
-        private static readonly BlockType[] TIOTurrets =
+        private static readonly BlockType[] VanillaArtillery =
         {
-            new BlockType("ConveyorSorter", "SG_TankCannon_Block"),
-            new BlockType("ConveyorSorter", "SG_Vulcan_AutoCannon_Block"),
-            new BlockType("ConveyorSorter", "SG_Vulcan_SAMS_Block"),
-
-            new BlockType("ConveyorSorter", "Laser_Block"),
-            new BlockType("ConveyorSorter", "CoilgunMk2_Block"),
-            new BlockType("ConveyorSorter", "Concordia_Block"),
-            new BlockType("ConveyorSorter", "IronMaiden_Block"),
-            new BlockType("ConveyorSorter", "MBA57Bofors_Block"),
-
-            new BlockType("ConveyorSorter", "MK1BattleshipGun_Block"),
-            new BlockType("ConveyorSorter", "MK2BattleshipGun_Block"),
-            new BlockType("ConveyorSorter", "MK3BattleshipGun_Block"),
-
-            new BlockType("ConveyorSorter", "MK1Railgun_Block"),
-            new BlockType("ConveyorSorter", "MK2_Railgun_Block"),
-            new BlockType("ConveyorSorter", "MK3_Railgun_Block"),
-
-            new BlockType("ConveyorSorter", "PDCTurret_Block"),
-            new BlockType("ConveyorSorter", "Torp_Block"),
-            new BlockType("ConveyorSorter", "PriestReskin_Block"),
+            new BlockType("LargeMissileTurret", "LargeCalibreTurret"),
+            new BlockType("SmallMissileLauncher", "LargeBlockLargeCalibreGun"),
         };
-
-        private static readonly BlockType[] TIOBattleshipTurrets =
+        private static readonly BlockType[] VanillaBrawl =
         {
-            new BlockType("ConveyorSorter", "MK1BattleshipGun_Block"),
-            new BlockType("ConveyorSorter", "MK2BattleshipGun_Block"),
-            new BlockType("ConveyorSorter", "MK3BattleshipGun_Block"),
-        };
+            new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2"),
+            new BlockType("SmallGatlingGun", "SmallBlockAutocannon"),
+            new BlockType("LargeGatlingTurret"),
 
-        private static readonly BlockType[] TIORailgunTurrets =
+        };
+        private static readonly BlockType[] VanillaPDC =
         {
-            new BlockType("ConveyorSorter", "MK1Railgun_Block"),
-            new BlockType("ConveyorSorter", "MK2_Railgun_Block"),
-            new BlockType("ConveyorSorter", "MK3_Railgun_Block"),
-        };
-
-        private static readonly BlockType SuperLaserLoader = new BlockType("ConveyorSorter", "SuperLaserLoader_Block");
-        private static readonly BlockType SuperLaserCore = new BlockType("ConveyorSorter", "SuperLaserCore_Block");
-        private static readonly BlockType SuperLaserMuzzle = new BlockType("ConveyorSorter", "SuperLaserMuzzle_Block");
-        private static readonly BlockType SuperLaserUpgrade = new BlockType("ConveyorSorter", "SuperLaserUpgrade_Block");
-
-        private static readonly BlockType[] SuperLaserParts =
-        {
-            SuperLaserLoader,
-            SuperLaserCore,
-            SuperLaserMuzzle,
-            SuperLaserUpgrade
-        };
-
+            new BlockType("InteriorTurret",  "LargeInteriorTurret")
+        };     
         // Concatenated block types
-
-        private static readonly BlockType[] StaticWeaponry = Utils.ConcatArrays(VanillaSmallGridFixedWeapons, VanillaLargeGridFixedWeapons, TIOStaticWeaponry);
-        private static readonly BlockType[] Turrets = Utils.ConcatArrays(VanillaLargeGridTurretWeapons, VanillaSmallGridTurretWeapons, TIOTurrets);
+        private static readonly BlockType[] StaticWeaponry = Utils.ConcatArrays(VanillaSmallGridFixedWeapons, VanillaLargeGridFixedWeapons);
+        private static readonly BlockType[] Turrets = Utils.ConcatArrays(VanillaLargeGridTurretWeapons, VanillaSmallGridTurretWeapons);
+        private static readonly BlockType[] Weaponry = Utils.ConcatArrays(Turrets, StaticWeaponry);
         private static readonly BlockType[] Production = Utils.ConcatArrays(Refineries, Assemblers);
 
         // Block limits
@@ -237,9 +175,6 @@
         private static readonly BlockLimit NoShipToolsLimit = new BlockLimit
             { Name = "Ship Tools", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Grinders, Welders)};
 
-        private static readonly BlockLimit NoSuperLaserLimit = new BlockLimit
-            { Name = "Super Laser", MaxCount = 0, BlockTypes = SuperLaserParts };
-
         private static readonly BlockLimit NoWeaponsLimit = new BlockLimit
             { Name = "Weapons", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Turrets, StaticWeaponry) };
 
@@ -248,16 +183,6 @@
 
         private static readonly BlockLimit SingleSafeZoneLimit = new BlockLimit
             { Name = "Safe Zone", MaxCount = 1, BlockTypes = SafeZone };
-
-        private static readonly BlockLimit NoStaticDrillLimit = new BlockLimit
-            { Name = "Static Resource Drills", MaxCount = 0, BlockTypes = Utils.ConcatArrays(StaticResourceDrills, StoneStaticResourceDrills) };
-
-        private static readonly BlockLimit StaticDrillLimit = new BlockLimit
-            { Name = "Static Resource Drills", MaxCount = 1, BlockTypes = StaticResourceDrills };
-
-        private static readonly BlockLimit StoneStaticDrillLimit = new BlockLimit
-            { Name = "Stone Static Resource Drill", MaxCount = 3, BlockTypes = StoneStaticResourceDrills };
-
         private static readonly BlockLimit NoCollectorLimit = new BlockLimit
             { Name = "Collector", MaxCount = 1, BlockTypes = Collectors };
 
@@ -269,15 +194,15 @@
 
         public static GridModifiers DefaultGridModifiers = new GridModifiers
         {
-            ThrusterForce = 0.5f,
+            ThrusterForce = 1f,
             ThrusterEfficiency = 1,
-            GyroForce = 0,
-            GyroEfficiency = 0,
-            AssemblerSpeed = 0,
-            DrillHarvestMultiplier = 0,
+            GyroForce = 1,
+            GyroEfficiency = 1,
+            AssemblerSpeed = 1,
+            DrillHarvestMultiplier = 1,
             PowerProducersOutput = 1,
-            RefineEfficiency = 0,
-            RefineSpeed = 0
+            RefineEfficiency = 1,
+            RefineSpeed = 1
         };
 
         public static GridDamageModifiers DefaultGridDamageModifiers2X = new GridDamageModifiers
@@ -295,6 +220,7 @@
             Id = 0,
             Name = "Derelict",
             MaxBlocks = 10000,
+            MaxPCU = 25000,
             SmallGrid = true,
             LargeGridMobile = true,
             LargeGridStatic = true,
@@ -306,9 +232,7 @@
                 NoWeaponsLimit,
                 NoSafeZoneLimit,
                 NoShipToolsLimit,
-                NoSuperLaserLimit,
                 NoDrillsLimit,
-                NoStaticDrillLimit,
                 NoCollectorLimit,
                 new BlockLimit
                 {
@@ -322,59 +246,34 @@
                     MaxCount = 2,
                     BlockTypes = Refineries
                 },
-                new BlockLimit
-                {
-                    Name = "Conveyor Junctions",
-                    MaxCount = 200,
-                    BlockTypes = ConveyorJunctions
-                },
-                new BlockLimit
-                {
-                    Name = "Small Hydrogen Tanks",
-                    MaxCount = 20,
-                    BlockTypes = SmallHydrogenTanks
-                },
-                new BlockLimit
-                {
-                    Name = "Large Hydrogen Tanks",
-                    MaxCount = 10,
-                    BlockTypes = LargeHydrogenTanks
-                },
-                new BlockLimit
-                {
-                    Name = "Small Cargo Containers",
-                    MaxCount = 20,
-                    BlockTypes = SmallCargoContainers
-                },
-                new BlockLimit
-                {
-                    Name = "Large Cargo Containers",
-                    MaxCount = 10,
-                    BlockTypes = LargeCargoContainers
-                },
-                new BlockLimit
-                {
-                    Name = "Gyros",
-                    MaxCount = 400,
-                    BlockTypes = Gyros
-                }
             }
         };
-
         public static ModConfig DefaultModConfig = new ModConfig
         {
             DefaultGridClass = DefaultGridClassDefinition,
             GridClasses = new[]
+            /*
+            Key:
+            #_## : GridType_ID
+            0_## : Default
+            1_## : LargeGridStatic
+            2_## : LargeGrid
+            3_## : SmallGrid
+            4_## : Universal
+            */
             {
-                new GridClass
+                new GridClass //Outpost
                 {
-                    Id = 1,
-                    Name = "Station",
+                    Id = 101,
+                    Name = "Outpost",
+                    SmallGrid = false,
+                    LargeGridMobile = false,
                     LargeGridStatic = true,
-                    MaxBlocks = 25000,
+                    MaxBlocks = 10000,
+                    MaxPCU = 60000,
                     ForceBroadCast = true,
-                    ForceBroadCastRange = 10000,
-                    MaxPerFaction = 1,
+                    ForceBroadCastRange = 5000,
+                    MaxPerFaction = 0,
                     MaxPerPlayer = 1,
                     Modifiers = new GridModifiers
                     {
@@ -390,121 +289,66 @@
                     {
                         SingleSafeZoneLimit,
                         SingleCollectorLimit,
-                        StaticDrillLimit,
-                        StoneStaticDrillLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
                         NoCollectorLimit,
-                        NoGyroLimit,
                         new BlockLimit
                         {
-                            Name = "Assemblers",
-                            MaxCount = 80,
-                            BlockTypes = Assemblers,
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Refineries",
-                            MaxCount = 80,
-                            BlockTypes = Refineries
+                            Name = "Production",
+                            MaxCount = 10,
+                            BlockTypes = Production,
                         },
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 400,
+                            MaxCount = 10,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "Welders",
-                            MaxCount = 40,
-                            BlockTypes = Welders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Grinders",
-                            MaxCount = 40,
-                            BlockTypes = Grinders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 50,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 100,
-                            BlockTypes = LargeCargoContainers
+                            Name = "Ship Tools",
+                            MaxCount = 10,
+                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills)
                         },
                         new BlockLimit
                         {
                             Name = "Turrets",
-                            MaxCount = 40,
+                            MaxCount = 20,
                             BlockTypes = Turrets
                         },
                         new BlockLimit
                         {
                             Name = "Static Weaponry",
-                            MaxCount = 40,
+                            MaxCount = 20,
                             BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 10,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 10,
-                            BlockTypes = TIOBattleshipTurrets
                         }
                     }
                 },
-                new GridClass
+                new GridClass //Station
                 {
-                    Id = 2,
-                    Name = "Outpost",
+                    Id = 102,
+                    Name = "Station",
+                    SmallGrid = false,
+                    LargeGridMobile = false,
                     LargeGridStatic = true,
-                    MaxBlocks = 5000,
+                    MaxBlocks = 25000,
+                    MaxPCU = 120000,
                     ForceBroadCast = true,
-                    ForceBroadCastRange = 2000,
-                    MaxPerFaction = 6,
-                    MaxPerPlayer = 2,
+                    ForceBroadCastRange = 20000,
+                    MaxPerFaction = 1,
+                    MaxPerPlayer = 1,
                     Modifiers = new GridModifiers
                     {
                         ThrusterForce = 0,
                         GyroForce = 0,
-                        AssemblerSpeed = 2,
-                        RefineEfficiency = 2,
-                        RefineSpeed = 2,
-                        DrillHarvestMultiplier = 3,
-                        PowerProducersOutput = 2
+                        AssemblerSpeed = 8,
+                        RefineEfficiency = 8,
+                        RefineSpeed = 8,
+                        DrillHarvestMultiplier = 8,
+                        PowerProducersOutput = 8
                     },
                     BlockLimits = new[]
                     {
+                        SingleSafeZoneLimit,
                         SingleCollectorLimit,
-                        StaticDrillLimit,
-                        StoneStaticDrillLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoCollectorLimit,
                         NoGyroLimit,
                         new BlockLimit
                         {
@@ -521,384 +365,112 @@
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 100,
+                            MaxCount = 20,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
                             Name = "Welders",
-                            MaxCount = 10,
+                            MaxCount = 25,
                             BlockTypes = Welders
                         },
                         new BlockLimit
                         {
                             Name = "Grinders",
-                            MaxCount = 10,
-                            BlockTypes = Grinders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 10,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 6,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 10,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 10,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 0,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 4,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 4,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 3,
-                    Name = "Sentry",
-                    LargeGridStatic = true,
-                    MaxBlocks = 200,
-                    ForceBroadCast = false,
-                    MaxPerFaction = 20,
-                    MaxPerPlayer = 4,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 0,
-                        GyroForce = 0,
-                        AssemblerSpeed = 0,
-                        RefineEfficiency = 0,
-                        RefineSpeed = 0,
-                        DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 3
-                    },
-                    DamageModifiers = new GridDamageModifiers
-                    {
-                        Environment = 0.5f,
-                        Bullet = 0.5f,
-                        Explosion = 0.5f,
-                        Rocket = 0.5f,
-                        Energy = 0.5f,
-                        Kinetic = 0.5f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoSafeZoneLimit,
-                        NoCollectorLimit,
-                        NoStaticDrillLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoCollectorLimit,
-                        NoGyroLimit,
-                        NoShipToolsLimit,
-                        NoProductionLimit,
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 40,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 0,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 4,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 6,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 1,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 10,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 10,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 2,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 2,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 10,
-                    Name = "Support",
-                    LargeGridStatic = true,
-                    LargeGridMobile = true,
-                    MaxBlocks = 10000,
-                    MaxPerFaction = 20,
-                    MaxPerPlayer = 4,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 0.8f,
-                        GyroForce = 0.8f,
-                        AssemblerSpeed = 1.5f,
-                        RefineEfficiency = 1.5f,
-                        RefineSpeed = 1.5f,
-                        DrillHarvestMultiplier = 2
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        new BlockLimit
-                        {
-                            Name = "Assemblers",
-                            MaxCount = 4,
-                            BlockTypes = Assemblers,
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Refineries",
-                            MaxCount = 4,
-                            BlockTypes = Refineries
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 200,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Welders",
-                            MaxCount = 20,
-                            BlockTypes = Welders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Grinders",
-                            MaxCount = 20,
+                            MaxCount = 25,
                             BlockTypes = Grinders
                         },
                         new BlockLimit
                         {
                             Name = "Drills",
-                            MaxCount = 40,
+                            MaxCount = 10,
                             BlockTypes = Drills
                         },
                         new BlockLimit
                         {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 10,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 40,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 10,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 40,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 200,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
                             Name = "Turrets",
-                            MaxCount = 6,
+                            MaxCount = 40,
                             BlockTypes = Turrets
                         },
                         new BlockLimit
                         {
                             Name = "Static Weaponry",
-                            MaxCount = 0,
+                            MaxCount = 40,
                             BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 0,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 0,
-                            BlockTypes = TIOBattleshipTurrets
                         }
                     }
                 },
-                new GridClass
+                new GridClass //Utility
                 {
-                    Id = 11,
-                    Name = "Scout",
-                    LargeGridStatic = true,
+                    Id =401,
+                    Name = "Utility",
+                    SmallGrid = true,
                     LargeGridMobile = true,
-                    MaxBlocks = 1500,
-                    MaxPerFaction = 8,
-                    MaxPerPlayer = 2,
+                    LargeGridStatic = true,
+                    MaxBlocks = 5000,
+                    MaxPCU = 10000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 1000,
+                    MaxPerFaction = 0,
+                    MaxPerPlayer = 3,
                     Modifiers = new GridModifiers
                     {
-                        ThrusterForce = 3,
-                        ThrusterEfficiency = 2.5f,
-                        GyroForce = 3,
-                        GyroEfficiency = 2.5f,
-                        AssemblerSpeed = 0,
-                        RefineEfficiency = 0,
-                        RefineSpeed = 0,
-                        DrillHarvestMultiplier = 0,
+                        ThrusterForce = 1,
+                        ThrusterEfficiency = 2,
+                        GyroForce = 1,
+                        GyroEfficiency = 1,
+                        AssemblerSpeed = 2,
+                        RefineEfficiency = 2,
+                        RefineSpeed = 2,
+                        DrillHarvestMultiplier = 2,
+                        PowerProducersOutput = 2
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 1.0f,
+                        Energy = 1.0f,
+                        Environment = 0.5f,
+                        Explosion = 1.0f,
+                        Kinetic = 1.0f,
+                        Rocket = 1.0f
                     },
                     BlockLimits = new[]
                     {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoProductionLimit,
-                        NoShipToolsLimit,
+                        NoWeaponsLimit,
+                        SingleSafeZoneLimit,               
+                        new BlockLimit
+                        {
+                            Name = "Production",
+                            MaxCount = 1,
+                            BlockTypes = Production,
+                        },
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 60,
+                            MaxCount = 5,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "Small Hydrogen Tanks",
+                            Name = "Ship Tools",
                             MaxCount = 10,
-                            BlockTypes = SmallHydrogenTanks
+                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills)
                         },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 4,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 10,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 2,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 50,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 10,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 2,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 0,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 0,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
                     }
                 },
-                new GridClass
+                new GridClass //Corevette
                 {
-                    Id = 12,
-                    Name = "Corvette",
-                    LargeGridStatic = true,
+                    Id =201,
+                    Name = "Corevette",
+                    SmallGrid = false,
                     LargeGridMobile = true,
-                    MaxBlocks = 3000,
-                    MaxPerFaction = 6,
-                    MaxPerPlayer = 2,
+                    LargeGridStatic = true,
+                    MaxBlocks = 6000,
+                    MaxPCU = 50000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 20000,
+                    MaxPerFaction = 3,
+                    MaxPerPlayer = 1,
                     Modifiers = new GridModifiers
                     {
                         ThrusterForce = 2,
@@ -909,837 +481,552 @@
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1.2f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoProductionLimit,
-                        NoShipToolsLimit,
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 80,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 8,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 6,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 80,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 20,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 6,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 1,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 1,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 13,
-                    Name = "Destroyer",
-                    LargeGridStatic = true,
-                    LargeGridMobile = true,
-                    MaxBlocks = 5000,
-                    MaxPerFaction = 4,
-                    MaxPerPlayer = 2,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 1.6f,
-                        ThrusterEfficiency = 1.4f,
-                        GyroForce = 1.6f,
-                        GyroEfficiency = 1.4f,
-                        AssemblerSpeed = 0,
-                        RefineEfficiency = 0,
-                        RefineSpeed = 0,
-                        DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 2f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoProductionLimit,
-                        NoShipToolsLimit,
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 100,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 10,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 6,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 120,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 20,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 32,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 3,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 3,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 14,
-                    Name = "Cruiser",
-                    LargeGridStatic = true,
-                    LargeGridMobile = true,
-                    MaxBlocks = 8000,
-                    MaxPerFaction = 3,
-                    MaxPerPlayer = 1,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 1.2f,
-                        ThrusterEfficiency = 1f,
-                        GyroForce = 1.2f,
-                        GyroEfficiency = 1f,
-                        AssemblerSpeed = 0,
-                        RefineEfficiency = 0,
-                        RefineSpeed = 0,
-                        DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1.2f
+                        PowerProducersOutput = 1
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
-                        Bullet = 0.9f,
-                        Energy = 0.9f,
-                        Environment = 0.9f,
-                        Explosion = 0.9f,
-                        Kinetic = 0.9f,
-                        Rocket = 0.9f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoProductionLimit,
-                        NoShipToolsLimit,
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 150,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 14,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 8,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 180,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 54,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 12,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 6,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 6,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 15,
-                    Name = "Battleship",
-                    LargeGridStatic = true,
-                    LargeGridMobile = true,
-                    MaxBlocks = 12000,
-                    MaxPerFaction = 2,
-                    MaxPerPlayer = 1,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 0.8f,
-                        ThrusterEfficiency = 1f,
-                        GyroForce = 0.8f,
-                        GyroEfficiency = 1f,
-                        AssemblerSpeed = 0.5f,
-                        RefineEfficiency = 0.5f,
-                        RefineSpeed = 0.5f,
-                        DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 0.8f
-                    },
-                    DamageModifiers = new GridDamageModifiers
-                    {
-                        Bullet = 0.8f,
-                        Energy = 0.8f,
-                        Environment = 0.8f,
-                        Explosion = 0.8f,
-                        Kinetic = 0.8f,
-                        Rocket = 0.8f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoShipToolsLimit,
-                        new BlockLimit
-                        {
-                            Name = "Assemblers",
-                            MaxCount = 2,
-                            BlockTypes = Assemblers,
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Refineries",
-                            MaxCount = 2,
-                            BlockTypes = Refineries
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 200,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 10,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 240,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 68,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 20,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 8,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 8,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 16,
-                    Name = "Dreadnought",
-                    LargeGridStatic = true,
-                    LargeGridMobile = true,
-                    MaxBlocks = 15000,
-                    MaxPerFaction = 1,
-                    MaxPerPlayer = 1,
-                    Modifiers = new GridModifiers
-                    {
-                        ThrusterForce = 0.6f,
-                        ThrusterEfficiency = 0.8f,
-                        GyroForce = 0.6f,
-                        GyroEfficiency = 0.8f,
-                        AssemblerSpeed = 0.6f,
-                        RefineEfficiency = 0.6f,
-                        RefineSpeed = 0.6f,
-                        DrillHarvestMultiplier = 0
-                    },
-                    DamageModifiers = new GridDamageModifiers
-                    {
-                        Bullet = 0.7f,
+                        Bullet = 0.5f,
                         Energy = 0.7f,
-                        Environment = 0.7f,
+                        Environment = 1f,
                         Explosion = 0.7f,
                         Kinetic = 0.7f,
                         Rocket = 0.7f
                     },
                     BlockLimits = new[]
                     {
-                        NoCollectorLimit,
+                        NoProductionLimit,
                         NoSafeZoneLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
                         NoShipToolsLimit,
-                        new BlockLimit
-                        {
-                            Name = "Assemblers",
-                            MaxCount = 4,
-                            BlockTypes = Assemblers,
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Refineries",
-                            MaxCount = 4,
-                            BlockTypes = Refineries
-                        },
+                        NoCollectorLimit,
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 300,
+                            MaxCount = 8,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "Small Hydrogen Tanks",
+                            Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 24,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 20,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 12,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 400,
-                            BlockTypes = Gyros
+                            BlockTypes = Weaponry
                         },
                         new BlockLimit
                         {
                             Name = "Turrets",
-                            MaxCount = 80,
+                            MaxCount = 0,
                             BlockTypes = Turrets
                         },
                         new BlockLimit
                         {
-                            Name = "Static Weaponry",
-                            MaxCount = 24,
-                            BlockTypes = StaticWeaponry
+                            Name = "RailGuns",
+                            MaxCount = 0,
+                            BlockTypes = VanillaRailguns
                         },
                         new BlockLimit
                         {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 12,
-                            BlockTypes = TIORailgunTurrets
+                            Name = "Artillery",
+                            MaxCount = 0,
+                            BlockTypes = VanillaArtillery
                         },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 12,
-                            BlockTypes = TIOBattleshipTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Super Laser Loader",
-                            MaxCount = 1,
-                            BlockTypes = new [] { SuperLaserLoader }
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Super Laser Core",
-                            MaxCount = 4,
-                            BlockTypes = new [] { SuperLaserCore }
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Super Laser Muzzle",
-                            MaxCount = 1,
-                            BlockTypes = new [] { SuperLaserMuzzle }
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Super Laser Upgrade",
-                            MaxCount = 16,
-                            BlockTypes = new [] { SuperLaserUpgrade }
-                        }
                     }
-                },
-                new GridClass
+                },     
+                new GridClass //Cruiser
                 {
-                    Id = 17,
-                    Name = "Carrier",
-                    LargeGridStatic = true,
+                    Id =202,
+                    Name = "Cruiser",
+                    SmallGrid = false,
                     LargeGridMobile = true,
-                    MaxBlocks = 12000,
+                    LargeGridStatic = true,
+                    MaxBlocks = 8000,
+                    MaxPCU = 50000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 20000,
                     MaxPerFaction = 2,
                     MaxPerPlayer = 1,
                     Modifiers = new GridModifiers
                     {
-                        PowerProducersOutput = 1.5f
-                    },
-                    BlockLimits = new[]
-                    {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
-                        NoSuperLaserLimit,
-                        new BlockLimit
-                        {
-                            Name = "Assemblers",
-                            MaxCount = 6,
-                            BlockTypes = Assemblers,
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Refineries",
-                            MaxCount = 6,
-                            BlockTypes = Refineries
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Conveyor Junctions",
-                            MaxCount = 300,
-                            BlockTypes = ConveyorJunctions
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 30,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 40,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 12,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 300,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 40,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
-                            MaxCount = 0,
-                            BlockTypes = StaticWeaponry
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Railgun Turrets",
-                            MaxCount = 4,
-                            BlockTypes = TIORailgunTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 4,
-                            BlockTypes = TIOBattleshipTurrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Welders",
-                            MaxCount = 10,
-                            BlockTypes = Welders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Grinders",
-                            MaxCount = 10,
-                            BlockTypes = Grinders
-                        }
-                    }
-                },
-                new GridClass
-                {
-                    Id = 20,
-                    Name = "Utility",
-                    SmallGrid = true,
-                    MaxBlocks = 3000,
-                    MaxPerFaction = 12,
-                    MaxPerPlayer = 3,
-                    Modifiers = new GridModifiers
-                    {
-                        AssemblerSpeed = 2,
-                        RefineEfficiency = 2,
-                        RefineSpeed = 2,
-                        DrillHarvestMultiplier = 3,
+                        ThrusterForce = 1,
+                        ThrusterEfficiency = 3,
+                        GyroForce = 1,
+                        GyroEfficiency = 2,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 1.5f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
-                        Rocket = 0.8f,
-                        Explosion = 0.8f,
-                        Environment = 0.8f,
-                        Energy = 0.8f,
-                        Kinetic = 0.8f,
-                        Bullet = 0.8f
+                        Bullet = 1.0f,
+                        Energy = 0.5f,
+                        Environment = 1f,
+                        Explosion = 1.0f,
+                        Kinetic = 1.0f,
+                        Rocket = 1.0f
                     },
                     BlockLimits = new[]
                     {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
                         NoProductionLimit,
+                        NoSafeZoneLimit,
+                        NoShipToolsLimit,
+                        NoCollectorLimit,
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 60,
+                            MaxCount = 8,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "Welders",
-                            MaxCount = 10,
-                            BlockTypes = Welders
+                            Name = "Weapons",
+                            MaxCount = 25,
+                            BlockTypes = Weaponry
                         },
                         new BlockLimit
                         {
-                            Name = "Grinders",
-                            MaxCount = 10,
-                            BlockTypes = Grinders
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Drills",
-                            MaxCount = 32,
-                            BlockTypes = Drills
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Hydrogen Tanks",
-                            MaxCount = 10,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 12,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 12,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Medium Cargo Containers",
-                            MaxCount = 8,
-                            BlockTypes = MediumCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 16,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 50,
-                            BlockTypes = Gyros
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Turrets",
-                            MaxCount = 6,
-                            BlockTypes = Turrets
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Static Weaponry",
+                            Name = "Fixed Weapons",
                             MaxCount = 0,
                             BlockTypes = StaticWeaponry
                         },
                         new BlockLimit
                         {
-                            Name = "TIO Railgun Turrets",
+                            Name = "RailGuns",
                             MaxCount = 0,
-                            BlockTypes = TIORailgunTurrets
+                            BlockTypes = VanillaRailguns
                         },
                         new BlockLimit
                         {
-                            Name = "TIO Battleship Turrets",
+                            Name = "Artillery",
                             MaxCount = 0,
-                            BlockTypes = TIOBattleshipTurrets
+                            BlockTypes = VanillaArtillery
+                        },
+                    }
+                },
+                new GridClass //Destroyer
+                {
+                    Id =203,
+                    Name = "Destroyer",
+                    SmallGrid = false,
+                    LargeGridMobile = true,
+                    LargeGridStatic = true,
+                    MaxBlocks = 6000,
+                    MaxPCU = 40000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 20000,
+                    MaxPerFaction = 2,
+                    MaxPerPlayer = 1,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 0.8f,
+                        ThrusterEfficiency = 1,
+                        GyroForce = 2,
+                        GyroEfficiency = 3,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 1f,
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 3.0f,
+                        Energy = 2.0f,
+                        Environment = 1f,
+                        Explosion = 3.0f,
+                        Kinetic = 2.0f,
+                        Rocket = 2.0f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoProductionLimit,
+                        NoSafeZoneLimit,
+                        NoShipToolsLimit,
+                        NoCollectorLimit,
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 8,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Weapons",
+                            MaxCount = 30,
+                            BlockTypes = Weaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Gattling Guns",
+                            MaxCount = 0,
+                            BlockTypes = VanillaBrawl
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Interior Turrent",
+                            MaxCount = 3,
+                            BlockTypes = VanillaPDC
+                        },
+                    }
+                },  
+                new GridClass //Battleship
+                {
+                    Id = 204,
+                    Name = "Battleship",
+                    SmallGrid = false,
+                    LargeGridMobile = true,
+                    LargeGridStatic = true,
+                    MaxBlocks = 10000,
+                    MaxPCU = 50000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 20000,
+                    MaxPerFaction = 2,
+                    MaxPerPlayer = 1,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 0.8f,
+                        ThrusterEfficiency = 0.9f,
+                        GyroForce = 0.8f,
+                        GyroEfficiency = 0.5f,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 2f,
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 0.8f,
+                        Energy = 0.7f,
+                        Environment = 1f,
+                        Explosion = 0.4f,
+                        Kinetic = 0.7f,
+                        Rocket = 0.6f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoProductionLimit,
+                        NoSafeZoneLimit,
+                        NoShipToolsLimit,
+                        NoCollectorLimit,
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 8,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Weapons",
+                            MaxCount = 30,
+                            BlockTypes = Weaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "RailGuns",
+                            MaxCount = 0,
+                            BlockTypes = VanillaRailguns
+                        },
+                    }
+                },  
+                new GridClass //FlagShip
+                {
+                    Id =205,
+                    Name = "FlagShip",
+                    SmallGrid = false,
+                    LargeGridMobile = true,
+                    LargeGridStatic = true,
+                    MaxBlocks = 25000,
+                    MaxPCU = 120000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 20000,
+                    MaxPerFaction = 1,
+                    MaxPerPlayer = 1,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 0.8f,
+                        ThrusterEfficiency = 0.9f,
+                        GyroForce = 0.8f,
+                        GyroEfficiency = 0.5f,
+                        AssemblerSpeed = 5,
+                        RefineEfficiency = 5,
+                        RefineSpeed = 5,
+                        DrillHarvestMultiplier = 5,
+                        PowerProducersOutput = 2f,
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 0.5f,
+                        Energy = 0.6f,
+                        Environment = 1f,
+                        Explosion = 0.3f,
+                        Kinetic = 0.6f,
+                        Rocket = 0.6f
+                    },
+                    BlockLimits = new[]
+                    {
+                        SingleSafeZoneLimit,
+                        SingleCollectorLimit,
+                        NoGyroLimit,
+                        new BlockLimit
+                        {
+                            Name = "Production",
+                            MaxCount = 10,
+                            BlockTypes = Production,
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 20,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Ship Tools",
+                            MaxCount = 5,
+                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills)
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Weaponry Assorted",
+                            MaxCount = 100,
+                            BlockTypes = new[]
+                            {
+                            //vanilla small grid fixex weapons
+                                new BlockType("SmallGatlingGun","",1),
+                                new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2",1),
+                                new BlockType("SmallGatlingGun", "SmallBlockAutocannon",1.5f),
+                                new BlockType("SmallMissileLauncher","",2),
+                                new BlockType("SmallMissileLauncher", "SmallMissileLauncherWarfare2",2),
+                                new BlockType("SmallMissileLauncherReload", "SmallMissileLauncherReload",3),
+                                new BlockType("SmallMissileLauncherReload", "SmallBlockMediumCalibreGun",4),
+                                new BlockType("SmallMissileLauncherReload", "SmallRailgun",8),   
+                            //vanilla small grid turrets{
+                                new BlockType("LargeMissileTurret", "SmallBlockMediumCalibreTurret",2),
+                                new BlockType("LargeMissileTurret", "AutoCannonTurret",1.5f),
+                                new BlockType("LargeMissileTurret", "SmallMissileTurret",2),
+                                new BlockType("LargeGatlingTurret", "SmallGatlingTurret",1),
+                            //vanilla large grid fixed weapons
+                                new BlockType("SmallMissileLauncher", "LargeMissileLauncher",4),
+                                new BlockType("SmallMissileLauncher", "LargeBlockLargeCalibreGun",8),
+                                new BlockType("SmallMissileLauncherReload", "LargeRailgun",10),
+                            //vanilla large grid turrets
+                                new BlockType("LargeMissileTurret","",3),
+                                new BlockType("LargeMissileTurret", "LargeBlockMediumCalibreTurret",2),
+                                new BlockType("LargeMissileTurret", "LargeCalibreTurret",4),
+                                new BlockType("LargeGatlingTurret","",1),
+                                new BlockType("InteriorTurret",  "LargeInteriorTurret",1),
+                            },
                         }
                     }
                 },
-                new GridClass
+                new GridClass //Interceptor
                 {
-                    Id = 21,
-                    Name = "Fighter",
+                    Id =301,
+                    Name = "Interceptor",
                     SmallGrid = true,
-                    MaxBlocks = 2000,
-                    MaxPerFaction = 36,
-                    MaxPerPlayer = 6,
+                    LargeGridMobile = false,
+                    LargeGridStatic = false,
+                    MaxBlocks = 600,
+                    MaxPCU = 10000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 500,
+                    MaxPerFaction = 20,
+                    MaxPerPlayer = 8,
                     Modifiers = new GridModifiers
                     {
-                        ThrusterForce = 2,
-                        ThrusterEfficiency = 2,
+                        ThrusterForce = 4f,
+                        ThrusterEfficiency = 4,
                         GyroForce = 2,
                         GyroEfficiency = 2,
                         AssemblerSpeed = 0,
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
-                        DrillHarvestMultiplier = 0
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 1
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 0.7f,
+                        Energy = 0.5f,
+                        Environment = 1f,
+                        Explosion = 10f,
+                        Kinetic = 0.5f,
+                        Rocket = 5.0f
                     },
                     BlockLimits = new[]
                     {
-                        NoCollectorLimit,
-                        NoSafeZoneLimit,
-                        NoSuperLaserLimit,
-                        NoDrillsLimit,
-                        NoStaticDrillLimit,
-                        NoCollectorLimit,
                         NoProductionLimit,
+                        NoSafeZoneLimit,
                         NoShipToolsLimit,
+                        NoCollectorLimit,
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 50,
+                            MaxCount = 100,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "Small Hydrogen Tanks",
+                            Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = SmallHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Hydrogen Tanks",
-                            MaxCount = 4,
-                            BlockTypes = LargeHydrogenTanks
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Small Cargo Containers",
-                            MaxCount = 12,
-                            BlockTypes = SmallCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Large Cargo Containers",
-                            MaxCount = 2,
-                            BlockTypes = LargeCargoContainers
-                        },
-                        new BlockLimit
-                        {
-                            Name = "Gyros",
-                            MaxCount = 30,
-                            BlockTypes = Gyros
+                            BlockTypes = Weaponry
                         },
                         new BlockLimit
                         {
                             Name = "Turrets",
-                            MaxCount = 8,
+                            MaxCount = 0,
                             BlockTypes = Turrets
                         },
                         new BlockLimit
                         {
-                            Name = "Static Weaponry",
-                            MaxCount = 8,
-                            BlockTypes = StaticWeaponry
+                            Name = "RailGuns",
+                            MaxCount = 0,
+                            BlockTypes = VanillaRailguns
                         },
                         new BlockLimit
                         {
-                            Name = "TIO Railgun Turrets",
+                            Name = "Artillery",
                             MaxCount = 0,
-                            BlockTypes = TIORailgunTurrets
+                            BlockTypes = VanillaArtillery
+                        },
+                    }
+                },
+                new GridClass //Fighter
+                {
+                    Id =202,
+                    Name = "Fighter",
+                    SmallGrid = true,
+                    LargeGridMobile = false,
+                    LargeGridStatic = false,
+                    MaxBlocks = 1200,
+                    MaxPCU = 10000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 1000,
+                    MaxPerFaction = 20,
+                    MaxPerPlayer = 8,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 2f,
+                        ThrusterEfficiency = 4,
+                        GyroForce = 2,
+                        GyroEfficiency = 2,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 1
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 0.5f,
+                        Energy = 0.5f,
+                        Environment = 1f,
+                        Explosion = 10f,
+                        Kinetic = 0.5f,
+                        Rocket = 2.0f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoProductionLimit,
+                        NoSafeZoneLimit,
+                        NoShipToolsLimit,
+                        NoCollectorLimit,
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 100,
+                            BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
                         {
-                            Name = "TIO Battleship Turrets",
-                            MaxCount = 0,
-                            BlockTypes = TIOBattleshipTurrets
-                        }
+                            Name = "Weapons",
+                            MaxCount = 20,
+                            BlockTypes = Weaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Turrets",
+                            MaxCount = 1,
+                            BlockTypes = Turrets
+                        },
+                        new BlockLimit
+                        {
+                            Name = "RailGuns",
+                            MaxCount = 1,
+                            BlockTypes = VanillaRailguns
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Artillery",
+                            MaxCount = 2,
+                            BlockTypes = VanillaArtillery
+                        },
+                    }
+                },
+                new GridClass //Gunship
+                {
+                    Id =203,
+                    Name = "Gunship",
+                    SmallGrid = true,
+                    LargeGridMobile = false,
+                    LargeGridStatic = false,
+                    MaxBlocks = 3000,
+                    MaxPCU = 20000,
+                    ForceBroadCast = true,
+                    ForceBroadCastRange = 1000,
+                    MaxPerFaction = 20,
+                    MaxPerPlayer = 8,
+                    Modifiers = new GridModifiers
+                    {
+                        ThrusterForce = 2f,
+                        ThrusterEfficiency = 4,
+                        GyroForce = 2,
+                        GyroEfficiency = 2,
+                        AssemblerSpeed = 0,
+                        RefineEfficiency = 0,
+                        RefineSpeed = 0,
+                        DrillHarvestMultiplier = 0,
+                        PowerProducersOutput = 1
+                    },
+                    DamageModifiers = new GridDamageModifiers
+                    {
+                        Bullet = 0.3f,
+                        Energy = 0.2f,
+                        Environment = 0.1f,
+                        Explosion = 5.0f,
+                        Kinetic = 0.4f,
+                        Rocket = 1.0f
+                    },
+                    BlockLimits = new[]
+                    {
+                        NoProductionLimit,
+                        NoSafeZoneLimit,
+                        NoShipToolsLimit,
+                        NoCollectorLimit,
+                        new BlockLimit
+                        {
+                            Name = "Conveyor Junctions",
+                            MaxCount = 100,
+                            BlockTypes = ConveyorJunctions
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Weapons",
+                            MaxCount = 20,
+                            BlockTypes = Weaponry
+                        },
+                        new BlockLimit
+                        {
+                            Name = "RailGuns",
+                            MaxCount = 1,
+                            BlockTypes = VanillaRailguns
+                        },
+                        new BlockLimit
+                        {
+                            Name = "Artillery",
+                            MaxCount = 2,
+                            BlockTypes = VanillaArtillery
+                        },
                     }
                 },
             }

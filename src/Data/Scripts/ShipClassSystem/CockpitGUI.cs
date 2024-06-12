@@ -39,13 +39,15 @@ namespace ShipClassSystem
             if (controls.Any(control => _cockpitControls.Contains(control))) return;
             controls.AddRange(_cockpitControls);
             foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
-                control.Visible = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainCockpit);
+                control.Enabled = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainOwner);
         }
 
-        private static bool VisibleIfIsMainCockpit(IMyTerminalBlock block)
+        private static bool VisibleIfIsMainOwner(IMyTerminalBlock block)
         {
             var cockpit = block as IMyCockpit;
-            return cockpit?.IsMainCockpit ?? false;
+            if(cockpit.OwnerId==Utils.GetGridOwner(block.CubeGrid)){return true;}
+            else if(MyAPIGateway.Session.Factions.TryGetPlayerFaction(cockpit.OwnerId)==MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid))){return true;}
+            else{return false;}
         }
 
         private static IMyTerminalControlCombobox GetCombobox(string name,

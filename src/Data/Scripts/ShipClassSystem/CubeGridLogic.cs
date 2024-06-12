@@ -7,6 +7,8 @@ using System.Linq;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRageMath;
+using Sandbox.Game.Replication;
 
 namespace ShipClassSystem
 {
@@ -121,6 +123,9 @@ namespace ShipClassSystem
             Grid.OnBlockRemoved += OnBlockRemoved;
             Grid.OnGridMerge += OnGridMerge;
 
+            
+            //Grid.OnPhysicsChanged += OnPhysicsChanged;
+
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
             {
@@ -155,6 +160,7 @@ namespace ShipClassSystem
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
+                //subgrid.OnPhysicsChanged += OnPhysicsChanged;
 
                 Blocks.UnionWith(subgrid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
@@ -242,6 +248,7 @@ namespace ShipClassSystem
                 Grid.OnBlockAdded -= OnBlockAdded;
                 Grid.OnBlockRemoved -= OnBlockRemoved;
                 Grid.OnGridMerge -= OnGridMerge;
+                //Grid.OnPhysicsChanged -= OnPhysicsChanged;
 
                 CubeGridLogics.Remove(Grid.EntityId);
                 GridsPerFactionClassManager.RemoveCubeGrid(this);
@@ -274,6 +281,7 @@ namespace ShipClassSystem
             sub.OnIsStaticChanged += mainLogic.OnIsStaticChanged;
             sub.OnBlockAdded += mainLogic.OnBlockAdded;
             sub.OnBlockRemoved += mainLogic.OnBlockRemoved;
+            //sub.OnPhysicsChanged += mainLogic.OnPhysicsChanged;
 
             mainLogic.Blocks.Clear();
             mainLogic.Blocks.UnionWith(mainLogic.Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
@@ -390,6 +398,21 @@ namespace ShipClassSystem
         {
             EnforceBlockPunishment();
         }
+        private void OnPhysicsChanged(IMyEntity obj)
+        {
+            if(obj is IMyCubeGrid)
+            {
+                IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
+                Vector3 velocity = MyGrid.Physics.LinearVelocity;
+                if (velocity.LengthSquared() > 10.0f*10.0f)
+                {
+                    velocity = Vector3.Normalize(velocity) * 10.0f;
+                }
+                MyGrid.Physics.SetSpeeds(velocity, MyGrid.Physics.AngularVelocity);
+            }
+        }
+        private void EnforceSpeedLimit(){}
+        private void EnforceNoFlyZones(){}
 
         private void FactionsOnFactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
         {

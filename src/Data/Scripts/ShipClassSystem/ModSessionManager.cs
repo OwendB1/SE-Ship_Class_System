@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage.Game.Components;
@@ -34,6 +35,15 @@ namespace ShipClassSystem
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
+            MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
+            MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
+            float SpeedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            List<string> AmmoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber"};
+            foreach(string AmmoID in AmmoDefinitions)
+            {
+                MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
+                if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed+=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
+            }
             Instance = this;
         }
 
@@ -43,6 +53,13 @@ namespace ShipClassSystem
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
             MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
+            float SpeedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            List<string> AmmoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber","Flare","FireworkBlue","FireworkGreen","FireworkRed","FireworkPink","FireworkYellow","FireworkRainbow","Shrapnel"};
+            foreach(string AmmoID in AmmoDefinitions)
+            {
+                MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
+                if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed-=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
+            }
             //foreach (var logic in CubeGridLogics)
             //{
             //    logic.Value.GridMarkedForClose();

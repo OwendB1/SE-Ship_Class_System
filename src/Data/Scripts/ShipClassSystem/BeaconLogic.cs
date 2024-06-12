@@ -65,7 +65,7 @@ namespace ShipClassSystem
             if (!gridClass.ForceBroadCast) return;
             _beacon.Enabled = true;
             _beacon.Radius = gridClass.ForceBroadCastRange;
-            _beacon.HudText = $"{_beacon.CubeGrid.DisplayName} : {gridClass.Name}";
+            if(!_beacon.HudText.Contains(gridClass.Name)){_beacon.HudText = $"{_beacon.CubeGrid.DisplayName} : {gridClass.Name}";}
 
             /*if(primaryOwnerId != -1)
             {

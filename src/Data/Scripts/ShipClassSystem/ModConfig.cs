@@ -9,11 +9,12 @@ namespace ShipClassSystem
     public class ModConfig
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
-
-        [ProtoMember(1)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-        [ProtoMember(2)] private GridClass[] _gridClasses;
-        [ProtoMember(3)] public string[] IgnoreFactionTags = { "SPRT" };
-        [ProtoMember(4)] public bool IncludeAiFactions = false;
+        [ProtoMember(1)] public bool Debug_Mode = false;
+        [ProtoMember(2)] public float MaxPossibleSpeed_MetersPerSecond = 120.0f;
+        [ProtoMember(3)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        [ProtoMember(4)] private GridClass[] _gridClasses;
+        [ProtoMember(5)] public string[] IgnoreFactionTags = { "SPRT" };
+        [ProtoMember(6)] public bool IncludeAiFactions = false;
 
         public GridClass DefaultGridClass
         {
@@ -89,6 +90,7 @@ namespace ShipClassSystem
             try
             {
                 var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
+                //writer.Write("// Please use this GUI based tool by Skiittz for configuration https://github.com/skiittz/Ship-Class-System-Config-Editor\n");
                 writer.Write(MyAPIGateway.Utilities.SerializeToXML(config));
                 writer.Close();
             }
@@ -159,6 +161,8 @@ namespace ShipClassSystem
         public float ThrusterEfficiency = 1;
         [ProtoMember(9)]
         public float ThrusterForce = 1;
+        [ProtoMember(10)]
+        public float MaxSpeed = 100.0f;
 
         public override string ToString()
         {
