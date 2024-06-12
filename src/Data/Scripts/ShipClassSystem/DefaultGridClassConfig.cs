@@ -202,7 +202,8 @@
             DrillHarvestMultiplier = 1,
             PowerProducersOutput = 1,
             RefineEfficiency = 1,
-            RefineSpeed = 1
+            RefineSpeed = 1,
+            MaxSpeed = 30.0f,
         };
 
         public static GridDamageModifiers DefaultGridDamageModifiers2X = new GridDamageModifiers
@@ -212,7 +213,7 @@
             Energy = 2f,
             Kinetic = 2f,
             Bullet = 2f,
-            Rocket = 2f
+            Rocket = 2f,
         };
 
         public static GridClass DefaultGridClassDefinition = new GridClass
@@ -283,13 +284,14 @@
                         RefineEfficiency = 3,
                         RefineSpeed = 3,
                         DrillHarvestMultiplier = 3,
-                        PowerProducersOutput = 3
+                        PowerProducersOutput = 3,
                     },
                     BlockLimits = new[]
                     {
                         SingleSafeZoneLimit,
                         SingleCollectorLimit,
                         NoCollectorLimit,
+                        NoGyroLimit,
                         new BlockLimit
                         {
                             Name = "Production",
@@ -299,7 +301,7 @@
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 10,
+                            MaxCount = 20,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
@@ -423,7 +425,8 @@
                         RefineEfficiency = 2,
                         RefineSpeed = 2,
                         DrillHarvestMultiplier = 2,
-                        PowerProducersOutput = 2
+                        PowerProducersOutput = 2,
+                        MaxSpeed=60.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -447,7 +450,7 @@
                         new BlockLimit
                         {
                             Name = "Conveyor Junctions",
-                            MaxCount = 5,
+                            MaxCount = 20,
                             BlockTypes = ConveyorJunctions
                         },
                         new BlockLimit
@@ -481,7 +484,8 @@
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1
+                        PowerProducersOutput = 1,
+                        MaxSpeed=100.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -554,6 +558,7 @@
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1.5f,
+                        MaxSpeed=90.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -626,6 +631,7 @@
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1f,
+                        MaxSpeed=100.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -692,6 +698,8 @@
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 2f,
+                        MaxSpeed=80.0f,
+                        
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -752,6 +760,7 @@
                         RefineSpeed = 5,
                         DrillHarvestMultiplier = 5,
                         PowerProducersOutput = 2f,
+                        MaxSpeed=70.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -766,7 +775,6 @@
                     {
                         SingleSafeZoneLimit,
                         SingleCollectorLimit,
-                        NoGyroLimit,
                         new BlockLimit
                         {
                             Name = "Production",
@@ -842,7 +850,8 @@
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1
+                        PowerProducersOutput = 1,
+                        MaxSpeed=120.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -893,7 +902,7 @@
                 },
                 new GridClass //Fighter
                 {
-                    Id =202,
+                    Id =302,
                     Name = "Fighter",
                     SmallGrid = true,
                     LargeGridMobile = false,
@@ -914,7 +923,8 @@
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1
+                        PowerProducersOutput = 1,
+                        MaxSpeed=120.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -965,7 +975,7 @@
                 },
                 new GridClass //Gunship
                 {
-                    Id =203,
+                    Id =303,
                     Name = "Gunship",
                     SmallGrid = true,
                     LargeGridMobile = false,
@@ -986,7 +996,8 @@
                         RefineEfficiency = 0,
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
-                        PowerProducersOutput = 1
+                        PowerProducersOutput = 1,
+                        MaxSpeed=115.0f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {

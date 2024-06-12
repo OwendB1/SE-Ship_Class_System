@@ -121,10 +121,9 @@ namespace ShipClassSystem
             Grid.OnIsStaticChanged += OnIsStaticChanged;
             Grid.OnBlockAdded += OnBlockAdded;
             Grid.OnBlockRemoved += OnBlockRemoved;
-            Grid.OnGridMerge += OnGridMerge;
-
-            
-            //Grid.OnPhysicsChanged += OnPhysicsChanged;
+            Grid.SpeedChanged += OnSpeedChanged;
+            Grid.GridPresenceTierChanged+=EnforceNoFlyZones;
+            //Grid.OnMaxThrustChanged += OnSpeedChanged;
 
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
@@ -160,7 +159,8 @@ namespace ShipClassSystem
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
-                //subgrid.OnPhysicsChanged += OnPhysicsChanged;
+                subgrid.SpeedChanged += OnSpeedChanged;
+                subgrid.GridPresenceTierChanged+=EnforceNoFlyZones;
 
                 Blocks.UnionWith(subgrid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
@@ -248,7 +248,8 @@ namespace ShipClassSystem
                 Grid.OnBlockAdded -= OnBlockAdded;
                 Grid.OnBlockRemoved -= OnBlockRemoved;
                 Grid.OnGridMerge -= OnGridMerge;
-                //Grid.OnPhysicsChanged -= OnPhysicsChanged;
+                Grid.SpeedChanged -= OnSpeedChanged;
+                Grid.GridPresenceTierChanged-=EnforceNoFlyZones;
 
                 CubeGridLogics.Remove(Grid.EntityId);
                 GridsPerFactionClassManager.RemoveCubeGrid(this);
@@ -281,8 +282,8 @@ namespace ShipClassSystem
             sub.OnIsStaticChanged += mainLogic.OnIsStaticChanged;
             sub.OnBlockAdded += mainLogic.OnBlockAdded;
             sub.OnBlockRemoved += mainLogic.OnBlockRemoved;
-            //sub.OnPhysicsChanged += mainLogic.OnPhysicsChanged;
-
+            sub.SpeedChanged += mainLogic.OnSpeedChanged;
+            sub.GridPresenceTierChanged+=mainLogic.EnforceNoFlyZones;
             mainLogic.Blocks.Clear();
             mainLogic.Blocks.UnionWith(mainLogic.Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
         }
@@ -398,21 +399,53 @@ namespace ShipClassSystem
         {
             EnforceBlockPunishment();
         }
-        private void OnPhysicsChanged(IMyEntity obj)
+        private void OnSpeedChanged(IMyCubeGrid obj)
         {
-            if(obj is IMyCubeGrid)
-            {
-                IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
-                Vector3 velocity = MyGrid.Physics.LinearVelocity;
-                if (velocity.LengthSquared() > 10.0f*10.0f)
-                {
-                    velocity = Vector3.Normalize(velocity) * 10.0f;
-                }
-                MyGrid.Physics.SetSpeeds(velocity, MyGrid.Physics.AngularVelocity);
-            }
+            EnforceSpeedLimit(obj);
+            EnforceNoFlyZones(obj);
         }
-        private void EnforceSpeedLimit(){}
-        private void EnforceNoFlyZones(){}
+        private void EnforceSpeedLimit(IMyCubeGrid obj)
+        {
+            var GridLogic=obj.GetMainGridLogic();
+            var gridClass = GridLogic?.GridClass;
+            float LimitedSpeed = ModSessionManager.Config.DefaultGridClass.Modifiers.MaxSpeed;
+            if (gridClass != null){LimitedSpeed=gridClass.Modifiers.MaxSpeed;}
+            IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
+            Vector3 velocity = MyGrid.Physics.LinearVelocity;
+            if (velocity.LengthSquared() > LimitedSpeed*LimitedSpeed)
+            {
+                velocity = (Vector3.Normalize(velocity) * LimitedSpeed)-(MyGrid.Physics.LinearAcceleration*0.2f);
+                //MyGrid.Physics.LinearAcceleration;
+               // MyGrid.Physics.AngularAcceleration;
+            }
+            MyGrid.Physics.SetSpeeds(velocity, MyGrid.Physics.AngularVelocity);
+            //MyGrid.Physics.Friction=5.0f;
+        }
+        private void EnforceNoFlyZones(IMyCubeGrid obj)
+        {
+            var GridLogic=obj.GetMainGridLogic();
+            var GridClassId = GridLogic?.GridClass?.Id;
+            if (GridClassId == null){GridClassId=0;}
+            foreach(Zones Zone in ModSessionManager.Config.NoFlyZones)
+            {
+                var Range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(Zone.X, Zone.Y, Zone.Z));
+                //Utils.Log($"Grid ID: {GridClassId}\nNoFlyZone ID:{Zone.ID}\nDistance From NoFlyZone:{Range}\nZone Radius:{Zone.Radius}");
+                if(Range<Zone.Radius)
+                {
+                    if (!Zone.AllowedClasses_ByID.Contains(GridClassId.Value))
+                    {
+                        IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
+                        IEnumerable<IMyFunctionalBlock> BlocksOnGrid = MyGrid.GetFatBlocks<IMyFunctionalBlock>();
+                        foreach (IMyFunctionalBlock Block in BlocksOnGrid)
+                        {
+                            if(Block==null && !(Block is IMyBeacon)){continue;}
+                            if(Block.Enabled){Block.Enabled = false;}	
+                        }
+                    }
+                }
+            }
+
+        }
 
         private void FactionsOnFactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
         {

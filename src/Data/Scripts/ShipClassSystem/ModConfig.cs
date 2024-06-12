@@ -10,12 +10,12 @@ namespace ShipClassSystem
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
         [ProtoMember(1)] public bool Debug_Mode = false;
-        [ProtoMember(2)] public float MaxPossibleSpeed_MetersPerSecond = 120.0f;
-        [ProtoMember(3)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-        [ProtoMember(4)] private GridClass[] _gridClasses;
-        [ProtoMember(5)] public string[] IgnoreFactionTags = { "SPRT" };
-        [ProtoMember(6)] public bool IncludeAiFactions = false;
-
+        [ProtoMember(2)] public List<Zones> NoFlyZones = new List<Zones>{new Zones{AllowedClasses_ByID=new List<long>{301,302,303},Radius=1000.0f},};
+        [ProtoMember(3)] public string[] IgnoreFactionTags = {"SPRT"};
+        [ProtoMember(4)] public bool IncludeAiFactions = false;
+        [ProtoMember(5)] public float MaxPossibleSpeed_MetersPerSecond = 120.0f;
+        [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
         {
             get { return _defaultGridClass; }
@@ -100,7 +100,22 @@ namespace ShipClassSystem
             }
         }
     }
+    [ProtoContract]
+	public class Zones {
+        [ProtoMember(1)]
+		public int ID {get; set;}
+        [ProtoMember(2)]
+		public double X {get; set;}
+        [ProtoMember(3)]
+		public double Y {get; set;}
+        [ProtoMember(4)]
+		public double Z {get; set;}
+        [ProtoMember(5)]
+		public double Radius{get; set;}
+        [ProtoMember(6)]
+        public List<long> AllowedClasses_ByID = new List<long>();
 
+		}
     [ProtoContract]
     public class GridClass
     {
@@ -162,7 +177,7 @@ namespace ShipClassSystem
         [ProtoMember(9)]
         public float ThrusterForce = 1;
         [ProtoMember(10)]
-        public float MaxSpeed = 100.0f;
+        public float MaxSpeed = 80.0f;
 
         public override string ToString()
         {

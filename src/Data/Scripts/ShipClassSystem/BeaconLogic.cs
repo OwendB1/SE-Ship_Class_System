@@ -57,8 +57,7 @@ namespace ShipClassSystem
 
         public void UpdateBeacon()
         {
-            var gridClass =
-                GridLogic?.GridClass; //<this was returning null, either because Beacon = null, or GetGridLogic isn't working
+            var gridClass =GridLogic?.GridClass; //<this was returning null, either because Beacon = null, or GetGridLogic isn't working
 
             if (gridClass == null) return;
 
