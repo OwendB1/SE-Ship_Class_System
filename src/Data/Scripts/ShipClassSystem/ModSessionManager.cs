@@ -85,7 +85,11 @@ namespace ShipClassSystem
             var grid = ent as IMyCubeGrid;
             if (grid == null) return;
             if (CubeGridLogics.ContainsKey(grid.EntityId))
+            {
+                try{
                 CubeGridLogics[grid.EntityId].RemoveGridLogic();
+                }catch{Utils.Log($"Cubegrid was not accessible in list due to silly witchcraft shenanagins:{grid.EntityId}");}
+            }
         }
 
         private void HookDamageHandler()
