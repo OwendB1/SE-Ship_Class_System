@@ -1,4 +1,5 @@
-﻿namespace ShipClassSystem
+﻿using System.Collections.Generic;
+namespace ShipClassSystem
 {
     internal static class DefaultGridClassConfig
     {
@@ -204,6 +205,9 @@
             RefineEfficiency = 1,
             RefineSpeed = 1,
             MaxSpeed = 30.0f,
+            MaxBoost=1.2f,
+            BoostDuration=10f,
+            BoostCoolDown=60f,
         };
 
         public static GridDamageModifiers DefaultGridDamageModifiers2X = new GridDamageModifiers
@@ -252,6 +256,11 @@
         public static ModConfig DefaultModConfig = new ModConfig
         {
             DefaultGridClass = DefaultGridClassDefinition,
+            Debug_Mode = false,
+            NoFlyZones = new List<Zones>{new Zones{AllowedClasses_ByID=new List<long>{301,302,303},Radius=1000.0f},},
+            IgnoreFactionTags =new string[]{"SPRT"},
+            IncludeAiFactions = false,
+            MaxPossibleSpeed_MetersPerSecond = 120.0f,
             GridClasses = new[]
             /*
             Key:
@@ -486,6 +495,9 @@
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         MaxSpeed=100.0f,
+                        MaxBoost=1.1f,
+                        BoostDuration=10f,
+                        BoostCoolDown=60f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -559,6 +571,9 @@
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1.5f,
                         MaxSpeed=90.0f,
+                        MaxBoost=1.1f,
+                        BoostDuration=10f,
+                        BoostCoolDown=60f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -632,6 +647,9 @@
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1f,
                         MaxSpeed=100.0f,
+                        MaxBoost=1.1f,
+                        BoostDuration=10f,
+                        BoostCoolDown=120f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -699,6 +717,9 @@
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 2f,
                         MaxSpeed=80.0f,
+                        MaxBoost=1.2f,
+                        BoostDuration=5f,
+                        BoostCoolDown=60f,
                         
                     },
                     DamageModifiers = new GridDamageModifiers
@@ -761,6 +782,9 @@
                         DrillHarvestMultiplier = 5,
                         PowerProducersOutput = 2f,
                         MaxSpeed=70.0f,
+                        MaxBoost=1.5f,
+                        BoostDuration=10f,
+                        BoostCoolDown=300f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -998,6 +1022,9 @@
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         MaxSpeed=115.0f,
+                        MaxBoost=1.1f,
+                        BoostDuration=15f,
+                        BoostCoolDown=30f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {

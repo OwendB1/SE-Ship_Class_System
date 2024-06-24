@@ -38,8 +38,13 @@ namespace ShipClassSystem
 
             _remote.AppendingCustomInfo += AppendingCustomInfo;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
+            NeedsUpdate |= MyEntityUpdateEnum.EACH_FRAME;
         }
-
+        public override void UpdateAfterSimulation()
+        {
+            if (GridLogic == null || _remote.CubeGrid == null || _remote.CubeGrid.IsStatic || !_remote.IsUnderControl){return;}
+            GridLogic.EnforceSpeedLimit(_remote.CubeGrid);
+        }
         public override void UpdateAfterSimulation100()
         {
             base.UpdateAfterSimulation100();

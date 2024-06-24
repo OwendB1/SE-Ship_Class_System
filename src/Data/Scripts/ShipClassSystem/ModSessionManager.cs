@@ -13,7 +13,7 @@ namespace ShipClassSystem
     {
         public static ModSessionManager Instance;
         public static ModConfig Config;
-
+        //public static string ModPath = MyAPIGateway.Session.ModContext.ModPath;
         public Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         public readonly Queue<IMyEntity> ToBeInitialized = new Queue<IMyEntity>();
 
@@ -32,6 +32,7 @@ namespace ShipClassSystem
                     ModConfig.SaveConfig(Config, Constants.ConfigFilename);
                 }
             } else Comms.RequestConfig();
+            //Utils.Log("Mod Path: "+ModPath);
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;

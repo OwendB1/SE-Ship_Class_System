@@ -9,11 +9,11 @@ namespace ShipClassSystem
     public class ModConfig
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
-        [ProtoMember(1)] public bool Debug_Mode = false;
-        [ProtoMember(2)] public List<Zones> NoFlyZones = new List<Zones>{new Zones{AllowedClasses_ByID=new List<long>{301,302,303},Radius=1000.0f},};
-        [ProtoMember(3)] public string[] IgnoreFactionTags = {"SPRT"};
-        [ProtoMember(4)] public bool IncludeAiFactions = false;
-        [ProtoMember(5)] public float MaxPossibleSpeed_MetersPerSecond = 120.0f;
+        [ProtoMember(1)] public bool Debug_Mode;
+        [ProtoMember(2)] public List<Zones> NoFlyZones;
+        [ProtoMember(3)] public string[] IgnoreFactionTags;
+        [ProtoMember(4)] public bool IncludeAiFactions;
+        [ProtoMember(5)] public float MaxPossibleSpeed_MetersPerSecond;
         [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
         [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
@@ -178,6 +178,12 @@ namespace ShipClassSystem
         public float ThrusterForce = 1;
         [ProtoMember(10)]
         public float MaxSpeed = 80.0f;
+        [ProtoMember(11)]
+        public float MaxBoost = 1.2f;
+        [ProtoMember(12)]
+        public float BoostDuration = 10f; 
+        [ProtoMember(13)]
+        public float BoostCoolDown = 60f; 
 
         public override string ToString()
         {
