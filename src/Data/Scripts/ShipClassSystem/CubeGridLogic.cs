@@ -179,7 +179,6 @@ namespace ShipClassSystem
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
-                subgrid.OnGridMerge += OnGridMerge;
                 subgrid.SpeedChanged += OnSpeedChanged;
                 subgrid.GridPresenceTierChanged+=EnforceNoFlyZones;
 

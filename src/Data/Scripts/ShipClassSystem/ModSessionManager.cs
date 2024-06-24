@@ -58,8 +58,10 @@ namespace ShipClassSystem
             List<string> AmmoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber","Flare","FireworkBlue","FireworkGreen","FireworkRed","FireworkPink","FireworkYellow","FireworkRainbow","Shrapnel"};
             foreach(string AmmoID in AmmoDefinitions)
             {
-                MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
-                if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed-=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
+                try{
+                    MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
+                    if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed-=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
+                }catch{Utils.Log($"Vanilla AmmoType {AmmoID} is missing.");}
             }
             //foreach (var logic in CubeGridLogics)
             //{
