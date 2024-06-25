@@ -316,29 +316,37 @@ namespace ShipClassSystem
         }
         private void GridClassHasChanged()
         {
-            Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
-
-            GridsPerFactionClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
-            GridsPerPlayerClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
-            Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
-
-            BlocksPerLimit.Clear();
-            foreach (var blockLimit in GridClass.BlockLimits)
+            try
             {
-                var blockVals = new List<KeyValuePair<IMyCubeBlock, double>>();
-                foreach (var blockType in blockLimit.BlockTypes)
+                GridsPerFactionClassManager.Reset();
+                foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
+                GridsPerPlayerClassManager.Reset();
+                foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
+                Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
+
+                BlocksPerLimit.Clear();
+                foreach (var blockLimit in GridClass.BlockLimits)
                 {
-                    var countingBlocks = Blocks
-                        .Where(b => Utils.GetBlockTypeId(b) == blockType.TypeId &&
-                                    Utils.GetBlockSubtypeId(b) == blockType.SubtypeId);
-                    blockVals.AddRange(countingBlocks.Select(bl => new KeyValuePair<IMyCubeBlock, double>(bl, blockType.CountWeight)));
+                    var blockVals = new List<KeyValuePair<IMyCubeBlock, double>>();
+                    foreach (var blockType in blockLimit.BlockTypes)
+                    {
+                        var countingBlocks = Blocks
+                            .Where(b => Utils.GetBlockTypeId(b) == blockType.TypeId &&
+                                        Utils.GetBlockSubtypeId(b) == blockType.SubtypeId);
+                        blockVals.AddRange(countingBlocks.Select(bl => new KeyValuePair<IMyCubeBlock, double>(bl, blockType.CountWeight)));
+                    }
+                    BlocksPerLimit[blockLimit] = blockVals;
                 }
-                BlocksPerLimit[blockLimit] = blockVals;
+                EnforceBlockPunishment();
+                ApplyModifiers();
             }
-            EnforceBlockPunishment();
-            ApplyModifiers();
+            catch (Exception e)
+            {
+                Utils.Log("CubeGridLogic::OnGridClassChanged: Unable to set Class Becuase:", 3);
+                Utils.LogException(e);
+                return;
+            }
+            Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
         }
 
         private void OnBlockAdded(IMySlimBlock obj)

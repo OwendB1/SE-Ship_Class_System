@@ -47,9 +47,8 @@ namespace ShipClassSystem
         {
             var GridLogic = obj.GetMainGridLogic();
             if(GridLogic==null){Utils.Log("gridnotfound");return(false);}
+            if(!(GridLogic.Modifiers.MaxBoost>1)){return(false);}
             if(GridLogic.BoostCoolDown==null){Utils.Log("BoostCooldown");return(false);}
-
-            bool Enabled = !(GridLogic.BoostCoolDown>0);
             return(true);
         }
         private IMyTerminalAction GetBoostButton(string name, Func<IMyTerminalBlock, bool> isEnabled)

@@ -876,6 +876,7 @@ namespace ShipClassSystem
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         MaxSpeed=120.0f,
+                        MaxBoost=1f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -949,6 +950,9 @@ namespace ShipClassSystem
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
                         MaxSpeed=120.0f,
+                        MaxBoost=1f,
+                        BoostDuration=5f,
+                        BoostCoolDown=60f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
