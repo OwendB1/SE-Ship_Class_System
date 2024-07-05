@@ -203,6 +203,10 @@ namespace ShipClassSystem
             yield return new ModifierNameValue("Assembler speed", AssemblerSpeed);
             yield return new ModifierNameValue("Power output", PowerProducersOutput);
             yield return new ModifierNameValue("Drill harvest", DrillHarvestMultiplier);
+            yield return new ModifierNameValue("Max speed", MaxSpeed);
+            yield return new ModifierNameValue("Max boost", MaxBoost);
+            yield return new ModifierNameValue("Boost duration", BoostDuration);
+            yield return new ModifierNameValue("Boost cooldown", BoostCoolDown);
         }
     }
 
