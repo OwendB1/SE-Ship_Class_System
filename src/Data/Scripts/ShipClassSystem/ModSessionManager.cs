@@ -33,6 +33,12 @@ namespace ShipClassSystem
                     Config = DefaultGridClassConfig.DefaultModConfig;
                     ModConfig.SaveConfig(Config, Constants.ConfigFilename);
                 }
+                if (Config.Version != "1.2")
+                {
+                    Utils.Log("Config version is outdated, crashing now!");
+                    throw new System.Exception("Config version is outdated, crashing now!");
+                }
+
             } else Comms.RequestConfig();
             //Utils.Log("Mod Path: "+ModPath);
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;

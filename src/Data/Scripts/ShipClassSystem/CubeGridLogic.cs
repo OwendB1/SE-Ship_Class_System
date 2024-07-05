@@ -38,7 +38,15 @@ namespace ShipClassSystem
 
                 var withinFactionLimit = GridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
                 var withinPlayerLimit = GridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
-                var hasMinimumPlayerCount = OwningFaction.Members.Count >= gridClass.MinPlayers;
+                
+                bool hasMinimumPlayerCount;
+                if (OwningFaction == null)
+                {
+                    hasMinimumPlayerCount = gridClass.MinPlayers <= 1;
+                } else
+                {
+                    hasMinimumPlayerCount = gridClass.MinPlayers <= OwningFaction.Members.Count;
+                }
                 
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
                 if (!withinFactionLimit)
@@ -153,7 +161,16 @@ namespace ShipClassSystem
                 var gridClassId = long.TryParse(value, out id) ? id : 0;
 
                 var gridClass = ModSessionManager.Config.GetGridClassById(gridClassId);
-                if (OwningFaction != null && OwningFaction.Members.Count < gridClass.MinPlayers) gridClassId = 0;
+                if (OwningFaction == null && 1 < gridClass.MinPlayers)
+                {
+                    gridClassId = 0;
+                }
+                else if (OwningFaction?.Members.Count < gridClass.MinPlayers)
+                {
+                    gridClassId = 0;
+                }
+
+                if (OwningFaction.Members.Count < gridClass.MinPlayers) gridClassId = 0;
 
                 Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
                 _gridClassId = gridClassId;
