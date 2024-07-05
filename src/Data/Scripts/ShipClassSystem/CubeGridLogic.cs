@@ -165,7 +165,7 @@ namespace ShipClassSystem
                 {
                     gridClassId = 0;
                 }
-                else if (gridClass.MinPlayers > OwningFaction?.Members.Count)
+                else if (gridClass.MinPlayers > OwningFaction.Members.Count)
                 {
                     gridClassId = 0;
                 }
