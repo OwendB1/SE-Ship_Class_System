@@ -8,7 +8,6 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
-using Sandbox.Game.Replication;
 
 namespace ShipClassSystem
 {
@@ -35,8 +34,12 @@ namespace ShipClassSystem
             get { return _gridClassId; }
             set
             {
+                var gridClass = ModSessionManager.Config.GetGridClassById(value);
+
                 var withinFactionLimit = GridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
                 var withinPlayerLimit = GridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
+                var hasMinimumPlayerCount = OwningFaction.Members.Count >= gridClass.MinPlayers;
+                
                 Utils.Log($"Within Faction limit: { withinFactionLimit } | Within Player limit: { withinPlayerLimit }");
                 if (!withinFactionLimit)
                 {
@@ -48,8 +51,12 @@ namespace ShipClassSystem
                     Utils.ShowNotification("Grid is not within allowed limit assigned to the player!", Grid);
                     return;
                 }
-
-                var gridClass = ModSessionManager.Config.GetGridClassById(value);
+                if (!hasMinimumPlayerCount)
+                {
+                    Utils.ShowNotification("Faction does not have enough players to use this class!", Grid);
+                    return;
+                }
+                
                 var maxBlocks = gridClass.MaxBlocks;
                 var maxPCU = gridClass.MaxPCU;
                 var maxMass = gridClass.MaxMass;
@@ -144,6 +151,10 @@ namespace ShipClassSystem
             {
                 long id;
                 var gridClassId = long.TryParse(value, out id) ? id : 0;
+
+                var gridClass = ModSessionManager.Config.GetGridClassById(gridClassId);
+                if (OwningFaction != null && OwningFaction.Members.Count < gridClass.MinPlayers) gridClassId = 0;
+
                 Utils.Log($"[CubeGridLogic] Assigning GridClassId = {gridClassId}");
                 _gridClassId = gridClassId;
             }
@@ -156,11 +167,11 @@ namespace ShipClassSystem
             //Speeds
             if (Grid.Storage.TryGetValue(Constants.ConfigurableSpeedGUID, out value))
             {
-                float BoostVar;
-                var ShipSpeedData = float.TryParse(value, out BoostVar) ? new List<float> { BoostVar } : new List<float> { 0, 0 };
+                float boostVar;
+                var shipSpeedData = float.TryParse(value, out boostVar) ? new List<float> { boostVar } : new List<float> { 0, 0 };
                 Utils.Log($"[CubeGridLogic] Assigning VelocityData");
-                BoostDuration=ShipSpeedData[0];
-                BoostCoolDown=ShipSpeedData[0];
+                BoostDuration=shipSpeedData[0];
+                BoostCoolDown=shipSpeedData[0];
             }
             else
             {
@@ -168,7 +179,7 @@ namespace ShipClassSystem
                 BoostCoolDown=DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown;     
                 Grid.Storage[Constants.ConfigurableSpeedGUID] = (new List<float>{DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration,DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown}).ToString();
             }
-            // If subgrid then blacklist and add blocks to main grid
+
             if (!AddGridLogic()) return;
 
             List<IMyCubeGrid> subgrids;
@@ -342,7 +353,7 @@ namespace ShipClassSystem
             }
             catch (Exception e)
             {
-                Utils.Log("CubeGridLogic::OnGridClassChanged: Unable to set Class Becuase:", 3);
+                Utils.Log("CubeGridLogic::OnGridClassChanged: Unable to set Class Because:", 3);
                 Utils.LogException(e);
                 return;
             }
@@ -426,31 +437,39 @@ namespace ShipClassSystem
         {
             EnforceBlockPunishment();
         }
+
         private void OnSpeedChanged(IMyCubeGrid obj)
         {
             EnforceNoFlyZones(obj);
         }
+
         public void EnforceSpeedLimit(IMyCubeGrid obj)
         {
             var gridLogic = obj.GetMainGridLogic();
             var gridClass = gridLogic?.GridClass;
-            if(gridLogic.BoostDuration==null || gridLogic.BoostCoolDown==null)
+            if (gridClass == null) return;
+            if(gridLogic?.BoostDuration == null || gridLogic?.BoostCoolDown == null)
             {
                 string value;
                 if (Grid.Storage.TryGetValue(Constants.ConfigurableSpeedGUID, out value))
                 {
-                    float BoostVar;
-                    var ShipSpeedData = float.TryParse(value, out BoostVar) ? new List<float> { BoostVar } : new List<float> { gridClass?.Modifiers.BoostDuration ?? (ModSessionManager.Config.DefaultGridClass.Modifiers.BoostDuration*60.0f), 0 };
-                    gridLogic.BoostDuration = ShipSpeedData[0];
-                    gridLogic.BoostCoolDown = ShipSpeedData[1];
+                    float boostVar;
+                    var shipSpeedData = float.TryParse(value, out boostVar) ? new List<float> { boostVar } : new List<float> { gridClass.Modifiers?.BoostDuration ?? ModSessionManager.Config.DefaultGridClass.Modifiers.BoostDuration*60.0f, 0 };
+                    gridLogic.BoostDuration = shipSpeedData[0];
+                    gridLogic.BoostCoolDown = shipSpeedData[1];
                 }
             }
-            if(gridLogic.BoostDuration==0 && gridLogic.BoostCoolDown==0){gridLogic.BoostDuration = gridClass.Modifiers.BoostDuration * 60.0f;}
-            float LimitedSpeed =gridClass?.Modifiers?.MaxSpeed ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxSpeed;
-            float BoostSpeed = gridClass?.Modifiers?.MaxBoost ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxBoost;
 
-            IMyCubeGrid MyGrid = obj as IMyCubeGrid;
-            Vector3 velocity = MyGrid.Physics.LinearVelocity;
+            if (gridLogic.BoostDuration == 0 && gridLogic.BoostCoolDown == 0)
+            {
+                gridLogic.BoostDuration = gridClass.Modifiers.BoostDuration * 60.0f;
+            }
+
+            var limitedSpeed = gridClass.Modifiers?.MaxSpeed ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxSpeed;
+            var boostSpeed = gridClass.Modifiers?.MaxBoost ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxBoost;
+
+            var myGrid = obj;
+            var velocity = myGrid.Physics.LinearVelocity;
             // If cooldown is active, decrement it
             if (gridLogic.BoostCoolDown > 0)
             {
@@ -464,14 +483,14 @@ namespace ShipClassSystem
             // Check if boost is enabled and cooldown is inactive
             if (gridLogic.EnableBoost && (gridLogic.BoostDuration>0f))
             {
-                LimitedSpeed *= BoostSpeed;
+                limitedSpeed *= boostSpeed;
                 gridLogic.BoostDuration -= 1.0f;
                 // If boost duration is depleted, start cooldown
                 if (gridLogic.BoostDuration <= 0f)
                 {
                     gridLogic.BoostCoolDown = gridClass.Modifiers.BoostCoolDown * 60.0f;
                     gridLogic.EnableBoost = false;
-                    Utils.ShowNotification("Booster Disengaged!",MyGrid,600);
+                    Utils.ShowNotification("Booster Disengaged!",myGrid,600);
                 }
             }
 
@@ -479,37 +498,30 @@ namespace ShipClassSystem
             Grid.Storage[Constants.ConfigurableSpeedGUID] = new List<float> {gridLogic.BoostDuration, gridLogic.BoostCoolDown}.ToString();
 
             // Ensure the velocity does not exceed the limited speed
-            if (velocity.LengthSquared() > LimitedSpeed * LimitedSpeed)
+            if (velocity.LengthSquared() > limitedSpeed * limitedSpeed)
             {
-                velocity = Vector3.Normalize(velocity) * LimitedSpeed;
+                velocity = Vector3.Normalize(velocity) * limitedSpeed;
             }
             // Apply the calculated velocity
-            MyGrid.Physics.SetSpeeds(velocity, MyGrid.Physics.AngularVelocity);
+            myGrid.Physics.SetSpeeds(velocity, myGrid.Physics.AngularVelocity);
             //Utils.Log($"Cooldown: {gridLogic.BoostCoolDown}\nDuration: {gridLogic.BoostDuration}");
         }
 
         private void EnforceNoFlyZones(IMyCubeGrid obj)
         {
             var gridLogic=obj.GetMainGridLogic();
-            var GridClassId = gridLogic?.GridClass?.Id;
-            if (GridClassId == null){GridClassId=0;}
-            foreach(Zones Zone in ModSessionManager.Config.NoFlyZones)
+            var gridClassId = gridLogic?.GridClass?.Id ?? 0;
+            foreach (IMyFunctionalBlock block in from zone in ModSessionManager.Config.NoFlyZones 
+                     let range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(zone.X, zone.Y, zone.Z)) 
+                     where range<zone.Radius 
+                     where !zone.AllowedClasses_ByID.Contains(gridClassId) 
+                     select obj into myGrid 
+                     select myGrid.GetFatBlocks<IMyFunctionalBlock>() into blocksOnGrid 
+                     from block in blocksOnGrid 
+                     where block != null 
+                     where block.Enabled select block)
             {
-                var Range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(Zone.X, Zone.Y, Zone.Z));
-                //Utils.Log($"Grid ID: {GridClassId}\nNoFlyZone ID:{Zone.ID}\nDistance From NoFlyZone:{Range}\nZone Radius:{Zone.Radius}");
-                if(Range<Zone.Radius)
-                {
-                    if (!Zone.AllowedClasses_ByID.Contains(GridClassId.Value))
-                    {
-                        IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
-                        IEnumerable<IMyFunctionalBlock> BlocksOnGrid = MyGrid.GetFatBlocks<IMyFunctionalBlock>();
-                        foreach (IMyFunctionalBlock Block in BlocksOnGrid)
-                        {
-                            if(Block==null && !(Block is IMyBeacon)){continue;}
-                            if(Block.Enabled){Block.Enabled = false;}	
-                        }
-                    }
-                }
+                block.Enabled = false;
             }
 
         }

@@ -2,6 +2,8 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
+using System.Linq;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -17,7 +19,7 @@ namespace ShipClassSystem
         public Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
         public readonly Queue<IMyEntity> ToBeInitialized = new Queue<IMyEntity>();
 
-        private int _lastFrameInit;
+        private int _lastFrameInit = 0;
         internal static Comms Comms;
 
         public override void LoadData()
@@ -36,16 +38,28 @@ namespace ShipClassSystem
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
+            MyAPIGateway.Session.Factions.FactionStateChanged += FactionStateChanged;
             MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
             MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
-            float SpeedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
-            List<string> AmmoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber"};
-            foreach(string AmmoID in AmmoDefinitions)
+            var speedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            var ammoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber"};
+            foreach(var ammoId in ammoDefinitions)
             {
-                MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
-                if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed+=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
+                var ammoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), ammoId));
+                if (ammoDefinition != null){ammoDefinition.DesiredSpeed+=speedDifferential;}else{Utils.Log($"AmmoType: {ammoId} was not sucessfully adjusted to match maxspeed");}
             }
             Instance = this;
+        }
+
+        private void FactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long factionId, long playerId)
+        {
+            if (action != MyFactionStateChange.FactionMemberKick && action != MyFactionStateChange.FactionMemberLeave) return;
+            Utils.Log($"FactionStateChanged: {action} from {fromFactionId} to {toFactionId} for faction {factionId} and player {playerId}");
+            var factionGridLogics = CubeGridLogics.Where(x => x.Value.OwningFaction?.FactionId == factionId).ToList();
+            foreach (var gridLogic in factionGridLogics.Where(gridLogic => gridLogic.Value.OwningFaction.Members.Count < gridLogic.Value.GridClass.MinPlayers))
+            {
+                gridLogic.Value.GridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
+            }
         }
 
         protected override void UnloadData()
@@ -54,14 +68,14 @@ namespace ShipClassSystem
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
             MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
-            float SpeedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
-            List<string> AmmoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber","Flare","FireworkBlue","FireworkGreen","FireworkRed","FireworkPink","FireworkYellow","FireworkRainbow","Shrapnel"};
-            foreach(string AmmoID in AmmoDefinitions)
+            var speedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            var ammoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber","Flare","FireworkBlue","FireworkGreen","FireworkRed","FireworkPink","FireworkYellow","FireworkRainbow","Shrapnel"};
+            foreach(var ammoId in ammoDefinitions)
             {
                 try{
-                    MyAmmoDefinition AmmoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), AmmoID)) as MyAmmoDefinition;
-                    if (AmmoDefinition != null){AmmoDefinition.DesiredSpeed-=SpeedDifferential;}else{Utils.Log($"AmmoType: {AmmoID} was not sucessfully adjusted to match maxspeed");}
-                }catch{Utils.Log($"Vanilla AmmoType {AmmoID} is missing.");}
+                    var ammoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), ammoId));
+                    if (ammoDefinition != null){ammoDefinition.DesiredSpeed -= speedDifferential;}else{Utils.Log($"AmmoType: {ammoId} was not sucessfully adjusted to match maxspeed");}
+                }catch{Utils.Log($"Vanilla AmmoType {ammoId} is missing.");}
             }
             //foreach (var logic in CubeGridLogics)
             //{
@@ -86,11 +100,14 @@ namespace ShipClassSystem
         {
             var grid = ent as IMyCubeGrid;
             if (grid == null) return;
-            if (CubeGridLogics.ContainsKey(grid.EntityId))
+            if (!CubeGridLogics.ContainsKey(grid.EntityId)) return;
+            try
             {
-                try{
                 CubeGridLogics[grid.EntityId].RemoveGridLogic();
-                }catch{Utils.Log($"Cubegrid was not accessible in list due to silly witchcraft shenanagins:{grid.EntityId}");}
+            }
+            catch
+            {
+                Utils.Log($"Cubegrid was not accessible in list due to silly witchcraft shenanagins:{grid.EntityId}");
             }
         }
 
@@ -103,7 +120,7 @@ namespace ShipClassSystem
         {
             if (Config == null) return;
             var initWaited = MyAPIGateway.Session.GameplayFrameCounter - _lastFrameInit;
-            if (ToBeInitialized.Count <= 1 || initWaited < 60) return;
+            if (ToBeInitialized.Count < 1 || initWaited < 60) return;
             if (Constants.IsClient && MyAPIGateway.Session.ControlledObject == null) return;
             var target = ToBeInitialized.Dequeue();
             var logic = new CubeGridLogic();

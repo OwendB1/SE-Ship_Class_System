@@ -147,10 +147,10 @@ namespace ShipClassSystem
                 //new select the faction with the most owners
                 ownersPerFaction.MaxBy(kvp => kvp.Value).Key;
         }
+
         public static long GetGridOwner(IMyCubeGrid grid)
         {
-            if (grid.BigOwners[0]==null){return grid.BigOwners[1];}
-            else{return grid.BigOwners[0];}
+            return grid.BigOwners[0];
         }
 
     }
