@@ -253,14 +253,15 @@ namespace ShipClassSystem
                 },
             }
         };
+
         public static ModConfig DefaultModConfig = new ModConfig
         {
             DefaultGridClass = DefaultGridClassDefinition,
-            Debug_Mode = false,
-            NoFlyZones = new List<Zones>{new Zones{AllowedClasses_ByID=new List<long>{301,302,303},Radius=1000.0f},},
-            IgnoreFactionTags =new string[]{"SPRT"},
+            DebugMode = false,
+            NoFlyZones = new List<Zones>{new Zones{AllowedClassesById=new List<long>{301,302,303},Radius=1000.0f},},
+            IgnoreFactionTags = new[]{"SPRT"},
             IncludeAiFactions = false,
-            MaxPossibleSpeed_MetersPerSecond = 120.0f,
+            MaxPossibleSpeedMetersPerSecond = 120.0f,
             GridClasses = new[]
             /*
             Key:
@@ -823,7 +824,7 @@ namespace ShipClassSystem
                             MaxCount = 100,
                             BlockTypes = new[]
                             {
-                            //vanilla small grid fixex weapons
+                            //vanilla small grid fixed weapons
                                 new BlockType("SmallGatlingGun","",1),
                                 new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2",1),
                                 new BlockType("SmallGatlingGun", "SmallBlockAutocannon",1.5f),

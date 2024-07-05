@@ -9,11 +9,11 @@ namespace ShipClassSystem
     public class ModConfig
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
-        [ProtoMember(1)] public bool Debug_Mode;
+        [ProtoMember(1)] public bool DebugMode;
         [ProtoMember(2)] public List<Zones> NoFlyZones;
         [ProtoMember(3)] public string[] IgnoreFactionTags;
         [ProtoMember(4)] public bool IncludeAiFactions;
-        [ProtoMember(5)] public float MaxPossibleSpeed_MetersPerSecond;
+        [ProtoMember(5)] public float MaxPossibleSpeedMetersPerSecond;
         [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
         [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
@@ -103,7 +103,7 @@ namespace ShipClassSystem
     [ProtoContract]
 	public class Zones {
         [ProtoMember(1)]
-		public int ID {get; set;}
+		public int Id {get; set;}
         [ProtoMember(2)]
 		public double X {get; set;}
         [ProtoMember(3)]
@@ -113,7 +113,7 @@ namespace ShipClassSystem
         [ProtoMember(5)]
 		public double Radius{get; set;}
         [ProtoMember(6)]
-        public List<long> AllowedClasses_ByID = new List<long>();
+        public List<long> AllowedClassesById = new List<long>();
 
 		}
     [ProtoContract]

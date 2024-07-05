@@ -169,7 +169,7 @@ namespace ShipClassSystem
             {
                 float boostVar;
                 var shipSpeedData = float.TryParse(value, out boostVar) ? new List<float> { boostVar } : new List<float> { 0, 0 };
-                Utils.Log($"[CubeGridLogic] Assigning VelocityData");
+                Utils.Log("[CubeGridLogic] Assigning VelocityData");
                 BoostDuration=shipSpeedData[0];
                 BoostCoolDown=shipSpeedData[0];
             }
@@ -514,7 +514,7 @@ namespace ShipClassSystem
             foreach (IMyFunctionalBlock block in from zone in ModSessionManager.Config.NoFlyZones 
                      let range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(zone.X, zone.Y, zone.Z)) 
                      where range<zone.Radius 
-                     where !zone.AllowedClasses_ByID.Contains(gridClassId) 
+                     where !zone.AllowedClassesById.Contains(gridClassId) 
                      select obj into myGrid 
                      select myGrid.GetFatBlocks<IMyFunctionalBlock>() into blocksOnGrid 
                      from block in blocksOnGrid 

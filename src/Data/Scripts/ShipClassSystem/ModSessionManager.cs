@@ -39,9 +39,9 @@ namespace ShipClassSystem
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionStateChanged;
-            MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
-            MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeed_MetersPerSecond;
-            var speedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
+            MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
+            var speedDifferential = Config.MaxPossibleSpeedMetersPerSecond-100.0f;
             var ammoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber"};
             foreach(var ammoId in ammoDefinitions)
             {
@@ -68,7 +68,7 @@ namespace ShipClassSystem
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             MyAPIGateway.Entities.OnEntityAdd -= EntityAdded;
             MyAPIGateway.Session.OnSessionReady -= HookDamageHandler;
-            var speedDifferential = Config.MaxPossibleSpeed_MetersPerSecond-100.0f;
+            var speedDifferential = Config.MaxPossibleSpeedMetersPerSecond-100.0f;
             var ammoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber","Flare","FireworkBlue","FireworkGreen","FireworkRed","FireworkPink","FireworkYellow","FireworkRainbow","Shrapnel"};
             foreach(var ammoId in ammoDefinitions)
             {
