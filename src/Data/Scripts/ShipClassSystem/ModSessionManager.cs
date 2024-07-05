@@ -34,7 +34,7 @@ namespace ShipClassSystem
                     Config = DefaultGridClassConfig.DefaultModConfig;
                     ModConfig.SaveConfig(Config, Constants.ConfigFilename);
                 }
-                if (Config.Version != "1.2")
+                if (Config.Version != "1.3")
                 {
                     Utils.Log("Config version is outdated, crashing now!");
                     throw new Exception("Config version is outdated, crashing now!");
