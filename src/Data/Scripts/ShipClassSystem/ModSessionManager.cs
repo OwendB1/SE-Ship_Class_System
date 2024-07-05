@@ -1,4 +1,5 @@
-﻿using Sandbox.Definitions;
+﻿using System;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace ShipClassSystem
                 if (Config.Version != "1.2")
                 {
                     Utils.Log("Config version is outdated, crashing now!");
-                    throw new System.Exception("Config version is outdated, crashing now!");
+                    throw new Exception("Config version is outdated, crashing now!");
                 }
 
             } else Comms.RequestConfig();
