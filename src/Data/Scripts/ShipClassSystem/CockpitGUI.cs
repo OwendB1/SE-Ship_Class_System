@@ -19,6 +19,7 @@ namespace ShipClassSystem
         private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall" };
         private readonly List<IMyTerminalControl> _cockpitControls = new List<IMyTerminalControl>();
         private readonly List<IMyTerminalAction> _cockpitActions = new List<IMyTerminalAction>();
+
         public override void BeforeStart()
         {
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
@@ -29,8 +30,9 @@ namespace ShipClassSystem
                 cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
             _cockpitControls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
                 cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-            _cockpitActions.Add(GetBoostButton("BoostButton", BoostButtonAvalibility));
+            _cockpitActions.Add(GetBoostButton("BoostButton", BoostButtonAvailability));
         }
+
         private void BoostButtonWriter(IMyTerminalBlock block, StringBuilder sb)
         {
             var gridLogic = block.CubeGrid.GetMainGridLogic();
@@ -43,7 +45,8 @@ namespace ShipClassSystem
                 sb.Append("Boost: N/A");
             }
         }
-        private static bool BoostButtonAvalibility(IMyTerminalBlock obj)
+
+        private static bool BoostButtonAvailability(IMyTerminalBlock obj)
         {
             var gridLogic = obj.GetMainGridLogic();
             if(gridLogic==null)
@@ -56,11 +59,10 @@ namespace ShipClassSystem
             {
                 return false;
             }
-
-            if (gridLogic.BoostCoolDown != null) return true;
             Utils.Log("BoostCooldown");
-            return false;
+            return gridLogic.BoostCoolDown != null;
         }
+
         private IMyTerminalAction GetBoostButton(string name, Func<IMyTerminalBlock, bool> isEnabled)
         {
             var boostButton = MyAPIGateway.TerminalControls.CreateAction<IMyCockpit>(name);
