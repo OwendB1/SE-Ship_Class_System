@@ -8,24 +8,22 @@ using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
-using System.IO;
 
 namespace ShipClassSystem
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Cockpit), false)]
-    public class CockpitInfo : MyGameLogicComponent
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_RemoteControl), false)]
+    public class RemoteControlInfo : MyGameLogicComponent
     {
-        private IMyCockpit _cockpit;
-        //public CockpitInfo Instance;
-        private CubeGridLogic GridLogic => _cockpit?.GetMainGridLogic();
+        private IMyRemoteControl _remote;
+        private CubeGridLogic GridLogic => _remote?.GetMainGridLogic();
+
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             // the base methods are usually empty, except for OnAddedToContainer()'s, which has some sync stuff making it required to be called.
             base.Init(objectBuilder);
-            //Instance=this;
             if (!Constants.IsClient) return;
 
-            _cockpit = (IMyCockpit)Entity;
+            _remote = (IMyRemoteControl)Entity;
 
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
         }
@@ -35,16 +33,17 @@ namespace ShipClassSystem
             base.UpdateOnceBeforeFrame();
             if (!Constants.IsClient) return;
 
-            if (_cockpit.CubeGrid?.Physics == null)
+            if (_remote.CubeGrid?.Physics == null)
                 return; // ignore ghost/projected grids
-            _cockpit.AppendingCustomInfo += AppendingCustomInfo;
+
+            _remote.AppendingCustomInfo += AppendingCustomInfo;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
             NeedsUpdate |= MyEntityUpdateEnum.EACH_FRAME;
         }
         public override void UpdateAfterSimulation()
         {
-            if (GridLogic == null || _cockpit.CubeGrid == null || _cockpit.CubeGrid.IsStatic || !_cockpit.IsUnderControl){return;}
-            GridLogic.EnforceSpeedLimit(_cockpit.CubeGrid);
+            if (GridLogic == null || _remote.CubeGrid == null || _remote.CubeGrid.IsStatic || !_remote.IsUnderControl){return;}
+            GridLogic.EnforceSpeedLimit(_remote.CubeGrid);
         }
         public override void UpdateAfterSimulation100()
         {
@@ -54,8 +53,8 @@ namespace ShipClassSystem
             {
                 if (MyAPIGateway.Gui.GetCurrentScreen != MyTerminalPageEnum.ControlPanel) return;
                 //TODO only run this if grid check results actually change
-                _cockpit.RefreshCustomInfo();
-                _cockpit.SetDetailedInfoDirty();
+                _remote.RefreshCustomInfo();
+                _remote.SetDetailedInfoDirty();
             }
             catch (Exception e)
             {
@@ -69,7 +68,7 @@ namespace ShipClassSystem
             if (gridLogic == null) return;
 
             var gridClass = gridLogic.GridClass;
-            var concreteGrid = _cockpit.CubeGrid as MyCubeGrid;
+            var concreteGrid = _remote.CubeGrid as MyCubeGrid;
             if (gridClass == null || concreteGrid == null) return;
 
             var infoBuilder = new StringBuilder();

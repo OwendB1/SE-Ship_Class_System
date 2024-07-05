@@ -9,12 +9,13 @@ namespace ShipClassSystem
     public class ModConfig
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
-
-        [ProtoMember(1)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-        [ProtoMember(2)] private GridClass[] _gridClasses;
-        [ProtoMember(3)] public string[] IgnoreFactionTags = { "SPRT" };
-        [ProtoMember(4)] public bool IncludeAiFactions = false;
-
+        [ProtoMember(1)] public bool Debug_Mode;
+        [ProtoMember(2)] public List<Zones> NoFlyZones;
+        [ProtoMember(3)] public string[] IgnoreFactionTags;
+        [ProtoMember(4)] public bool IncludeAiFactions;
+        [ProtoMember(5)] public float MaxPossibleSpeed_MetersPerSecond;
+        [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
         {
             get { return _defaultGridClass; }
@@ -89,6 +90,7 @@ namespace ShipClassSystem
             try
             {
                 var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(filename, typeof(ModConfig));
+                //writer.Write("// Please use this GUI based tool by Skiittz for configuration https://github.com/skiittz/Ship-Class-System-Config-Editor\n");
                 writer.Write(MyAPIGateway.Utilities.SerializeToXML(config));
                 writer.Close();
             }
@@ -98,7 +100,22 @@ namespace ShipClassSystem
             }
         }
     }
+    [ProtoContract]
+	public class Zones {
+        [ProtoMember(1)]
+		public int ID {get; set;}
+        [ProtoMember(2)]
+		public double X {get; set;}
+        [ProtoMember(3)]
+		public double Y {get; set;}
+        [ProtoMember(4)]
+		public double Z {get; set;}
+        [ProtoMember(5)]
+		public double Radius{get; set;}
+        [ProtoMember(6)]
+        public List<long> AllowedClasses_ByID = new List<long>();
 
+		}
     [ProtoContract]
     public class GridClass
     {
@@ -159,6 +176,14 @@ namespace ShipClassSystem
         public float ThrusterEfficiency = 1;
         [ProtoMember(9)]
         public float ThrusterForce = 1;
+        [ProtoMember(10)]
+        public float MaxSpeed = 80.0f;
+        [ProtoMember(11)]
+        public float MaxBoost = 1.2f;
+        [ProtoMember(12)]
+        public float BoostDuration = 10f; 
+        [ProtoMember(13)]
+        public float BoostCoolDown = 60f; 
 
         public override string ToString()
         {

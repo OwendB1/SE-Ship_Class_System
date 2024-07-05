@@ -14,22 +14,22 @@ using System.IO;
 namespace ShipClassSystem
 {
     [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
-    public class CockpitGUI : MySessionComponentBase, IMyEventProxy
+    public class RemoteGUI : MySessionComponentBase, IMyEventProxy
     {
-        private static readonly string[] ControlsToHideIfNotMainCockpit = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall" };
-        private readonly List<IMyTerminalControl> _cockpitControls = new List<IMyTerminalControl>();
-        private readonly List<IMyTerminalAction> _cockpitActions = new List<IMyTerminalAction>();
+        private static readonly string[] ControlsToHideIfNotMainRemote = { "SetGridClassLargeStatic", "SetGridClassLargeMobile", "SetGridClassSmall" };
+        private readonly List<IMyTerminalControl> _remoteControls = new List<IMyTerminalControl>();
+        private readonly List<IMyTerminalAction> _remoteActions = new List<IMyTerminalAction>();
         public override void BeforeStart()
         {
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
             MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionGetter;
-            _cockpitControls.Add(GetCombobox("SetGridClassLargeStatic", SetComboboxContentLargeStatic,
-                cockpit => cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            _cockpitControls.Add(GetCombobox("SetGridClassLargeMobile", SetComboboxContentLargeGridMobile,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Large));
-            _cockpitControls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
-                cockpit => !cockpit.CubeGrid.IsStatic && cockpit.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-            _cockpitActions.Add(GetBoostButton("BoostButton", BoostButtonAvalibility));
+            _remoteControls.Add(GetCombobox("SetGridClassLargeStatic", SetComboboxContentLargeStatic,
+                remote => remote.CubeGrid.IsStatic && remote.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            _remoteControls.Add(GetCombobox("SetGridClassLargeMobile", SetComboboxContentLargeGridMobile,
+                remote => !remote.CubeGrid.IsStatic && remote.CubeGrid.GridSizeEnum == MyCubeSize.Large));
+            _remoteControls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
+                remote => !remote.CubeGrid.IsStatic && remote.CubeGrid.GridSizeEnum == MyCubeSize.Small));
+            _remoteActions.Add(GetBoostButton("BoostButton", BoostButtonAvalibility));
         }
         private void BoostButtonWriter(IMyTerminalBlock block, StringBuilder sb)
         {
@@ -53,7 +53,7 @@ namespace ShipClassSystem
         }
         private IMyTerminalAction GetBoostButton(string name, Func<IMyTerminalBlock, bool> isEnabled)
         {
-            var BoostButton = MyAPIGateway.TerminalControls.CreateAction<IMyCockpit>(name);
+            var BoostButton = MyAPIGateway.TerminalControls.CreateAction<IMyRemoteControl>(name);
             BoostButton.Enabled = isEnabled;
             BoostButton.Action = BoostButtonClicked;
             BoostButton.Icon=Path.Combine(ModContext.ModPath, "Textures", "BoostButton_Sad_Static.png");
@@ -79,29 +79,29 @@ namespace ShipClassSystem
 
         public void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            if (!(block is IMyCockpit)) return;
-            if (controls.Any(control => _cockpitControls.Contains(control))) return;
-            controls.AddRange(_cockpitControls);
-            foreach (var control in controls.Where(control => ControlsToHideIfNotMainCockpit.Contains(control.Id)))
+            if (!(block is IMyRemoteControl)) return;
+            if (controls.Any(control => _remoteControls.Contains(control))) return;
+            controls.AddRange(_remoteControls);
+            foreach (var control in controls.Where(control => ControlsToHideIfNotMainRemote.Contains(control.Id)))
                 control.Enabled = TerminalChainedDelegate.Create(control.Visible, VisibleIfIsMainOwner);
         }
         public void CustomActionGetter(IMyTerminalBlock block, List<IMyTerminalAction> controls)
         {
-            if (!(block is IMyCockpit)) return;
-            if (controls.Any(control => _cockpitActions.Contains(control))) return;
-            controls.AddRange(_cockpitActions);
+            if (!(block is IMyRemoteControl)) return;
+            if (controls.Any(control => _remoteActions.Contains(control))) return;
+            controls.AddRange(_remoteActions);
         }
         private static bool VisibleIfIsMainOwner(IMyTerminalBlock block)
         {
-            var cockpit = block as IMyCockpit;
-            if(cockpit.OwnerId==Utils.GetGridOwner(block.CubeGrid)){return true;}
-            else if(MyAPIGateway.Session.Factions.TryGetPlayerFaction(cockpit.OwnerId)==MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid))){return true;}
+            var remote = block as IMyRemoteControl;
+            if(remote.OwnerId==Utils.GetGridOwner(block.CubeGrid)){return true;}
+            else if(MyAPIGateway.Session.Factions.TryGetPlayerFaction(remote.OwnerId)==MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid))){return true;}
             else{return false;}
         }
         private static IMyTerminalControlCombobox GetCombobox(string name,
             Action<List<MyTerminalControlComboBoxItem>> setComboboxContent, Func<IMyTerminalBlock, bool> isVisible)
         {
-            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, IMyCockpit>(name);
+            var combobox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, IMyRemoteControl>(name);
             combobox.Visible = isVisible;
             combobox.Enabled = isVisible;
             combobox.Title = MyStringId.GetOrCompute("Grid class");
@@ -146,7 +146,7 @@ namespace ShipClassSystem
             if (cubeGridLogic != null)
             {
                 Utils.Log(
-                    $"CockpitGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
+                    $"RemoteGUI::SetGridClass: Sending change grid class message, entityId = {block.CubeGrid.EntityId}, grid class id = {key}",
                     2);
                 cubeGridLogic.GridClassId = key;
                 if (!Constants.IsServer)
@@ -154,55 +154,8 @@ namespace ShipClassSystem
             }
             else
             {
-                Utils.Log($"CockpitGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null on {block.EntityId}", 3);
+                Utils.Log($"RemoteGUI::SetGridClass: Unable to set GridClassId, GetGridLogic is returning null on {block.EntityId}", 3);
             }
-        }
-    }
-
-    public class TerminalChainedDelegate
-    {
-        private readonly bool CheckOR;
-        private readonly Func<IMyTerminalBlock, bool> CustomFunc;
-        private readonly Func<IMyTerminalBlock, bool> OriginalFunc;
-
-        private TerminalChainedDelegate(Func<IMyTerminalBlock, bool> originalFunc,
-            Func<IMyTerminalBlock, bool> customFunc, bool checkOR)
-        {
-            OriginalFunc = originalFunc;
-            CustomFunc = customFunc;
-            CheckOR = checkOR;
-        }
-
-        /// <summary>
-        ///     <paramref name="originalFunc" /> should always be the delegate this replaces, to properly chain with other mods
-        ///     doing the same.
-        ///     <para><paramref name="customFunc" /> should be your custom condition to append to the chain.</para>
-        ///     <para>
-        ///         As for <paramref name="checkOR" />, leave false if you want to hide controls by returning false with your
-        ///         <paramref name="customFunc" />.
-        ///     </para>
-        ///     <para>
-        ///         Otherwise set to true if you want to force-show otherwise hidden controls by returning true with your
-        ///         <paramref name="customFunc" />.
-        ///     </para>
-        /// </summary>
-        public static Func<IMyTerminalBlock, bool> Create(Func<IMyTerminalBlock, bool> originalFunc,
-            Func<IMyTerminalBlock, bool> customFunc, bool checkOR = false)
-        {
-            return new TerminalChainedDelegate(originalFunc, customFunc, checkOR).ResultFunc;
-        }
-
-        private bool ResultFunc(IMyTerminalBlock block)
-        {
-            if (block?.CubeGrid == null)
-                return false;
-
-            var originalCondition = OriginalFunc?.Invoke(block) ?? true;
-            var customCondition = CustomFunc?.Invoke(block) ?? true;
-
-            if (CheckOR)
-                return originalCondition || customCondition;
-            return originalCondition && customCondition;
         }
     }
 }

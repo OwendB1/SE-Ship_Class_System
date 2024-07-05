@@ -7,6 +7,8 @@ using System.Linq;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRageMath;
+using Sandbox.Game.Replication;
 
 namespace ShipClassSystem
 {
@@ -19,6 +21,10 @@ namespace ShipClassSystem
 
         private long _gridClassId;
         public IMyCubeGrid Grid;
+
+        public bool EnableBoost;
+        public float BoostDuration;
+        public float BoostCoolDown;
 
         public IMyFaction OwningFaction => Grid.GetOwningFaction();
 
@@ -120,6 +126,9 @@ namespace ShipClassSystem
             Grid.OnBlockAdded += OnBlockAdded;
             Grid.OnBlockRemoved += OnBlockRemoved;
             Grid.OnGridMerge += OnGridMerge;
+            Grid.SpeedChanged += OnSpeedChanged;
+            Grid.GridPresenceTierChanged+=EnforceNoFlyZones;
+            //Grid.OnMaxThrustChanged += OnSpeedChanged;
 
             var config = ModSessionManager.Config;
             if (OwningFaction != null)
@@ -140,10 +149,25 @@ namespace ShipClassSystem
             }
             else
             {
+                Utils.Log($"[CubeGridLogic] Assigning Default Class, grid did not contain a class assignment");
                 _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
                 Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
             }
-
+            //Speeds
+            if (Grid.Storage.TryGetValue(Constants.ConfigurableSpeedGUID, out value))
+            {
+                float BoostVar;
+                var ShipSpeedData = float.TryParse(value, out BoostVar) ? new List<float> { BoostVar } : new List<float> { 0, 0 };
+                Utils.Log($"[CubeGridLogic] Assigning VelocityData");
+                BoostDuration=ShipSpeedData[0];
+                BoostCoolDown=ShipSpeedData[0];
+            }
+            else
+            {
+                BoostDuration=DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration;
+                BoostCoolDown=DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown;     
+                Grid.Storage[Constants.ConfigurableSpeedGUID] = (new List<float>{DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration,DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown}).ToString();
+            }
             // If subgrid then blacklist and add blocks to main grid
             if (!AddGridLogic()) return;
 
@@ -155,6 +179,8 @@ namespace ShipClassSystem
                 subgrid.OnIsStaticChanged += OnIsStaticChanged;
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
+                subgrid.SpeedChanged += OnSpeedChanged;
+                subgrid.GridPresenceTierChanged+=EnforceNoFlyZones;
 
                 Blocks.UnionWith(subgrid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
@@ -242,6 +268,8 @@ namespace ShipClassSystem
                 Grid.OnBlockAdded -= OnBlockAdded;
                 Grid.OnBlockRemoved -= OnBlockRemoved;
                 Grid.OnGridMerge -= OnGridMerge;
+                Grid.SpeedChanged -= OnSpeedChanged;
+                Grid.GridPresenceTierChanged-=EnforceNoFlyZones;
 
                 CubeGridLogics.Remove(Grid.EntityId);
                 GridsPerFactionClassManager.RemoveCubeGrid(this);
@@ -274,7 +302,8 @@ namespace ShipClassSystem
             sub.OnIsStaticChanged += mainLogic.OnIsStaticChanged;
             sub.OnBlockAdded += mainLogic.OnBlockAdded;
             sub.OnBlockRemoved += mainLogic.OnBlockRemoved;
-
+            sub.SpeedChanged += mainLogic.OnSpeedChanged;
+            sub.GridPresenceTierChanged+=mainLogic.EnforceNoFlyZones;
             mainLogic.Blocks.Clear();
             mainLogic.Blocks.UnionWith(mainLogic.Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
         }
@@ -285,32 +314,39 @@ namespace ShipClassSystem
             if (GridClass.LargeGridStatic && !GridClass.LargeGridMobile && !isStatic) grid.IsStatic = true;
             if (!GridClass.LargeGridStatic && isStatic) grid.IsStatic = false;
         }
-
         private void GridClassHasChanged()
         {
-            Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
-
-            GridsPerFactionClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
-            GridsPerPlayerClassManager.Reset();
-            foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
-            Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
-
-            BlocksPerLimit.Clear();
-            foreach (var blockLimit in GridClass.BlockLimits)
+            try
             {
-                var blockVals = new List<KeyValuePair<IMyCubeBlock, double>>();
-                foreach (var blockType in blockLimit.BlockTypes)
+                GridsPerFactionClassManager.Reset();
+                foreach (var gridLogic in CubeGridLogics) GridsPerFactionClassManager.AddCubeGrid(gridLogic.Value);
+                GridsPerPlayerClassManager.Reset();
+                foreach (var gridLogic in CubeGridLogics) GridsPerPlayerClassManager.AddCubeGrid(gridLogic.Value);
+                Grid.Storage[Constants.GridClassStorageGUID] = GridClassId.ToString();
+
+                BlocksPerLimit.Clear();
+                foreach (var blockLimit in GridClass.BlockLimits)
                 {
-                    var countingBlocks = Blocks
-                        .Where(b => Utils.GetBlockTypeId(b) == blockType.TypeId &&
-                                    Utils.GetBlockSubtypeId(b) == blockType.SubtypeId);
-                    blockVals.AddRange(countingBlocks.Select(bl => new KeyValuePair<IMyCubeBlock, double>(bl, blockType.CountWeight)));
+                    var blockVals = new List<KeyValuePair<IMyCubeBlock, double>>();
+                    foreach (var blockType in blockLimit.BlockTypes)
+                    {
+                        var countingBlocks = Blocks
+                            .Where(b => Utils.GetBlockTypeId(b) == blockType.TypeId &&
+                                        Utils.GetBlockSubtypeId(b) == blockType.SubtypeId);
+                        blockVals.AddRange(countingBlocks.Select(bl => new KeyValuePair<IMyCubeBlock, double>(bl, blockType.CountWeight)));
+                    }
+                    BlocksPerLimit[blockLimit] = blockVals;
                 }
-                BlocksPerLimit[blockLimit] = blockVals;
+                EnforceBlockPunishment();
+                ApplyModifiers();
             }
-            EnforceBlockPunishment();
-            ApplyModifiers();
+            catch (Exception e)
+            {
+                Utils.Log("CubeGridLogic::OnGridClassChanged: Unable to set Class Becuase:", 3);
+                Utils.LogException(e);
+                return;
+            }
+            Utils.Log($"CubeGridLogic::OnGridClassChanged: new grid class id = {GridClassId}", 2);
         }
 
         private void OnBlockAdded(IMySlimBlock obj)
@@ -389,6 +425,93 @@ namespace ShipClassSystem
         private void OnBlockOwnershipChanged(IMyCubeGrid obj)
         {
             EnforceBlockPunishment();
+        }
+        private void OnSpeedChanged(IMyCubeGrid obj)
+        {
+            EnforceNoFlyZones(obj);
+        }
+        public void EnforceSpeedLimit(IMyCubeGrid obj)
+        {
+            var gridLogic = obj.GetMainGridLogic();
+            var gridClass = gridLogic?.GridClass;
+            if(gridLogic.BoostDuration==null || gridLogic.BoostCoolDown==null)
+            {
+                string value;
+                if (Grid.Storage.TryGetValue(Constants.ConfigurableSpeedGUID, out value))
+                {
+                    float BoostVar;
+                    var ShipSpeedData = float.TryParse(value, out BoostVar) ? new List<float> { BoostVar } : new List<float> { gridClass?.Modifiers.BoostDuration ?? (ModSessionManager.Config.DefaultGridClass.Modifiers.BoostDuration*60.0f), 0 };
+                    gridLogic.BoostDuration = ShipSpeedData[0];
+                    gridLogic.BoostCoolDown = ShipSpeedData[1];
+                }
+            }
+            if(gridLogic.BoostDuration==0 && gridLogic.BoostCoolDown==0){gridLogic.BoostDuration = gridClass.Modifiers.BoostDuration * 60.0f;}
+            float LimitedSpeed =gridClass?.Modifiers?.MaxSpeed ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxSpeed;
+            float BoostSpeed = gridClass?.Modifiers?.MaxBoost ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxBoost;
+
+            IMyCubeGrid MyGrid = obj as IMyCubeGrid;
+            Vector3 velocity = MyGrid.Physics.LinearVelocity;
+            // If cooldown is active, decrement it
+            if (gridLogic.BoostCoolDown > 0)
+            {
+                gridLogic.BoostCoolDown -= 1.0f;
+                if (gridLogic.BoostCoolDown <= 0)
+                {
+                    // Reset boost duration when cooldown ends
+                    gridLogic.BoostDuration = gridClass.Modifiers.BoostDuration * 60.0f;
+                }
+            }
+            // Check if boost is enabled and cooldown is inactive
+            if (gridLogic.EnableBoost && (gridLogic.BoostDuration>0f))
+            {
+                LimitedSpeed *= BoostSpeed;
+                gridLogic.BoostDuration -= 1.0f;
+                // If boost duration is depleted, start cooldown
+                if (gridLogic.BoostDuration <= 0f)
+                {
+                    gridLogic.BoostCoolDown = gridClass.Modifiers.BoostCoolDown * 60.0f;
+                    gridLogic.EnableBoost = false;
+                    Utils.ShowNotification("Booster Disengaged!",MyGrid,600);
+                }
+            }
+
+            // Store the current boost status
+            Grid.Storage[Constants.ConfigurableSpeedGUID] = new List<float> {gridLogic.BoostDuration, gridLogic.BoostCoolDown}.ToString();
+
+            // Ensure the velocity does not exceed the limited speed
+            if (velocity.LengthSquared() > LimitedSpeed * LimitedSpeed)
+            {
+                velocity = Vector3.Normalize(velocity) * LimitedSpeed;
+            }
+            // Apply the calculated velocity
+            MyGrid.Physics.SetSpeeds(velocity, MyGrid.Physics.AngularVelocity);
+            //Utils.Log($"Cooldown: {gridLogic.BoostCoolDown}\nDuration: {gridLogic.BoostDuration}");
+        }
+
+        private void EnforceNoFlyZones(IMyCubeGrid obj)
+        {
+            var gridLogic=obj.GetMainGridLogic();
+            var GridClassId = gridLogic?.GridClass?.Id;
+            if (GridClassId == null){GridClassId=0;}
+            foreach(Zones Zone in ModSessionManager.Config.NoFlyZones)
+            {
+                var Range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(Zone.X, Zone.Y, Zone.Z));
+                //Utils.Log($"Grid ID: {GridClassId}\nNoFlyZone ID:{Zone.ID}\nDistance From NoFlyZone:{Range}\nZone Radius:{Zone.Radius}");
+                if(Range<Zone.Radius)
+                {
+                    if (!Zone.AllowedClasses_ByID.Contains(GridClassId.Value))
+                    {
+                        IMyCubeGrid MyGrid = (obj as IMyCubeGrid);
+                        IEnumerable<IMyFunctionalBlock> BlocksOnGrid = MyGrid.GetFatBlocks<IMyFunctionalBlock>();
+                        foreach (IMyFunctionalBlock Block in BlocksOnGrid)
+                        {
+                            if(Block==null && !(Block is IMyBeacon)){continue;}
+                            if(Block.Enabled){Block.Enabled = false;}	
+                        }
+                    }
+                }
+            }
+
         }
 
         private void FactionsOnFactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
