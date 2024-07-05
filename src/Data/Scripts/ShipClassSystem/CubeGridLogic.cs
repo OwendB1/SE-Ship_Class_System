@@ -161,11 +161,11 @@ namespace ShipClassSystem
                 var gridClassId = long.TryParse(value, out id) ? id : 0;
 
                 var gridClass = ModSessionManager.Config.GetGridClassById(gridClassId);
-                if (OwningFaction == null && 1 < gridClass.MinPlayers)
+                if (OwningFaction == null && gridClass.MinPlayers > 1)
                 {
                     gridClassId = 0;
                 }
-                else if (OwningFaction?.Members.Count < gridClass.MinPlayers)
+                else if (gridClass.MinPlayers > OwningFaction?.Members.Count)
                 {
                     gridClassId = 0;
                 }
