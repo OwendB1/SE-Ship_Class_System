@@ -256,7 +256,7 @@ namespace ShipClassSystem
 
         public static ModConfig DefaultModConfig = new ModConfig
         {
-            Version = "",
+            Version = "1.2",
             DefaultGridClass = DefaultGridClassDefinition,
             DebugMode = false,
             NoFlyZones = new List<Zones>{new Zones{AllowedClassesById=new List<long>{301,302,303},Radius=1000.0f},},
