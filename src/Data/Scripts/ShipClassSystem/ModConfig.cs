@@ -192,21 +192,24 @@ namespace ShipClassSystem
                 $"<GridModifiers ThrusterForce={ThrusterForce} ThrusterEfficiency={ThrusterEfficiency} GyroForce={GyroForce} GyroEfficiency={GyroEfficiency} RefineEfficiency={RefineEfficiency} RefineSpeed={RefineSpeed} AssemblerSpeed={AssemblerSpeed} PowerProducersOutput={PowerProducersOutput} DrillHarvestMutiplier={DrillHarvestMultiplier} />";
         }
 
-        public IEnumerable<ModifierNameValue> GetModifierValues()
+        public List<ModifierNameValue> GetModifierValues()
         {
-            yield return new ModifierNameValue("Thruster force", ThrusterForce);
-            yield return new ModifierNameValue("Thruster efficiency", ThrusterEfficiency);
-            yield return new ModifierNameValue("Gyro force", GyroForce);
-            yield return new ModifierNameValue("Gyro efficiency", GyroEfficiency);
-            yield return new ModifierNameValue("Refinery efficiency", RefineEfficiency);
-            yield return new ModifierNameValue("Refinery speed", RefineSpeed);
-            yield return new ModifierNameValue("Assembler speed", AssemblerSpeed);
-            yield return new ModifierNameValue("Power output", PowerProducersOutput);
-            yield return new ModifierNameValue("Drill harvest", DrillHarvestMultiplier);
-            yield return new ModifierNameValue("Max speed", MaxSpeed);
-            yield return new ModifierNameValue("Max boost", MaxBoost);
-            yield return new ModifierNameValue("Boost duration", BoostDuration);
-            yield return new ModifierNameValue("Boost cooldown", BoostCoolDown);
+            return new List<ModifierNameValue>
+            {
+                new ModifierNameValue("Thruster force", ThrusterForce),
+                new ModifierNameValue("Thruster efficiency", ThrusterEfficiency),
+                new ModifierNameValue("Gyro force", GyroForce),
+                new ModifierNameValue("Gyro efficiency", GyroEfficiency),
+                new ModifierNameValue("Refinery efficiency", RefineEfficiency),
+                new ModifierNameValue("Refinery speed", RefineSpeed),
+                new ModifierNameValue("Assembler speed", AssemblerSpeed),
+                new ModifierNameValue("Power output", PowerProducersOutput),
+                new ModifierNameValue("Drill harvest", DrillHarvestMultiplier),
+                new ModifierNameValue("Max speed", MaxSpeed),
+                new ModifierNameValue("Max boost", MaxBoost),
+                new ModifierNameValue("Boost duration", BoostDuration),
+                new ModifierNameValue("Boost cooldown", BoostCoolDown)
+            };
         }
     }
 
