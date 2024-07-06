@@ -26,25 +26,43 @@ namespace ShipClassSystem
             Comms = new Comms(Settings.COMMS_MESSAGE_ID);
             if (Constants.IsServer)
             {
-                Config = ModConfig.LoadConfig() ?? DefaultGridClassConfig.DefaultModConfig;
+                var config = ModConfig.LoadConfig() ?? DefaultGridClassConfig.DefaultModConfig;
+                LoadConfig(config);
                 ModConfig.SaveConfig(Config, Constants.ConfigFilename);
-            } else Comms.RequestConfig();
+            }
+            else
+            {
+                Config = DefaultGridClassConfig.DefaultModConfig;
+                Comms.RequestConfig();
+            }
 
             //Utils.Log("Mod Path: "+ModPath);
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;
             MyAPIGateway.Session.OnSessionReady += HookDamageHandler;
             MyAPIGateway.Session.Factions.FactionStateChanged += FactionStateChanged;
+            Instance = this;
+        }
+
+        public void LoadConfig(ModConfig config)
+        {
+            Config = config;
             MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
             MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
-            var speedDifferential = Config.MaxPossibleSpeedMetersPerSecond-100.0f;
-            var ammoDefinitions = new List<string>{"Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber"};
+            var speedDifferential = Config.MaxPossibleSpeedMetersPerSecond - 100.0f;
+            var ammoDefinitions = new List<string> { "Missile","LargeCalibreShell","MediumCalibreShell","LargeCaliber","AutocannonShell","LargeRailgunSlug","SmallRailgunSlug","SmallCaliber","PistolCaliber" };
             foreach(var ammoId in ammoDefinitions)
             {
                 var ammoDefinition = MyDefinitionManager.Static.GetAmmoDefinition(new MyDefinitionId(typeof(MyObjectBuilder_AmmoDefinition), ammoId));
-                if (ammoDefinition != null){ammoDefinition.DesiredSpeed+=speedDifferential;}else{Utils.Log($"AmmoType: {ammoId} was not sucessfully adjusted to match maxspeed");}
+                if (ammoDefinition != null)
+                {
+                    ammoDefinition.DesiredSpeed += speedDifferential;
+                }
+                else
+                {
+                    Utils.Log($"AmmoType: {ammoId} was not sucessfully adjusted to match maxspeed");
+                }
             }
-            Instance = this;
         }
 
         private void FactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long factionId, long playerId)

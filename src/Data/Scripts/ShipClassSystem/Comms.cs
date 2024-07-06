@@ -42,14 +42,6 @@ namespace ShipClassSystem
             }
         }
 
-        //public void SendLogToClient(string logMessage, ulong userId)
-        //{
-        //    var messageData = MyAPIGateway.Utilities.SerializeToBinary(logMessage);
-        //    var message = MyAPIGateway.Utilities.SerializeToBinary(new Message
-        //        { Type = MessageType.ChangeGridClass, Data = messageData });
-        //    MyAPIGateway.Multiplayer.SendMessageTo(_commsId, message, userId);
-        //}
-
         public void RequestConfig()
         {
             if (!Constants.IsClient) return;
@@ -69,10 +61,9 @@ namespace ShipClassSystem
 
         private void MessageHandler(ushort handlerId, byte[] data, ulong playerId, bool unknown)
         {
-            Utils.Log($"Comms::MessageHandler recieved message length = {data.Length}", 1);
+            Utils.Log($"Comms::MessageHandler received message length = {data.Length}", 1);
 
             Message message;
-
             try
             {
                 message = MyAPIGateway.Utilities.SerializeFromBinary<Message>(data);
@@ -97,31 +88,11 @@ namespace ShipClassSystem
                 case MessageType.Config:
                     HandleConfig(message.Data);
                     break;
-                //case MessageType.LogMessage:
-                //    HandleLogMessage(message.Data);
-                //    break;
                 default:
                     Utils.Log("Comms::MessageHandler: Unknown message type", 2);
                     break;
             }
         }
-
-        //private void HandleLogMessage(byte[] data)
-        //{
-        //    string message;
-        //    try
-        //    {
-        //        message = MyAPIGateway.Utilities.SerializeFromBinary<string>(data);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Utils.Log("Comms::HandleRequestConfig: deserialize message error", 3);
-        //        Utils.LogException(e);
-        //        return;
-        //    }
-        //    MyAPIGateway.Utilities.ShowMessage("[Ship Classes]: ", message);
-        //    MyAPIGateway.Utilities.ShowNotification(message, 10000, MyFontEnum.Red);
-        //}
 
         private void HandleRequestConfig(byte[] data)
         {
@@ -149,7 +120,7 @@ namespace ShipClassSystem
             {
                 var config = MyAPIGateway.Utilities.SerializeFromBinary<ModConfig>(data);
                 if (config.GridClasses.Length < 1) return;
-                ModSessionManager.Config = config;
+                ModSessionManager.Instance.LoadConfig(config);
             }
             catch (Exception e)
             {
@@ -202,8 +173,7 @@ namespace ShipClassSystem
     {
         ChangeGridClass,
         RequestConfig,
-        Config,
-        LogMessage
+        Config
     }
 
     [ProtoContract]
