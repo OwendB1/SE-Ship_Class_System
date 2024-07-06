@@ -16,7 +16,7 @@ namespace ShipClassSystem
         public readonly Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>> BlocksPerLimit = new Dictionary<BlockLimit, List<KeyValuePair<IMyCubeBlock, double>>>();
         public readonly HashSet<MyCubeBlock> Blocks = new HashSet<MyCubeBlock>();
 
-        private static Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.Instance.CubeGridLogics;
+        private static Dictionary<long, CubeGridLogic> CubeGridLogics => ModSessionManager.CubeGridLogics;
 
         private long _gridClassId;
         public IMyCubeGrid Grid;
@@ -130,7 +130,7 @@ namespace ShipClassSystem
         {
             Grid = entity as IMyCubeGrid;
             if (Grid == null) return;
-            if (ModSessionManager.Instance.CubeGridLogics.ContainsKey(Grid.EntityId) && 
+            if (ModSessionManager.CubeGridLogics.ContainsKey(Grid.EntityId) && 
                 _gridClassId == DefaultGridClassConfig.DefaultGridClassDefinition.Id) return;
             
             List<IMyCubeGrid> subs;
