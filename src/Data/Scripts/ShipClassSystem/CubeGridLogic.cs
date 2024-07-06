@@ -29,12 +29,14 @@ namespace ShipClassSystem
 
         public long MajorityOwningPlayerId => GetMajorityOwner();
 
+        public ModConfig Config => ModSessionManager.Config;
+
         public long GridClassId
         {
             get { return _gridClassId; }
             set
             {
-                var gridClass = ModSessionManager.Config.GetGridClassById(value);
+                var gridClass = Config.GetGridClassById(value);
 
                 var withinFactionLimit = GridsPerFactionClassManager.WillGridBeWithinFactionLimits(this, value);
                 var withinPlayerLimit = GridsPerPlayerClassManager.WillGridBeWithinPlayerLimits(this, value);
@@ -65,6 +67,7 @@ namespace ShipClassSystem
                 }
                 if (!hasMinimumPlayerCount)
                 {
+                    Utils.ShowNotification($"GridClass min: {gridClass.MinPlayers} Faction count: {OwningFaction.Members.Count}", Grid);
                     Utils.ShowNotification("Faction does not have enough players to use this class!", Grid);
                     return;
                 }
@@ -110,7 +113,7 @@ namespace ShipClassSystem
                     return;
                 }
 
-                if (!ModSessionManager.Config.IsValidGridClassId(value))
+                if (!Config.IsValidGridClassId(value))
                     throw new Exception($"CubeGridLogic:: set GridClassId: invalid grid class id {value}");
 
                 Utils.Log($"CubeGridLogic::GridClassId setting grid class to {value}", 1);
@@ -119,7 +122,7 @@ namespace ShipClassSystem
             }
         }
 
-        public GridClass GridClass => ModSessionManager.Config.GetGridClassById(GridClassId);
+        public GridClass GridClass => Config.GetGridClassById(GridClassId);
         public GridModifiers Modifiers => GridClass.Modifiers;
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
 
@@ -149,11 +152,10 @@ namespace ShipClassSystem
             Grid.GridPresenceTierChanged+=EnforceNoFlyZones;
             //Grid.OnMaxThrustChanged += OnSpeedChanged;
 
-            var config = ModSessionManager.Config;
             if (OwningFaction != null)
             {
-                if (!config.IncludeAiFactions && OwningFaction.IsEveryoneNpc()) return;
-                if (config.IgnoreFactionTags.Contains(OwningFaction.Tag)) return;
+                if (!Config.IncludeAiFactions && OwningFaction.IsEveryoneNpc()) return;
+                if (Config.IgnoreFactionTags.Contains(OwningFaction.Tag)) return;
             }
             Blocks.UnionWith(Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
 
@@ -164,7 +166,7 @@ namespace ShipClassSystem
                 long id;
                 var gridClassId = long.TryParse(value, out id) ? id : 0;
 
-                var gridClass = ModSessionManager.Config.GetGridClassById(gridClassId);
+                var gridClass = Config.GetGridClassById(gridClassId);
                 if (gridClass.MinPlayers > 0)
                 {
                     if (OwningFaction == null && gridClass.MinPlayers > 1)
@@ -196,8 +198,8 @@ namespace ShipClassSystem
             }
             else
             {
-                BoostDuration=DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration;
-                BoostCoolDown=DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown;     
+                BoostDuration = DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration;
+                BoostCoolDown = DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown;     
                 Grid.Storage[Constants.ConfigurableSpeedGUID] = (new List<float>{DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostDuration,DefaultGridClassConfig.DefaultGridClassDefinition.Modifiers.BoostCoolDown}).ToString();
             }
 
@@ -475,7 +477,8 @@ namespace ShipClassSystem
                 if (Grid.Storage.TryGetValue(Constants.ConfigurableSpeedGUID, out value))
                 {
                     float boostVar;
-                    var shipSpeedData = float.TryParse(value, out boostVar) ? new List<float> { boostVar } : new List<float> { gridClass.Modifiers?.BoostDuration ?? ModSessionManager.Config.DefaultGridClass.Modifiers.BoostDuration*60.0f, 0 };
+                    var shipSpeedData = float.TryParse(value, out boostVar) ? new List<float> { boostVar } : 
+                        new List<float> { gridClass.Modifiers?.BoostDuration ?? Config.DefaultGridClass.Modifiers.BoostDuration*60.0f, 0 };
                     gridLogic.BoostDuration = shipSpeedData[0];
                     gridLogic.BoostCoolDown = shipSpeedData[1];
                 }
@@ -486,8 +489,8 @@ namespace ShipClassSystem
                 gridLogic.BoostDuration = gridClass.Modifiers.BoostDuration * 60.0f;
             }
 
-            var limitedSpeed = gridClass.Modifiers?.MaxSpeed ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxSpeed;
-            var boostSpeed = gridClass.Modifiers?.MaxBoost ?? ModSessionManager.Config.DefaultGridClass.Modifiers.MaxBoost;
+            var limitedSpeed = gridClass.Modifiers?.MaxSpeed ?? Config.DefaultGridClass.Modifiers.MaxSpeed;
+            var boostSpeed = gridClass.Modifiers?.MaxBoost ?? Config.DefaultGridClass.Modifiers.MaxBoost;
 
             var myGrid = obj;
             var velocity = myGrid.Physics.LinearVelocity;
@@ -532,7 +535,7 @@ namespace ShipClassSystem
         {
             var gridLogic=obj.GetMainGridLogic();
             var gridClassId = gridLogic?.GridClass?.Id ?? 0;
-            foreach (IMyFunctionalBlock block in from zone in ModSessionManager.Config.NoFlyZones 
+            foreach (IMyFunctionalBlock block in from zone in Config.NoFlyZones 
                      let range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(zone.X, zone.Y, zone.Z)) 
                      where range<zone.Radius 
                      where !zone.AllowedClassesById.Contains(gridClassId) 

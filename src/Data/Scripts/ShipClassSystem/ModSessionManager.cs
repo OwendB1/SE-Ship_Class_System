@@ -32,7 +32,6 @@ namespace ShipClassSystem
             }
             else
             {
-                Config = DefaultGridClassConfig.DefaultModConfig;
                 Comms.RequestConfig();
             }
 

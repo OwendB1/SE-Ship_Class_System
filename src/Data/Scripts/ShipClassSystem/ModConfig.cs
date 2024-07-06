@@ -14,7 +14,7 @@ namespace ShipClassSystem
         [ProtoMember(3)] public string[] IgnoreFactionTags;
         [ProtoMember(4)] public bool IncludeAiFactions;
         [ProtoMember(5)] public float MaxPossibleSpeedMetersPerSecond;
-        [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        [ProtoMember(6)] private GridClass _defaultGridClass;
         [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
         {
