@@ -17,11 +17,11 @@ namespace ShipClassSystem
 
         public void Discard()
         {
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
-            MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(_commsId, MessageHandler);
         }
 
         public void ChangeGridClass(long entityId, long gridClassId)

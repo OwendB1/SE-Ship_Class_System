@@ -256,7 +256,6 @@ namespace ShipClassSystem
 
         public static ModConfig DefaultModConfig = new ModConfig
         {
-            Version = "1.3",
             DefaultGridClass = DefaultGridClassDefinition,
             DebugMode = false,
             NoFlyZones = new List<Zones>{new Zones{AllowedClassesById=new List<long>{301,302,303},Radius=1000.0f},},
@@ -823,33 +822,7 @@ namespace ShipClassSystem
                         {
                             Name = "Weaponry Assorted",
                             MaxCount = 100,
-                            BlockTypes = new[]
-                            {
-                            //vanilla small grid fixed weapons
-                                new BlockType("SmallGatlingGun","",1),
-                                new BlockType("SmallGatlingGun", "SmallGatlingGunWarfare2",1),
-                                new BlockType("SmallGatlingGun", "SmallBlockAutocannon",1.5f),
-                                new BlockType("SmallMissileLauncher","",2),
-                                new BlockType("SmallMissileLauncher", "SmallMissileLauncherWarfare2",2),
-                                new BlockType("SmallMissileLauncherReload", "SmallMissileLauncherReload",3),
-                                new BlockType("SmallMissileLauncherReload", "SmallBlockMediumCalibreGun",4),
-                                new BlockType("SmallMissileLauncherReload", "SmallRailgun",8),   
-                            //vanilla small grid turrets{
-                                new BlockType("LargeMissileTurret", "SmallBlockMediumCalibreTurret",2),
-                                new BlockType("LargeMissileTurret", "AutoCannonTurret",1.5f),
-                                new BlockType("LargeMissileTurret", "SmallMissileTurret",2),
-                                new BlockType("LargeGatlingTurret", "SmallGatlingTurret",1),
-                            //vanilla large grid fixed weapons
-                                new BlockType("SmallMissileLauncher", "LargeMissileLauncher",4),
-                                new BlockType("SmallMissileLauncher", "LargeBlockLargeCalibreGun",8),
-                                new BlockType("SmallMissileLauncherReload", "LargeRailgun",10),
-                            //vanilla large grid turrets
-                                new BlockType("LargeMissileTurret","",3),
-                                new BlockType("LargeMissileTurret", "LargeBlockMediumCalibreTurret",2),
-                                new BlockType("LargeMissileTurret", "LargeCalibreTurret",4),
-                                new BlockType("LargeGatlingTurret","",1),
-                                new BlockType("InteriorTurret",  "LargeInteriorTurret",1),
-                            },
+                            BlockTypes = Weaponry
                         }
                     }
                 },

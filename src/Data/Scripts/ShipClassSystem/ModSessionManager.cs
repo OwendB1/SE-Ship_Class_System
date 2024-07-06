@@ -1,6 +1,4 @@
-﻿using System;
-using Sandbox.Definitions;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Definitions;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,19 +26,10 @@ namespace ShipClassSystem
             Comms = new Comms(Settings.COMMS_MESSAGE_ID);
             if (Constants.IsServer)
             {
-                Config = ModConfig.LoadConfig();
-                if (Config == null)
-                {
-                    Config = DefaultGridClassConfig.DefaultModConfig;
-                    ModConfig.SaveConfig(Config, Constants.ConfigFilename);
-                }
-                if (Config.Version != "1.3")
-                {
-                    Utils.Log("Config version is outdated, crashing now!");
-                    throw new Exception("Config version is outdated, crashing now!");
-                }
-
+                Config = ModConfig.LoadConfig() ?? DefaultGridClassConfig.DefaultModConfig;
+                ModConfig.SaveConfig(Config, Constants.ConfigFilename);
             } else Comms.RequestConfig();
+
             //Utils.Log("Mod Path: "+ModPath);
             MyAPIGateway.Entities.OnEntityAdd += EntityAdded;
             MyAPIGateway.Entities.OnEntityRemove += EntityRemoved;

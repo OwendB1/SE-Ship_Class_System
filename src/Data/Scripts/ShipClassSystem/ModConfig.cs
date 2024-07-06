@@ -9,14 +9,13 @@ namespace ShipClassSystem
     public class ModConfig
     {
         private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
-        [ProtoMember(1)] public string Version;
-        [ProtoMember(2)] public bool DebugMode;
-        [ProtoMember(3)] public List<Zones> NoFlyZones;
-        [ProtoMember(4)] public string[] IgnoreFactionTags;
-        [ProtoMember(5)] public bool IncludeAiFactions;
-        [ProtoMember(6)] public float MaxPossibleSpeedMetersPerSecond;
-        [ProtoMember(7)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
-        [ProtoMember(8)] private GridClass[] _gridClasses;
+        [ProtoMember(1)] public bool DebugMode;
+        [ProtoMember(2)] public List<Zones> NoFlyZones;
+        [ProtoMember(3)] public string[] IgnoreFactionTags;
+        [ProtoMember(4)] public bool IncludeAiFactions;
+        [ProtoMember(5)] public float MaxPossibleSpeedMetersPerSecond;
+        [ProtoMember(6)] private GridClass _defaultGridClass = DefaultGridClassConfig.DefaultGridClassDefinition;
+        [ProtoMember(7)] private GridClass[] _gridClasses;
         public GridClass DefaultGridClass
         {
             get { return _defaultGridClass; }
