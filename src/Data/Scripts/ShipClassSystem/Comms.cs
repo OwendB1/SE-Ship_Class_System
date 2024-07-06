@@ -148,12 +148,8 @@ namespace ShipClassSystem
             try
             {
                 var config = MyAPIGateway.Utilities.SerializeFromBinary<ModConfig>(data);
-                ModSessionManager.Config = DefaultGridClassConfig.DefaultModConfig;
                 if (config.GridClasses.Length < 1) return;
-                ModSessionManager.Config.GridClasses = config.GridClasses;
-                ModSessionManager.Config.IgnoreFactionTags = config.IgnoreFactionTags;
-                ModSessionManager.Config.IncludeAiFactions = config.IncludeAiFactions;
-                ModSessionManager.Config.DefaultGridClass = config.DefaultGridClass;
+                ModSessionManager.Config = config;
             }
             catch (Exception e)
             {
