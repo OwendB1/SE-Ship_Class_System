@@ -2,67 +2,33 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ShipClassSystem
 {
     [ProtoContract]
     public class ModConfig
     {
-        private readonly Dictionary<long, GridClass> _gridClassesById = new Dictionary<long, GridClass>();
         [ProtoMember(1)] public bool DebugMode;
         [ProtoMember(2)] public List<Zones> NoFlyZones;
         [ProtoMember(3)] public string[] IgnoreFactionTags;
         [ProtoMember(4)] public bool IncludeAiFactions;
         [ProtoMember(5)] public float MaxPossibleSpeedMetersPerSecond;
-        [ProtoMember(6)] private GridClass _defaultGridClass;
-        [ProtoMember(7)] private GridClass[] _gridClasses;
-        public GridClass DefaultGridClass
-        {
-            get { return _defaultGridClass; }
-            set
-            {
-                _defaultGridClass = value;
-                UpdateGridClassesDictionary();
-            }
-        }
-
-        public GridClass[] GridClasses
-        {
-            get { return _gridClasses; }
-            set
-            {
-                _gridClasses = value;
-                UpdateGridClassesDictionary();
-            }
-        }
+        [ProtoMember(6)] public GridClass DefaultGridClass;
+        [ProtoMember(7)] public GridClass[] GridClasses;
 
         public GridClass GetGridClassById(long gridClassId)
         {
-            GridClass id;
-            if (_gridClassesById.TryGetValue(gridClassId, out id)) return id;
+            var gridClass = GridClasses.FirstOrDefault(g => g.Id == gridClassId);
 
             Utils.Log($"Unknown grid class {gridClassId}, using default grid class");
 
-            return DefaultGridClass;
+            return gridClass ?? DefaultGridClass;
         }
 
         public bool IsValidGridClassId(long gridClassId)
         {
-            return _gridClassesById.ContainsKey(gridClassId);
-        }
-
-        private void UpdateGridClassesDictionary()
-        {
-            _gridClassesById.Clear();
-
-            if (_defaultGridClass != null)
-                _gridClassesById[0] = DefaultGridClass;
-            else
-                _gridClassesById[0] = DefaultGridClassConfig.DefaultGridClassDefinition;
-
-            if (_gridClasses == null) return;
-            foreach (var gridClass in _gridClasses)
-                _gridClassesById[gridClass.Id] = gridClass;
+            return GridClasses.Any(g => g.Id == gridClassId);
         }
 
         public static ModConfig LoadConfig()
