@@ -14,27 +14,8 @@ namespace ShipClassSystem
         [ProtoMember(3)] public string[] IgnoreFactionTags;
         [ProtoMember(4)] public bool IncludeAiFactions;
         [ProtoMember(5)] public float MaxPossibleSpeedMetersPerSecond;
-        [ProtoMember(6)] private GridClass _defaultGridClass;
-        [ProtoMember(7)] private GridClass[] _gridClasses;
-        public GridClass DefaultGridClass
-        {
-            get { return _defaultGridClass; }
-            set
-            {
-                _defaultGridClass = value;
-                UpdateGridClassesDictionary();
-            }
-        }
-
-        public GridClass[] GridClasses
-        {
-            get { return _gridClasses; }
-            set
-            {
-                _gridClasses = value;
-                UpdateGridClassesDictionary();
-            }
-        }
+        [ProtoMember(6)] public GridClass DefaultGridClass;
+        [ProtoMember(7)] public GridClass[] GridClasses;
 
         public GridClass GetGridClassById(long gridClassId)
         {
@@ -55,13 +36,13 @@ namespace ShipClassSystem
         {
             _gridClassesById.Clear();
 
-            if (_defaultGridClass != null)
+            if (DefaultGridClass != null)
                 _gridClassesById[0] = DefaultGridClass;
             else
                 _gridClassesById[0] = DefaultGridClassConfig.DefaultGridClassDefinition;
 
-            if (_gridClasses == null) return;
-            foreach (var gridClass in _gridClasses)
+            if (GridClasses == null) return;
+            foreach (var gridClass in GridClasses)
                 _gridClassesById[gridClass.Id] = gridClass;
         }
 
