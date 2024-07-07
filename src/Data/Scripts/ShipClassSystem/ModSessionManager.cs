@@ -41,6 +41,7 @@ namespace ShipClassSystem
         public static void LoadConfig(ModConfig config)
         {
             Config = config;
+            Config.UpdateGridClassesDictionary();
             MyDefinitionManager.Static.EnvironmentDefinition.LargeShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
             MyDefinitionManager.Static.EnvironmentDefinition.SmallShipMaxSpeed = Config.MaxPossibleSpeedMetersPerSecond;
             var speedDifferential = Config.MaxPossibleSpeedMetersPerSecond - 100.0f;
