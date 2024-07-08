@@ -168,16 +168,16 @@ namespace ShipClassSystem
         // Block limits
 
         private static readonly BlockLimit NoDrillsLimit = new BlockLimit
-            { Name = "Drills", MaxCount = 0, BlockTypes = Drills };
+            { Name = "Drills", MaxCount = 0, BlockTypes = Drills, TurnedOffByNoFlyZone = true };
 
         private static readonly BlockLimit NoProductionLimit = new BlockLimit
             { Name = "Production", MaxCount = 0, BlockTypes = Production };
 
         private static readonly BlockLimit NoShipToolsLimit = new BlockLimit
-            { Name = "Ship Tools", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Grinders, Welders)};
+            { Name = "Ship Tools", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Grinders, Welders), TurnedOffByNoFlyZone = true };
 
         private static readonly BlockLimit NoWeaponsLimit = new BlockLimit
-            { Name = "Weapons", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Turrets, StaticWeaponry) };
+            { Name = "Weapons", MaxCount = 0, BlockTypes = Utils.ConcatArrays(Turrets, StaticWeaponry), TurnedOffByNoFlyZone = true };
 
         private static readonly BlockLimit NoSafeZoneLimit = new BlockLimit
             { Name = "Safe Zone", MaxCount = 0, BlockTypes = SafeZone };
@@ -243,7 +243,7 @@ namespace ShipClassSystem
                 {
                     Name = "Assemblers",
                     MaxCount = 2,
-                    BlockTypes = Assemblers,
+                    BlockTypes = Assemblers
                 },
                 new BlockLimit
                 {
@@ -324,13 +324,15 @@ namespace ShipClassSystem
                         {
                             Name = "Turrets",
                             MaxCount = 20,
-                            BlockTypes = Turrets
+                            BlockTypes = Turrets,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Static Weaponry",
                             MaxCount = 20,
-                            BlockTypes = StaticWeaponry
+                            BlockTypes = StaticWeaponry,
+                            TurnedOffByNoFlyZone = true
                         }
                     }
                 },
@@ -402,13 +404,15 @@ namespace ShipClassSystem
                         {
                             Name = "Turrets",
                             MaxCount = 40,
-                            BlockTypes = Turrets
+                            BlockTypes = Turrets,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Static Weaponry",
                             MaxCount = 40,
-                            BlockTypes = StaticWeaponry
+                            BlockTypes = StaticWeaponry,
+                            TurnedOffByNoFlyZone = true
                         }
                     }
                 },
@@ -467,14 +471,15 @@ namespace ShipClassSystem
                         {
                             Name = "Ship Tools",
                             MaxCount = 10,
-                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills)
+                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills),
+                            TurnedOffByNoFlyZone = true
                         },
                     }
                 },
-                new GridClass //Corevette
+                new GridClass //Corvette
                 {
                     Id =201,
-                    Name = "Corevette",
+                    Name = "Corvette",
                     SmallGrid = false,
                     LargeGridMobile = true,
                     LargeGridStatic = true,
@@ -495,10 +500,10 @@ namespace ShipClassSystem
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
-                        MaxSpeed=100.0f,
-                        MaxBoost=1.1f,
-                        BoostDuration=10f,
-                        BoostCoolDown=60f,
+                        MaxSpeed = 100.0f,
+                        MaxBoost = 1.1f,
+                        BoostDuration = 10f,
+                        BoostCoolDown = 60f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -525,7 +530,8 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
@@ -601,7 +607,8 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 25,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
@@ -677,7 +684,8 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 30,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
@@ -689,7 +697,8 @@ namespace ShipClassSystem
                         {
                             Name = "Interior Turrent",
                             MaxCount = 3,
-                            BlockTypes = VanillaPDC
+                            BlockTypes = VanillaPDC,
+                            TurnedOffByNoFlyZone = true
                         },
                     }
                 },  
@@ -748,7 +757,8 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 30,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
@@ -816,13 +826,15 @@ namespace ShipClassSystem
                         {
                             Name = "Ship Tools",
                             MaxCount = 5,
-                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills)
+                            BlockTypes = Utils.ConcatArrays(Grinders, Welders, Drills),
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Weaponry Assorted",
                             MaxCount = 100,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         }
                     }
                 },
@@ -878,7 +890,8 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
@@ -924,10 +937,10 @@ namespace ShipClassSystem
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
-                        MaxSpeed=120.0f,
-                        MaxBoost=1f,
-                        BoostDuration=5f,
-                        BoostCoolDown=60f,
+                        MaxSpeed = 120.0f,
+                        MaxBoost = 1f,
+                        BoostDuration = 5f,
+                        BoostCoolDown = 60f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -954,31 +967,35 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Turrets",
                             MaxCount = 1,
-                            BlockTypes = Turrets
+                            BlockTypes = Turrets,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "RailGuns",
                             MaxCount = 1,
-                            BlockTypes = VanillaRailguns
+                            BlockTypes = VanillaRailguns,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Artillery",
                             MaxCount = 2,
-                            BlockTypes = VanillaArtillery
+                            BlockTypes = VanillaArtillery,
+                            TurnedOffByNoFlyZone = true
                         },
                     }
                 },
                 new GridClass //Gunship
                 {
-                    Id =303,
+                    Id = 303,
                     Name = "Gunship",
                     SmallGrid = true,
                     LargeGridMobile = false,
@@ -1000,10 +1017,10 @@ namespace ShipClassSystem
                         RefineSpeed = 0,
                         DrillHarvestMultiplier = 0,
                         PowerProducersOutput = 1,
-                        MaxSpeed=115.0f,
-                        MaxBoost=1.1f,
-                        BoostDuration=15f,
-                        BoostCoolDown=30f,
+                        MaxSpeed = 115.0f,
+                        MaxBoost = 1.1f,
+                        BoostDuration = 15f,
+                        BoostCoolDown = 30f,
                     },
                     DamageModifiers = new GridDamageModifiers
                     {
@@ -1030,19 +1047,22 @@ namespace ShipClassSystem
                         {
                             Name = "Weapons",
                             MaxCount = 20,
-                            BlockTypes = Weaponry
+                            BlockTypes = Weaponry,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "RailGuns",
                             MaxCount = 1,
-                            BlockTypes = VanillaRailguns
+                            BlockTypes = VanillaRailguns,
+                            TurnedOffByNoFlyZone = true
                         },
                         new BlockLimit
                         {
                             Name = "Artillery",
                             MaxCount = 2,
-                            BlockTypes = VanillaArtillery
+                            BlockTypes = VanillaArtillery,
+                            TurnedOffByNoFlyZone = true
                         },
                     }
                 },

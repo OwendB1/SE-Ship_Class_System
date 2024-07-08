@@ -33,13 +33,20 @@ namespace ShipClassSystem
 
             if (logPriority >= Settings.CLIENT_OUTPUT_LOG_LEVEL)
                 MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);
-            if(ModSessionManager.Config != null && ModSessionManager.Config.DebugMode) {MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);}
+
+            if (ModSessionManager.Config != null && ModSessionManager.Config.DebugMode)
+            {
+                MyAPIGateway.Utilities.ShowMessage($"[Ship Classes={logPriority}]: ", msg);
+            }
         }
 
         public static void LogException(Exception e)
         {
             Log($"Exception message = {e.Message}, Stack trace:\n{e.StackTrace}", 3);
-            if(ModSessionManager.Config != null && ModSessionManager.Config.DebugMode) {MyAPIGateway.Utilities.ShowMessage("[Ship Classes] Exception:", $"{e.Message}\nStack trace:\n{e.StackTrace}");}
+            if (ModSessionManager.Config != null && ModSessionManager.Config.DebugMode)
+            {
+                MyAPIGateway.Utilities.ShowMessage("[Ship Classes] Exception:", $"{e.Message}\nStack trace:\n{e.StackTrace}");
+            }
         }
 
         public static string GetBlockTypeId(IMyCubeBlock block)

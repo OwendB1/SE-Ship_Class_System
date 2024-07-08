@@ -149,7 +149,7 @@ namespace ShipClassSystem
             Grid.OnBlockRemoved += OnBlockRemoved;
             Grid.OnGridMerge += OnGridMerge;
             Grid.SpeedChanged += OnSpeedChanged;
-            Grid.GridPresenceTierChanged+=EnforceNoFlyZones;
+            Grid.GridPresenceTierChanged += EnforceNoFlyZones;
             //Grid.OnMaxThrustChanged += OnSpeedChanged;
 
             if (OwningFaction != null)
@@ -183,7 +183,7 @@ namespace ShipClassSystem
             }
             else
             {
-                Utils.Log($"[CubeGridLogic] Assigning Default Class, grid did not contain a class assignment");
+                Utils.Log("[CubeGridLogic] Assigning Default Class, grid did not contain a class assignment");
                 _gridClassId = DefaultGridClassConfig.DefaultGridClassDefinition.Id;
                 Grid.Storage[Constants.GridClassStorageGUID] = DefaultGridClassConfig.DefaultGridClassDefinition.Id.ToString();
             }
@@ -214,7 +214,7 @@ namespace ShipClassSystem
                 subgrid.OnBlockAdded += OnBlockAdded;
                 subgrid.OnBlockRemoved += OnBlockRemoved;
                 subgrid.SpeedChanged += OnSpeedChanged;
-                subgrid.GridPresenceTierChanged+=EnforceNoFlyZones;
+                subgrid.GridPresenceTierChanged += EnforceNoFlyZones;
 
                 Blocks.UnionWith(subgrid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
             }
@@ -303,7 +303,7 @@ namespace ShipClassSystem
                 Grid.OnBlockRemoved -= OnBlockRemoved;
                 Grid.OnGridMerge -= OnGridMerge;
                 Grid.SpeedChanged -= OnSpeedChanged;
-                Grid.GridPresenceTierChanged-=EnforceNoFlyZones;
+                Grid.GridPresenceTierChanged -= EnforceNoFlyZones;
 
                 CubeGridLogics.Remove(Grid.EntityId);
                 GridsPerFactionClassManager.RemoveCubeGrid(this);
@@ -337,7 +337,7 @@ namespace ShipClassSystem
             sub.OnBlockAdded += mainLogic.OnBlockAdded;
             sub.OnBlockRemoved += mainLogic.OnBlockRemoved;
             sub.SpeedChanged += mainLogic.OnSpeedChanged;
-            sub.GridPresenceTierChanged+=mainLogic.EnforceNoFlyZones;
+            sub.GridPresenceTierChanged += mainLogic.EnforceNoFlyZones;
             mainLogic.Blocks.Clear();
             mainLogic.Blocks.UnionWith(mainLogic.Grid.GetFatBlocks<MyCubeBlock>().Where(b => b.IsPreview == false));
         }
@@ -533,17 +533,21 @@ namespace ShipClassSystem
 
         private void EnforceNoFlyZones(IMyCubeGrid obj)
         {
-            var gridLogic=obj.GetMainGridLogic();
+            var gridLogic = obj.GetMainGridLogic();
             var gridClassId = gridLogic?.GridClass?.Id ?? 0;
-            foreach (IMyFunctionalBlock block in from zone in Config.NoFlyZones 
+            foreach (var block in from zone in Config.NoFlyZones 
                      let range = Vector3D.Distance(obj.WorldMatrix.Translation,new Vector3D(zone.X, zone.Y, zone.Z)) 
-                     where range<zone.Radius 
+                     where range < zone.Radius 
                      where !zone.AllowedClassesById.Contains(gridClassId) 
                      select obj into myGrid 
                      select myGrid.GetFatBlocks<IMyFunctionalBlock>() into blocksOnGrid 
                      from block in blocksOnGrid 
                      where block != null 
-                     where block.Enabled select block)
+                     where block.Enabled
+                     where GridClass.BlockLimits.Any(limit => limit.TurnedOffByNoFlyZone && limit.BlockTypes.Any(type => 
+                                                                  type.TypeId == Utils.GetBlockTypeId(block) && 
+                                                                  type.SubtypeId == Utils.GetBlockSubtypeId(block)))
+                     select block)
             {
                 block.Enabled = false;
             }

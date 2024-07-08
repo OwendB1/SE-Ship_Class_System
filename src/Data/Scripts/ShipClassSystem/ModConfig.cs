@@ -216,6 +216,9 @@ namespace ShipClassSystem
 
         [ProtoMember(3)] 
         public float MaxCount;
+
+        [ProtoMember(4)] 
+        public bool TurnedOffByNoFlyZone;
     }
 
 

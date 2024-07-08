@@ -46,30 +46,59 @@ namespace ShipClassSystem
         private static bool BoostButtonAvalibility(IMyTerminalBlock obj)
         {
             var GridLogic = obj.GetMainGridLogic();
-            if(GridLogic==null){Utils.Log("gridnotfound");return(false);}
-            if(!(GridLogic.Modifiers.MaxBoost>1)){return(false);}
-            if(GridLogic.BoostCoolDown==null){Utils.Log("BoostCooldown");return(false);}
+            if (GridLogic == null)
+            {
+                Utils.Log("gridnotfound");
+                return false;
+            }
+
+            if (!(GridLogic.Modifiers.MaxBoost > 1))
+            {
+                return false;
+            }
+
+            if (GridLogic.BoostCoolDown == null)
+            {
+                Utils.Log("BoostCooldown");
+                return false;
+            }
             return(true);
         }
         private IMyTerminalAction GetBoostButton(string name, Func<IMyTerminalBlock, bool> isEnabled)
         {
-            var BoostButton = MyAPIGateway.TerminalControls.CreateAction<IMyRemoteControl>(name);
-            BoostButton.Enabled = isEnabled;
-            BoostButton.Action = BoostButtonClicked;
-            BoostButton.Icon=Path.Combine(ModContext.ModPath, "Textures", "BoostButton_Sad_Static.png");
-            BoostButton.Writer = BoostButtonWriter;
-            BoostButton.Name = new StringBuilder("Boost");
-            return BoostButton;
+            var boostButton = MyAPIGateway.TerminalControls.CreateAction<IMyRemoteControl>(name);
+            boostButton.Enabled = isEnabled;
+            boostButton.Action = BoostButtonClicked;
+            boostButton.Icon=Path.Combine(ModContext.ModPath, "Textures", "BoostButton_Sad_Static.png");
+            boostButton.Writer = BoostButtonWriter;
+            boostButton.Name = new StringBuilder("Boost");
+            return boostButton;
         }
 
         private static void BoostButtonClicked(IMyTerminalBlock block)
         {
-            var GridLogic = block.GetMainGridLogic();
-            if(GridLogic==null){Utils.Log("gridnotfound");return;}
-            if(GridLogic.EnableBoost==null){Utils.Log("BoostDataNotFOund");return;}
-            if(GridLogic.BoostCoolDown>0){GridLogic.EnableBoost=false;Utils.ShowNotification("Booster On Cooldown!",block.CubeGrid,600);return;}
-            GridLogic.EnableBoost= !GridLogic.EnableBoost;
-            Utils.ShowNotification(GridLogic.EnableBoost ? "Booster Engaged!" : "Booster Disengaged!",block.CubeGrid,600);
+            var gridLogic = block.GetMainGridLogic();
+            if (gridLogic == null)
+            {
+                Utils.Log("gridnotfound");
+                return;
+            }
+
+            if (gridLogic.EnableBoost == null)
+            {
+                Utils.Log("BoostDataNotFOund");
+                return;
+            }
+
+            if (gridLogic.BoostCoolDown > 0)
+            {
+                gridLogic.EnableBoost=false;
+                Utils.ShowNotification("Booster On Cooldown!",block.CubeGrid,600);
+                return;
+            }
+
+            gridLogic.EnableBoost= !gridLogic.EnableBoost;
+            Utils.ShowNotification(gridLogic.EnableBoost ? "Booster Engaged!" : "Booster Disengaged!",block.CubeGrid,600);
         }
         protected override void UnloadData()
         {
@@ -94,9 +123,16 @@ namespace ShipClassSystem
         private static bool VisibleIfIsMainOwner(IMyTerminalBlock block)
         {
             var remote = block as IMyRemoteControl;
-            if(remote.OwnerId==Utils.GetGridOwner(block.CubeGrid)){return true;}
-            else if(MyAPIGateway.Session.Factions.TryGetPlayerFaction(remote.OwnerId)==MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid))){return true;}
-            else{return false;}
+            if (remote.OwnerId == Utils.GetGridOwner(block.CubeGrid))
+            {
+                return true;
+            }
+            if (MyAPIGateway.Session.Factions.TryGetPlayerFaction(remote.OwnerId) ==
+                MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid)))
+            {
+                return true;
+            }
+            return false;
         }
         private static IMyTerminalControlCombobox GetCombobox(string name,
             Action<List<MyTerminalControlComboBoxItem>> setComboboxContent, Func<IMyTerminalBlock, bool> isVisible)

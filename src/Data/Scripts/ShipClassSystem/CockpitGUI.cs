@@ -84,7 +84,7 @@ namespace ShipClassSystem
             }
             if (gridLogic.EnableBoost == null)
             {
-                Utils.Log("BoostDataNotFOund");
+                Utils.Log("BoostDataNotFound");
                 return;
             }
 
