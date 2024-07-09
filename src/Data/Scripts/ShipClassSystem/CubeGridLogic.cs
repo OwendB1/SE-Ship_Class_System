@@ -533,7 +533,7 @@ namespace ShipClassSystem
 
         private void EnforceNoFlyZones(IMyCubeGrid obj)
         {
-            if(Config.NoFlyZones?.Count == 0) return;
+            if(Config.NoFlyZones == null || Config.NoFlyZones?.Count == 0) return;
             var gridLogic = obj.GetMainGridLogic();
             var gridClassId = gridLogic?.GridClass?.Id ?? 0;
             foreach (var block in from zone in Config.NoFlyZones 
