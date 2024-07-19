@@ -159,7 +159,6 @@ namespace ShipClassSystem
         {
             return grid.BigOwners.FirstOrDefault();
         }
-
     }
 
     public static class TextUtils

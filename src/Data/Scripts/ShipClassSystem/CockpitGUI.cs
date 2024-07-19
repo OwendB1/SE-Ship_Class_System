@@ -190,16 +190,16 @@ namespace ShipClassSystem
 
     public class TerminalChainedDelegate
     {
-        private readonly bool CheckOR;
-        private readonly Func<IMyTerminalBlock, bool> CustomFunc;
-        private readonly Func<IMyTerminalBlock, bool> OriginalFunc;
+        private readonly bool _checkOR;
+        private readonly Func<IMyTerminalBlock, bool> _customFunc;
+        private readonly Func<IMyTerminalBlock, bool> _originalFunc;
 
         private TerminalChainedDelegate(Func<IMyTerminalBlock, bool> originalFunc,
             Func<IMyTerminalBlock, bool> customFunc, bool checkOR)
         {
-            OriginalFunc = originalFunc;
-            CustomFunc = customFunc;
-            CheckOR = checkOR;
+            _originalFunc = originalFunc;
+            _customFunc = customFunc;
+            _checkOR = checkOR;
         }
 
         /// <summary>
@@ -226,10 +226,10 @@ namespace ShipClassSystem
             if (block?.CubeGrid == null)
                 return false;
 
-            var originalCondition = OriginalFunc?.Invoke(block) ?? true;
-            var customCondition = CustomFunc?.Invoke(block) ?? true;
+            var originalCondition = _originalFunc?.Invoke(block) ?? true;
+            var customCondition = _customFunc?.Invoke(block) ?? true;
 
-            if (CheckOR)
+            if (_checkOR)
                 return originalCondition || customCondition;
             return originalCondition && customCondition;
         }

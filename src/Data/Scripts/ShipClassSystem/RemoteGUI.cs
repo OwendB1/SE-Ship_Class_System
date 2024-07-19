@@ -121,12 +121,8 @@ namespace ShipClassSystem
             {
                 return true;
             }
-            if (MyAPIGateway.Session.Factions.TryGetPlayerFaction(remote.OwnerId) ==
-                MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid)))
-            {
-                return true;
-            }
-            return false;
+            return MyAPIGateway.Session.Factions.TryGetPlayerFaction(remote.OwnerId) ==
+                   MyAPIGateway.Session.Factions.TryGetPlayerFaction(Utils.GetGridOwner(block.CubeGrid));
         }
         private static IMyTerminalControlCombobox GetCombobox(string name,
             Action<List<MyTerminalControlComboBoxItem>> setComboboxContent, Func<IMyTerminalBlock, bool> isVisible)
