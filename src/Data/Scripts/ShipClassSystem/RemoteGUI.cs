@@ -29,7 +29,7 @@ namespace ShipClassSystem
                 remote => !remote.CubeGrid.IsStatic && remote.CubeGrid.GridSizeEnum == MyCubeSize.Large));
             _remoteControls.Add(GetCombobox("SetGridClassSmall", SetComboboxContentSmall,
                 remote => !remote.CubeGrid.IsStatic && remote.CubeGrid.GridSizeEnum == MyCubeSize.Small));
-            _remoteActions.Add(GetBoostButton("BoostButton", BoostButtonAvalibility));
+            _remoteActions.Add(GetBoostButton("BoostButton", BoostButtonAvailability));
         }
         private void BoostButtonWriter(IMyTerminalBlock block, StringBuilder sb)
         {
@@ -43,26 +43,20 @@ namespace ShipClassSystem
                 sb.Append("Boost: N/A");
             }
         }
-        private static bool BoostButtonAvalibility(IMyTerminalBlock obj)
+        private static bool BoostButtonAvailability(IMyTerminalBlock obj)
         {
-            var GridLogic = obj.GetMainGridLogic();
-            if (GridLogic == null)
-            {
-                Utils.Log("gridnotfound");
-                return false;
-            }
-
-            if (!(GridLogic.Modifiers.MaxBoost > 1))
+            var gridLogic = obj.GetMainGridLogic();
+            if (gridLogic == null)
             {
                 return false;
             }
 
-            if (GridLogic.BoostCoolDown == null)
+            if (!(gridLogic.Modifiers.MaxBoost > 1))
             {
-                Utils.Log("BoostCooldown");
                 return false;
             }
-            return(true);
+
+            return gridLogic.BoostCoolDown != null;
         }
         private IMyTerminalAction GetBoostButton(string name, Func<IMyTerminalBlock, bool> isEnabled)
         {
@@ -86,7 +80,7 @@ namespace ShipClassSystem
 
             if (gridLogic.EnableBoost == null)
             {
-                Utils.Log("BoostDataNotFOund");
+                Utils.Log("BoostDataNotFound");
                 return;
             }
 
