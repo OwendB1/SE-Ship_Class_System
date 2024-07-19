@@ -157,7 +157,7 @@ namespace ShipClassSystem
 
         public static long GetGridOwner(IMyCubeGrid grid)
         {
-            return grid.BigOwners[0];
+            return grid.BigOwners.FirstOrDefault();
         }
 
     }
