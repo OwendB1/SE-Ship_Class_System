@@ -14,7 +14,7 @@ namespace ShipClassSystem
     {
         public static ModConfig Config;
         public static Dictionary<long, CubeGridLogic> CubeGridLogics = new Dictionary<long, CubeGridLogic>();
-        public readonly Queue<IMyEntity> ToBeInitialized = new Queue<IMyEntity>();
+        public readonly Queue<IMyCubeGrid> ToBeInitialized = new Queue<IMyCubeGrid>();
         internal static Comms Comms;
 
         public override void LoadData()
@@ -102,7 +102,8 @@ namespace ShipClassSystem
         {
             var grid = ent as IMyCubeGrid;
             if (grid == null) return;
-            ToBeInitialized.Enqueue(ent);
+            Utils.Log($"EntityAdded: {grid.DisplayName}");
+            ToBeInitialized.Enqueue(grid);
         }
 
         private void EntityRemoved(IMyEntity ent)
@@ -129,8 +130,11 @@ namespace ShipClassSystem
         {
             if (Config == null) return;
             if (ToBeInitialized.Count < 1) return;
-            if (Constants.IsClient && MyAPIGateway.Session.ControlledObject == null) return;
+            if (MyAPIGateway.Session.GameplayFrameCounter < 1) return;
+
             var target = ToBeInitialized.Dequeue();
+            if (target.Physics == null) return;
+
             var logic = new CubeGridLogic();
             logic.Initialize(target);
         }

@@ -126,10 +126,9 @@ namespace ShipClassSystem
         public GridModifiers Modifiers => GridClass.Modifiers;
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
 
-        public void Initialize(IMyEntity entity)
+        public void Initialize(IMyCubeGrid grid)
         {
-            Grid = entity as IMyCubeGrid;
-            if (Grid == null) return;
+            Grid = grid;
             if (ModSessionManager.CubeGridLogics.ContainsKey(Grid.EntityId) && 
                 _gridClassId == DefaultGridClassConfig.DefaultGridClassDefinition.Id) return;
             
