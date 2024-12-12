@@ -101,9 +101,9 @@ namespace ShipClassSystem
     public class GridClass
     {
         [ProtoMember(1)]
-        public int Id;
+        public int Id = 0;
         [ProtoMember(2)]
-        public string Name;
+        public string Name = string.Empty;
         [ProtoMember(3)]
         public bool ForceBroadCast = false;
         [ProtoMember(4)]
@@ -133,7 +133,7 @@ namespace ShipClassSystem
         [ProtoMember(16)]
         public GridDamageModifiers DamageModifiers = new GridDamageModifiers();
         [ProtoMember(17)]
-        public BlockLimit[] BlockLimits;
+        public BlockLimit[] BlockLimits = Array.Empty<BlockLimit>();
     }
 
     [ProtoContract]

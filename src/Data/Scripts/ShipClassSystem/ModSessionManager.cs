@@ -117,7 +117,7 @@ namespace ShipClassSystem
             }
             catch
             {
-                Utils.Log($"Cubegrid was not accessible in list due to silly witchcraft shenanagins:{grid.EntityId}");
+                Utils.Log($"Cubegrid was not accessible in list due to silly witchcraft shenanigans:{grid.EntityId}");
             }
         }
 
