@@ -78,7 +78,7 @@ namespace ShipCoreFramework
             if (referenceBlock?.CubeGrid == null || block?.CubeGrid == null ||
                 referenceBlock.CubeGrid == block.CubeGrid)
                 return false;
-            if (limit == null || limit.MaxCountPerDirection < 0f && !HasAllowedDirectionRule(limit, key))
+            if (limit == null || !limit.HasDirectionalBudget && !HasAllowedDirectionRule(limit, key))
                 return false;
             return Session.Config == null || Session.Config.BlockDirectionalPlacementOnSubgrids;
         }
@@ -667,7 +667,7 @@ namespace ShipCoreFramework
                     else if (!connectorOnly)
                     {
                         localCandidates.Add(new KeyValuePair<IMySlimBlock, double>(block, weight));
-                        if (limit.MaxCountPerDirection >= 0f)
+                        if (limit.HasDirectionalBudget)
                         {
                             BlockType matchedBlockType = limit.GetMatchingBlockType(GridComponent.KeyOf(block));
                             DirectionType facing;
@@ -687,11 +687,13 @@ namespace ShipCoreFramework
 
                 var directionPunishments = new HashSet<IMySlimBlock>();
                 var directionPunishedWeight = 0d;
-                if (!connectorOnly && limit.MaxCountPerDirection >= 0f)
+                if (!connectorOnly && limit.HasDirectionalBudget)
                 {
                     for (var directionIndex = 0; directionIndex < directionTotals.Length; directionIndex++)
                     {
-                        var directionOver = directionTotals[directionIndex] - limit.MaxCountPerDirection;
+                        var directionMax = limit.GetMaxCountForDirection((DirectionType)directionIndex);
+                        if (directionMax < 0f) continue;
+                        var directionOver = directionTotals[directionIndex] - directionMax;
                         var candidates = directionCandidates[directionIndex];
                         if (directionOver <= 0d || candidates == null) continue;
 

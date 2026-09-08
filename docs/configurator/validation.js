@@ -37,6 +37,61 @@ export function limitNeedsDirectionWarning(limit) {
     selectedGroups.has(groupName) && text(directions).split(",").some(isValidSpecificDirection));
 }
 
+export function enabledBudgetDirections(limit) {
+  const directions = new Set();
+  const add = (allowed) => {
+    const values = asArray(allowed);
+    if (!values.length || values.includes("Any")) VALID_DIRECTIONS.forEach((value) => directions.add(value));
+    else values.filter((value) => VALID_DIRECTIONS.includes(value)).forEach((value) => directions.add(value));
+  };
+  const included = asArray(limit?.blockGroups);
+  if (!included.length) add(limit?.allowedDirections);
+  included.forEach((groupName) => {
+    const override = limit?.blockGroupDirections?.[groupName];
+    if (override == null) return add(limit?.allowedDirections);
+    const tokens = text(override).split(",").map(trimmed).filter(Boolean);
+    const allowed = tokens.map((token) => VALID_ALLOWED_DIRECTIONS.find((value) =>
+      value.toLowerCase() === token.toLowerCase()) || (/^[0-6]$/.test(token) ? VALID_ALLOWED_DIRECTIONS[Number(token)] : null))
+      .filter(Boolean);
+    // Runtime discards an override containing only invalid tokens; an empty override means Any.
+    add(tokens.length && !allowed.length ? limit?.allowedDirections : allowed);
+  });
+  return VALID_DIRECTIONS.filter((direction) => directions.has(direction));
+}
+
+export function validateDirectionBudgets(limit) {
+  const budgets = asArray(limit?.directionBudgets);
+  const errors = [];
+  const fallback = Number(limit?.maxCountPerDirection ?? -1);
+  if (!budgets.length && fallback < 0) return { errors, total: null };
+  const finiteCap = (value) => value != null && trimmed(value) !== "" &&
+    Number.isFinite(Math.fround(Number(value))) && Number(value) >= 0;
+  if (!finiteCap(limit?.maxCount))
+    errors.push("DirectionBudgets requires a finite, non-negative MaxCount.");
+  if (fallback !== -1 && !finiteCap(fallback))
+    errors.push("MaxCountPerDirection must be -1 or finite and non-negative.");
+  const byDirection = new Map();
+  budgets.forEach((budget) => {
+    if (!VALID_DIRECTIONS.includes(budget?.direction))
+      errors.push(`Invalid DirectionBudget direction '${text(budget?.direction)}'; use one of the six specific directions.`);
+    if (byDirection.has(budget?.direction))
+      errors.push(`Duplicate DirectionBudget for ${budget?.direction}.`);
+    byDirection.set(budget?.direction, budget?.maxCount);
+    if (!finiteCap(budget?.maxCount))
+      errors.push(`DirectionBudget for ${budget?.direction} must be finite and non-negative.`);
+  });
+  const directions = new Set([...enabledBudgetDirections(limit), ...byDirection.keys()]);
+  let total = 0;
+  directions.forEach((direction) => {
+    const cap = byDirection.has(direction) ? Number(byDirection.get(direction)) : fallback;
+    if (cap >= 0) total += Math.fround(cap);
+  });
+  total = Math.fround(total);
+  if (total > Math.fround(Number(limit?.maxCount)))
+    errors.push(`DirectionBudgets total (including inherited caps) ${total} exceeds MaxCount ${limit?.maxCount}.`);
+  return { errors, total };
+}
+
 function duplicateValues(items, keyOf, caseInsensitive = false) {
   const counts = new Map();
   asArray(items).forEach((item) => {
@@ -129,6 +184,7 @@ export function validateEditorConfig(config = {}) {
     asArray(core?.blockLimits).forEach((limit, limitIndex) => {
       const limitName = trimmed(limit?.name) || `BlockLimit ${limitIndex + 1}`;
       const limitLabel = `${label} limit '${limitName}'`;
+      validateDirectionBudgets(limit).errors.forEach((error) => errors.push(`${limitLabel}: ${error}`));
       validateEnum(errors, limitLabel, "LimitVisibility", limit?.limitVisibility, VALID_LIMIT_VISIBILITIES);
       validateEnum(errors, limitLabel, "PunishmentType", limit?.punishmentType, VALID_PUNISHMENT_TYPES);
 

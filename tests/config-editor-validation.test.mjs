@@ -21,6 +21,7 @@ const validCore = {
   ],
   blockLimits: [{
     name: "Weapons",
+    maxCount: 2,
     maxCountPerDirection: 2,
     limitVisibility: "Always",
     punishmentType: "ShutOff",

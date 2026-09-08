@@ -973,6 +973,13 @@ namespace ShipCoreFramework
                     .ToArray(),
                 MaxCount = limit.MaxCount,
                 MaxCountPerDirection = limit.MaxCountPerDirection,
+                DirectionBudgets = (limit.DirectionBudgets ?? Array.Empty<DirectionBudget>())
+                    .Where(budget => budget != null)
+                    .Select(budget => new DirectionBudgetData
+                    {
+                        Direction = (DirectionTypeData)(int)budget.Direction,
+                        MaxCount = budget.MaxCount
+                    }).ToArray(),
                 LimitVisibility = (LimitVisibilityData)(int)limit.LimitVisibility,
                 CrossConnectorPunishment = limit.CrossConnectorPunishment,
                 PunishByNoFlyZone = limit.PunishByNoFlyZone,

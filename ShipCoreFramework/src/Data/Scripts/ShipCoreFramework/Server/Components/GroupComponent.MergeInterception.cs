@@ -224,7 +224,7 @@ namespace ShipCoreFramework
                 foreach (var block in blocks)
                     totalWeight += limit.GetWeight(GridComponent.KeyOf(block));
 
-                if (limit.MaxCountPerDirection >= 0f && coreBlocks.Count > 0)
+                if (limit.HasDirectionalBudget && coreBlocks.Count > 0)
                 {
                     var referenceMatrix = coreBlocks[0].WorldMatrix;
                     var referenceGrid = coreBlocks[0].CubeGrid;
@@ -251,11 +251,12 @@ namespace ShipCoreFramework
 
                         for (var directionIndex = 0; directionIndex < directionTotals.Length; directionIndex++)
                         {
-                            if (directionTotals[directionIndex] <= limit.MaxCountPerDirection) continue;
+                            var directionMax = limit.GetMaxCountForDirection((DirectionType)directionIndex);
+                            if (directionMax < 0f || directionTotals[directionIndex] <= directionMax) continue;
                             violation = "projected " + limit.Name + " " +
                                         ((DirectionType)directionIndex) + " directional limit " +
                                         directionTotals[directionIndex].ToString("0.##") + "/" +
-                                        limit.MaxCountPerDirection.ToString("0.##") + " for " +
+                                        directionMax.ToString("0.##") + " for " +
                                         shipCore.UniqueName + ".";
                             return true;
                         }

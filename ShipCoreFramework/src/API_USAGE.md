@@ -142,6 +142,9 @@ take precedence when a block belongs to both.
 older v4 consumers remain compatible and ignore the appended protobuf members.
 `BlockLimitData.IgnoredByNpc` exposes the per-limit NPC exemption and requires API v4.3. Older v4
 consumers remain compatible and treat the appended protobuf member as `false`.
+`BlockLimitData.DirectionBudgets` exposes per-direction overrides as `DirectionBudgetData` entries
+(`Direction`, `MaxCount`) and requires API v4.5. Missing directions inherit `MaxCountPerDirection`;
+older v4 consumers ignore the appended field. Direction budgets share the limit's weighted counts.
 `PunishmentTypeData.DeleteWithoutRefund` requires API v4.4.
 `ApiReadStatusData.ConfigurationUnavailable` and `ApiReadinessData.ConfigurationError` also require
 API v4.4; older v4 consumers remain wire-compatible but do not expose the diagnostic name or text.

@@ -34,7 +34,7 @@ namespace ShipCoreFramework
 
                 var directionIndex = -1;
                 var facing = DirectionType.Forward;
-                if (limit.MaxCountPerDirection >= 0f && directionReferenceBlock != null &&
+                if (limit.HasDirectionalBudget && directionReferenceBlock != null &&
                     GroupComponent.TryResolveBlockFacing(directionReferenceBlock, block,
                         matchedBlockType.PrimaryDirection, out facing))
                     directionIndex = (int)facing;
@@ -69,12 +69,13 @@ namespace ShipCoreFramework
                         directionWeight = groupBucket.DirectionWeights[directionIndex];
                 }
 
-                if (evaluateLimit && directionIndex >= 0 && directionWeight + weight > limit.MaxCountPerDirection &&
+                var directionMax = limit.GetMaxCountForDirection(facing);
+                if (evaluateLimit && directionIndex >= 0 && directionMax >= 0f && directionWeight + weight > directionMax &&
                     authoritative && !deferPunishment)
                 {
                     var directionMessage = localizedBlockName + " violates directional Block limit " +
                                            limit.Name + " (" + facing + "): " +
-                                           (directionWeight + weight) + "/" + limit.MaxCountPerDirection;
+                                           (directionWeight + weight) + "/" + directionMax;
                     if (firstOwner != 0) Utils.ShowNotification(directionMessage, firstOwner);
                     else Utils.ShowNotification(directionMessage);
                     var directionPunishment = forceShutOff
@@ -158,7 +159,7 @@ namespace ShipCoreFramework
 
                     bucket.TotalWeight += weight;
                     DirectionType facing;
-                    if (limit.MaxCountPerDirection >= 0f &&
+                    if (limit.HasDirectionalBudget &&
                         GroupComponent.TryResolveBlockFacing(directionReference, block,
                             matchedBlockType.PrimaryDirection, out facing))
                         bucket.DirectionWeights[(int)facing] += weight;

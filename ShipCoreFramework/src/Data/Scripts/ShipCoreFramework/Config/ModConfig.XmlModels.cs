@@ -722,6 +722,28 @@ namespace ShipCoreFramework
         [XmlElement("MaxCountPerDirection")]
         public float MaxCountPerDirection = -1f;
 
+        [XmlArray("DirectionBudgets")]
+        [XmlArrayItem("DirectionBudget")]
+        public DirectionBudget[] DirectionBudgets = Array.Empty<DirectionBudget>();
+
+        [XmlIgnore]
+        public bool HasDirectionalBudget => MaxCountPerDirection >= 0f ||
+                                            DirectionBudgets != null && DirectionBudgets.Length > 0;
+
+        internal float GetMaxCountForDirection(DirectionType direction)
+        {
+            if (DirectionBudgets != null)
+                foreach (var budget in DirectionBudgets)
+                    if (budget != null && budget.Direction == direction)
+                        return budget.MaxCount;
+            return MaxCountPerDirection;
+        }
+
+        public bool ShouldSerializeDirectionBudgets()
+        {
+            return DirectionBudgets != null && DirectionBudgets.Length > 0;
+        }
+
         [XmlElement("LimitVisibility")]
         public LimitVisibility LimitVisibility = ShipCoreFramework.LimitVisibility.Always;
 
@@ -815,6 +837,15 @@ namespace ShipCoreFramework
 
             return null;
         }
+    }
+
+    public class DirectionBudget
+    {
+        [XmlAttribute("Direction")]
+        public DirectionType Direction = DirectionType.Any;
+
+        [XmlAttribute("MaxCount")]
+        public float MaxCount = -1f;
     }
 
     public class BlockGroupReference

@@ -35,7 +35,7 @@ namespace ShipCoreFramework
         /// Increment when you add functionality in a backwards compatible way.
         /// Minor version changes remain compatible as long as the major version matches.
         /// </summary>
-        public const int API_MINOR = 4;
+        public const int API_MINOR = 5;
 
         /// <summary>
         /// Encoded API version (Major.Minor) packed into a single int.
@@ -574,6 +574,14 @@ namespace ShipCoreFramework
         [ProtoMember(10)] public float MaxCountPerDirection = -1f;
         [ProtoMember(11)] public LimitVisibilityData LimitVisibility;
         [ProtoMember(12)] public bool IgnoredByNpc;
+        [ProtoMember(13)] public DirectionBudgetData[] DirectionBudgets = Array.Empty<DirectionBudgetData>();
+    }
+
+    [ProtoContract]
+    public class DirectionBudgetData
+    {
+        [ProtoMember(1)] public DirectionTypeData Direction;
+        [ProtoMember(2)] public float MaxCount;
     }
 
     [ProtoContract]

@@ -1,8 +1,10 @@
-// app.js build v1016
+// app.js build v1018
 import {
   VALID_DIRECTIONS,
   VALID_ALLOWED_DIRECTIONS,
   limitNeedsDirectionWarning,
+  enabledBudgetDirections,
+  validateDirectionBudgets,
   validateEditorConfig
 } from "./validation.js";
 
@@ -828,6 +830,7 @@ function cloneLimit(limit = createDefaultLimit()) {
     ...createDefaultLimit(),
     ...limit,
     maxCountPerDirection: Number(limit.maxCountPerDirection ?? -1),
+    directionBudgets: (limit.directionBudgets || []).map((budget) => ({ ...budget })),
     limitVisibility: normalizeLimitVisibility(limit.limitVisibility),
     ignoredByNpc: Boolean(limit.ignoredByNpc),
     allowedDirections: Array.isArray(limit.allowedDirections) ? [...limit.allowedDirections] : [],
@@ -1002,6 +1005,7 @@ function createDefaultLimit() {
     name: "",
     maxCount: 0,
     maxCountPerDirection: -1,
+    directionBudgets: [],
     limitVisibility: "Always",
     crossConnectorPunishment: false,
     punishByNoFlyZone: false,
@@ -1365,6 +1369,38 @@ function updateLimitDirectionWarning(coreIndex, limitIndex, limit) {
   warning.closest("details")?.querySelector("summary")?.classList.toggle("block-limit-summary--warning", needsWarning);
 }
 
+function directionBudgetStatus(limit) {
+  const { errors, total } = validateDirectionBudgets(limit);
+  if (errors.length) return errors.join(" ");
+  return total == null ? "No directional budgets allocated."
+    : `Allocated budget: ${Number(total.toPrecision(7))} / ${limit.maxCount} (includes inherited caps).`;
+}
+
+function directionBudgetInputs(coreIndex, limitIndex, limit) {
+  const budgets = limit.directionBudgets || [];
+  const directions = [...new Set([...enabledBudgetDirections(limit), ...budgets.map((budget) => budget.direction)])];
+  const fallback = Number(limit.maxCountPerDirection ?? -1);
+  return `<label>Direction budgets</label>
+    <p class="muted">Blank inherits MaxCountPerDirection (${fallback < 0 ? "unlimited" : fallback}). Overrides plus inherited caps for enabled directions must fit MaxCount. Unlimited directions add no allocation; MaxCount still caps total usage.</p>
+    <div class="row wrap">${directions.map((direction) => {
+      const budget = budgets.find((entry) => entry.direction === direction);
+      return `<label class="inline">${escapeXml(direction || "Invalid direction")}
+        <input data-action="limit-direction-budget" data-c="${coreIndex}" data-l="${limitIndex}" data-direction="${escapeXml(direction)}" class="small" type="number" min="0" step="any" placeholder="${fallback < 0 ? "Unlimited" : fallback}" value="${budget ? escapeXml(budget.maxCount) : ""}" />
+      </label>`;
+    }).join("")}</div>
+    <p data-direction-budget-status data-c="${coreIndex}" data-l="${limitIndex}" role="status">${escapeXml(directionBudgetStatus(limit))}</p>`;
+}
+
+function renderDirectionBudgets(coreIndex, limitIndex, limit) {
+  const container = document.querySelector(`[data-direction-budgets][data-c="${coreIndex}"][data-l="${limitIndex}"]`);
+  if (container) container.innerHTML = directionBudgetInputs(coreIndex, limitIndex, limit);
+}
+
+function updateDirectionBudgetStatus(coreIndex, limitIndex, limit) {
+  const status = document.querySelector(`[data-direction-budget-status][data-c="${coreIndex}"][data-l="${limitIndex}"]`);
+  if (status) status.textContent = directionBudgetStatus(limit);
+}
+
 function modifierFieldColumn({ title, fields, action, step = 0.01, dataAttrs = "" }) {
   return `
     <div class="modifier-column card">
@@ -1634,6 +1670,9 @@ function renderShipCores() {
               ${directionCheckboxes(coreIndex, limitIndex, limit.allowedDirections || [])}
             </div>
           </div>
+          <div data-direction-budgets data-c="${coreIndex}" data-l="${limitIndex}">
+            ${directionBudgetInputs(coreIndex, limitIndex, limit)}
+          </div>
           <div>
             <label>Included Reusable Block Groups</label>
             <input data-action="limit-group-search" data-c="${coreIndex}" data-l="${limitIndex}" class="small group-search" placeholder="Search block groups" value="${escapeXml(limit.groupSearch || "")}" />
@@ -1850,6 +1889,11 @@ function parseCoreXml(text, originalFileName = "") {
         name: textOf(limitNode, "Name"),
         maxCount: numberOf(limitNode, "MaxCount", 0),
         maxCountPerDirection: numberOf(limitNode, "MaxCountPerDirection", -1),
+        directionBudgets: qselAll(childElement(limitNode, "DirectionBudgets"), "DirectionBudget").map((node) => ({
+          direction: node.getAttribute("Direction") || "",
+          maxCount: node.hasAttribute("MaxCount") && node.getAttribute("MaxCount").trim() !== ""
+            ? Number(node.getAttribute("MaxCount")) : NaN
+        })),
         limitVisibility: normalizeLimitVisibility(textOf(limitNode, "LimitVisibility")),
         crossConnectorPunishment: boolOf(limitNode, "CrossConnectorPunishment", false),
         punishByNoFlyZone: boolOf(limitNode, "PunishByNoFlyZone", boolOf(limitNode, "TurnedOffByNoFlyZone", false)),
@@ -1954,6 +1998,11 @@ function writeBlockLimitXml(limit, indent = "  ") {
     ...(limit.excludedBlockGroups || []).map((groupName) => `${indent}  <ExcludedBlockGroups>${escapeXml(groupName)}</ExcludedBlockGroups>`),
     `${indent}  <MaxCount>${limit.maxCount}</MaxCount>`,
     ...(Number(limit.maxCountPerDirection) >= 0 ? [`${indent}  <MaxCountPerDirection>${Number(limit.maxCountPerDirection)}</MaxCountPerDirection>`] : []),
+    ...((limit.directionBudgets || []).length ? [
+      `${indent}  <DirectionBudgets>`,
+      ...limit.directionBudgets.map((budget) => `${indent}    <DirectionBudget Direction="${escapeXml(budget.direction)}" MaxCount="${escapeXml(budget.maxCount)}" />`),
+      `${indent}  </DirectionBudgets>`
+    ] : []),
     ...(normalizeLimitVisibility(limit.limitVisibility) !== "Always" ? [`${indent}  <LimitVisibility>${normalizeLimitVisibility(limit.limitVisibility)}</LimitVisibility>`] : []),
     `${indent}  <CrossConnectorPunishment>${limit.crossConnectorPunishment}</CrossConnectorPunishment>`,
     `${indent}  <PunishByNoFlyZone>${limit.punishByNoFlyZone}</PunishByNoFlyZone>`,
@@ -2897,7 +2946,16 @@ document.addEventListener("input", (event) => {
     const limit = selectedCore.blockLimits[limitIndex];
     limit.maxCountPerDirection = Number(target.value || -1);
     updateLimitDirectionWarning(coreIndex, limitIndex, limit);
+    renderDirectionBudgets(coreIndex, limitIndex, limit);
   }
+  if (action === "limit-direction-budget") {
+    const limit = selectedCore.blockLimits[limitIndex];
+    const direction = target.dataset.direction;
+    limit.directionBudgets = (limit.directionBudgets || []).filter((budget) => budget.direction !== direction);
+    if (target.value.trim() !== "") limit.directionBudgets.push({ direction, maxCount: Number(target.value) });
+    updateDirectionBudgetStatus(coreIndex, limitIndex, limit);
+  }
+  if (action === "limit-max") updateDirectionBudgetStatus(coreIndex, limitIndex, selectedCore.blockLimits[limitIndex]);
   if (action === "limit-visibility" && selectElement) selectedCore.blockLimits[limitIndex].limitVisibility = normalizeLimitVisibility(selectElement.value);
   if (action === "limit-group-search") {
     selectedCore.blockLimits[limitIndex].groupSearch = target.value;
@@ -3085,6 +3143,7 @@ document.addEventListener("change", (event) => {
 
     limit.blockGroupDirections[groupName] = inputElement.value;
     updateLimitDirectionWarning(coreIndex, limitIndex, limit);
+    renderDirectionBudgets(coreIndex, limitIndex, limit);
   }
   if (action === "limit-group-toggle" && inputElement) {
     const limit = selectedCore.blockLimits[limitIndex];

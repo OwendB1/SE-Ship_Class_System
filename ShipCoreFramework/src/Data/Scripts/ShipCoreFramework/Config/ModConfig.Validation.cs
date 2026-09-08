@@ -70,6 +70,7 @@ namespace ShipCoreFramework
                 if (limit == null) continue;
 
                 NormalizeIncludedBlockGroupReferences(limit, core, source, coreFileOrKey);
+                ValidateDirectionBudgets(limit, core, source, coreFileOrKey);
 
                 if (limit.MaxCountPerDirection >= 0f && !HasValidDirectionRule(limit))
                     Utils.Log($"Config warning: ShipCore '{core.UniqueName}' limit '{limit.Name}' has <MaxCountPerDirection> enabled but no valid direction in <AllowedDirections> or a BlockGroups Directions attribute.", 2, "Config Validation");
@@ -151,6 +152,61 @@ namespace ShipCoreFramework
             return limit.BlockGroupReferences != null && limit.BlockGroupReferences.Any(reference =>
                 reference != null && reference.AllowedDirections != null &&
                 reference.AllowedDirections.Any(IsSpecificDirection));
+        }
+
+        private static void ValidateDirectionBudgets(BlockLimit limit, ShipCore core, string source, string file)
+        {
+            var budgets = limit.DirectionBudgets ?? Array.Empty<DirectionBudget>();
+            if (budgets.Length == 0 && limit.MaxCountPerDirection < 0f) return;
+
+            var label = $"ShipCore '{core.UniqueName}' limit '{limit.Name}' from {source} ({file})";
+            if (float.IsNaN(limit.MaxCount) || float.IsInfinity(limit.MaxCount) || limit.MaxCount < 0f)
+                throw new Exception(label + " requires a finite, non-negative MaxCount with DirectionBudgets.");
+            if (float.IsNaN(limit.MaxCountPerDirection) || float.IsInfinity(limit.MaxCountPerDirection) ||
+                limit.MaxCountPerDirection < 0f && limit.MaxCountPerDirection != -1f)
+                throw new Exception(label + " requires MaxCountPerDirection to be -1 or finite and non-negative.");
+
+            var directions = new HashSet<DirectionType>();
+            foreach (var budget in budgets)
+            {
+                if (budget == null || !IsSpecificDirection(budget.Direction))
+                    throw new Exception(label + " has an invalid DirectionBudget direction; use one of the six specific directions.");
+                if (!directions.Add(budget.Direction))
+                    throw new Exception(label + " has a duplicate DirectionBudget for " + budget.Direction + ".");
+                if (float.IsNaN(budget.MaxCount) || float.IsInfinity(budget.MaxCount) || budget.MaxCount < 0f)
+                    throw new Exception(label + " requires a finite, non-negative DirectionBudget for " + budget.Direction + ".");
+            }
+
+            // Retained overrides count even when currently disabled. Group direction rules share budgets.
+            var references = limit.BlockGroupReferences;
+            if (references == null || references.Length == 0)
+                AddBudgetDirections(directions, limit.AllowedDirections);
+            else
+                foreach (var reference in references)
+                    AddBudgetDirections(directions, reference.HasDirectionsOverride
+                        ? reference.AllowedDirections : limit.AllowedDirections);
+
+            var total = 0d;
+            foreach (var direction in directions)
+            {
+                var cap = limit.GetMaxCountForDirection(direction);
+                if (cap >= 0f) total += cap;
+            }
+            // Compare at the precision used by the serialized float caps.
+            if ((float)total > limit.MaxCount)
+                throw new Exception(label + " DirectionBudgets total (including inherited caps) " + total +
+                                    " exceeds MaxCount " + limit.MaxCount + ".");
+        }
+
+        private static void AddBudgetDirections(HashSet<DirectionType> directions, List<DirectionType> allowed)
+        {
+            if (allowed == null || allowed.Count == 0 || allowed.Contains(DirectionType.Any))
+            {
+                for (var index = 0; index < 6; index++) directions.Add((DirectionType)index);
+                return;
+            }
+            foreach (var direction in allowed)
+                if (IsSpecificDirection(direction)) directions.Add(direction);
         }
 
         private static bool IsSpecificDirection(DirectionType direction)

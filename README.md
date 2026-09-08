@@ -360,6 +360,7 @@ Each entry uses `<BlockLimit>`.
 | `ExcludedBlockGroups` | `string[]` | Names of `BlockGroup` definitions subtracted from this limit. | Exclusion wins when a block matches both an included and excluded group. |
 | `MaxCount` | `float` | Maximum allowed total weight for this limit. | Weight comes from matched `BlockType.CountWeight`. |
 | `MaxCountPerDirection` | `float` | Maximum allowed weight facing any one of the six core-relative directions. | Optional; negative values disable it. Uses each matched `BlockType.PrimaryDirection`. Connector-imported weight remains aggregate-only. |
+| `DirectionBudgets` | `DirectionBudget[]` | Per-direction weighted cap overrides (`Direction`, `MaxCount` attributes). | Overrides plus inherited caps for enabled directions must total no more than `MaxCount`; invalid allocation rejects config loading. |
 | `LimitVisibility` | `Always`, `NearLimit`, or `Hidden` | Controls this limit's placement-preview and Core Status HUD elements. | Defaults to `Always`. `NearLimit` uses the 80% threshold; `Hidden` affects presentation only, never enforcement. |
 | `CrossConnectorPunishment` | `bool` | Pulls blocks from connected no-core groups into this limit's bucket. | Only affects non-critical limits on this core. Manifest blacklist imports use all non-critical limits regardless of this flag. |
 | `PunishByNoFlyZone` | `bool` | Applies this limit's punishment inside no-fly zones. | Only used when the zone itself is not forcing everything off. |
@@ -407,16 +408,54 @@ Directional count caps share the normal limit's weighted points while keeping si
 <BlockLimits>
   <Name>RCS Thrusters</Name>
   <BlockGroups>RCS</BlockGroups>
-  <MaxCount>100</MaxCount>
+  <MaxCount>150</MaxCount>
   <MaxCountPerDirection>25</MaxCountPerDirection>
   <LimitVisibility>NearLimit</LimitVisibility>
 </BlockLimits>
 ```
 
-This permits up to 100 total RCS points, but no more than 25 points facing Forward, Backward, Up,
+This permits up to 150 total RCS points, but no more than 25 points facing Forward, Backward, Up,
 Down, Left, or Right. A placement reaching exactly 25 stays valid; the placement preview adds a
 directional overflow line only when the proposed placement would exceed 25. Mechanical-subgrid
 behavior follows `BlockDirectionalPlacementOnSubgrids`, matching `AllowedDirections`.
+
+Different direction budgets can be assigned within the same limit:
+
+```xml
+<BlockLimits>
+  <Name>Directional Weapons</Name>
+  <BlockGroups>Weapons</BlockGroups>
+  <MaxCount>100</MaxCount>
+  <MaxCountPerDirection>10</MaxCountPerDirection>
+  <DirectionBudgets>
+    <DirectionBudget Direction="Forward" MaxCount="60" />
+    <DirectionBudget Direction="Backward" MaxCount="20" />
+  </DirectionBudgets>
+  <AllowedDirections>Forward</AllowedDirections>
+  <AllowedDirections>Backward</AllowedDirections>
+  <AllowedDirections>Left</AllowedDirections>
+  <AllowedDirections>Right</AllowedDirections>
+</BlockLimits>
+```
+
+Forward gets 60 points, Backward 20, and Left/Right inherit 10 each. Validation enforces
+`sum(DirectionBudgets) + enabled non-overridden direction count * MaxCountPerDirection <= MaxCount`.
+A disabled fallback (negative/missing `MaxCountPerDirection`) contributes zero to the allocation;
+unassigned directions then have no directional cap, but still consume the aggregate `MaxCount`.
+This allocation check also applies to scalar-only directional limits. Existing configs whose six-way
+allocation exceeds `MaxCount` must reduce their caps, restrict directions, or raise `MaxCount`.
+
+Direction names are `Forward`, `Backward`, `Up`, `Down`, `Left`, and `Right`. Override budgets must be
+finite and non-negative; zero allows no weighted usage. Duplicate directions, `Any` entries, missing
+attributes, and invalid numbers reject config loading and editor downloads. With overrides configured,
+the fallback must be `-1` or finite and non-negative. Empty/`Any` allowed directions enable all six.
+Per-group `Directions` rules determine the union of enabled directions; each direction is counted once.
+Explicit overrides retained for disabled directions still count in the allocation. Budgets never enable
+forbidden directions, and all included block groups share each direction's budget. Upgrade modifiers
+continue to affect aggregate capacity only. Connector-imported weight remains aggregate-only.
+
+The XML editor shows per-direction inputs, inherited values, and the allocation total. Clear an input to
+restore inheritance. Imported overrides survive duplication and XML export.
 
 `LimitVisibility` applies only to HUD presentation. `Always` preserves the original behavior,
 `NearLimit` shows numeric rows at 80% usage and direction rules when violated, and `Hidden` suppresses

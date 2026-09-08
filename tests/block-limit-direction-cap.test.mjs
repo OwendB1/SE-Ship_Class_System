@@ -36,13 +36,13 @@ assert.match(validation, /direction != DirectionType\.Any && Enum\.IsDefined/);
 assert.match(models, /enum LimitVisibility[\s\S]*Always = 0[\s\S]*NearLimit = 1[\s\S]*Hidden = 2/);
 assert.match(bucket, /double\[\] DirectionWeights = new double\[6\]/);
 
-assert.match(gridLimits, /directionWeight \+ weight > limit\.MaxCountPerDirection/);
+assert.match(gridLimits, /directionWeight \+ weight > directionMax/);
 assert.match(gridLimits, /gridBucket\.DirectionWeights\[directionIndex\] \+= weight/);
 assert.match(gridLimits, /groupBucket\.DirectionWeights\[directionIndex\] \+= weight/);
 assert.match(gridLimits, /BuildLimitsSnapshot[\s\S]*DirectionWeights\[\(int\)facing\] \+= weight/);
 assert.match(gridBlocks, /DirectionWeights\[directionIndex\] -= weight/);
-assert.match(gridBlocks, /directionalTotal > limit\.MaxCountPerDirection/);
-assert.match(groupLimits, /directionOver = directionTotals\[directionIndex\] - limit\.MaxCountPerDirection/);
+assert.match(gridBlocks, /directionalTotal > directionMax/);
+assert.match(groupLimits, /directionOver = directionTotals\[directionIndex\] - directionMax/);
 assert.match(groupLimits, /CaptureDirectionReference\(GetDirectionLockReferenceBlock\(\)\)/);
 assert.match(merge, /projected [\s\S]* directional limit/);
 
@@ -50,7 +50,7 @@ assert.match(runtime, /ProtoMember\(5\).*DirectionCounts/);
 assert.match(snapshot, /Array\.Copy\(bucket\.DirectionWeights, directionCounts/);
 assert.match(replica, /Array\.Copy\(runtime\.DirectionCounts, bucket\.DirectionWeights/);
 
-assert.match(evaluation, /current \+ added <= limit\.MaxCountPerDirection\) continue;[\s\S]*Kind = LimitCheckKind\.DirectionCount/);
+assert.match(evaluation, /current \+ added <= directionMax\) continue;[\s\S]*Kind = LimitCheckKind\.DirectionCount/);
 assert.match(evaluation, /NearLimitDisplayFraction = 0\.8d/);
 assert.match(evaluation, /LimitVisibility\.Hidden[\s\S]*LimitVisibility\.Always/);
 assert.match(preview, /DirectionCount[\s\S]*OVER/);
@@ -58,7 +58,7 @@ assert.match(preview, /_results\[i\]\.Pass \|\| !IsDisplayable\(_results\[i\]\)/
 assert.match(statusHud, /ShouldShowOnHud/);
 assert.match(statusHud, /bool wroteHeader = false/);
 
-assert.match(apiData, /API_MINOR\s*=\s*4/);
+assert.match(apiData, /API_MINOR\s*=\s*5/);
 assert.match(apiData, /ProtoMember\(10\).*MaxCountPerDirection/);
 assert.match(apiData, /ProtoMember\(11\).*LimitVisibility/);
 assert.match(api, /MaxCountPerDirection = limit\.MaxCountPerDirection/);

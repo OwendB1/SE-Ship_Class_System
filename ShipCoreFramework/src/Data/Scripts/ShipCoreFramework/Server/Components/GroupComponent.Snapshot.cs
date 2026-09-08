@@ -30,7 +30,7 @@ namespace ShipCoreFramework
                         if (limit == null) continue;
                         var total = 0d;
                         var connectorTotal = 0d;
-                        var directionCounts = limit.MaxCountPerDirection >= 0f
+                        var directionCounts = limit.HasDirectionalBudget
                             ? new double[6]
                             : Array.Empty<double>();
                         LimitBucket bucket;

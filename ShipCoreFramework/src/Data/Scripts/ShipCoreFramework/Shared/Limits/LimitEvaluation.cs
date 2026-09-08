@@ -236,7 +236,7 @@ namespace ShipCoreFramework
                 if (!group.ShouldEvaluateBlockLimit(limit)) continue;
 
                 var addedByDirection = new double[6];
-                var directionCapEnabled = limit.MaxCountPerDirection >= 0f;
+                var directionCapEnabled = limit.HasDirectionalBudget;
                 for (var i = 0; i < proposed.Count; i++)
                 {
                     var block = proposed[i];
@@ -294,7 +294,8 @@ namespace ShipCoreFramework
                         var added = addedByDirection[directionIndex];
                         if (added <= 0d) continue;
                         var current = bucket.DirectionWeights[directionIndex];
-                        if (current + added <= limit.MaxCountPerDirection) continue;
+                        var directionMax = limit.GetMaxCountForDirection((DirectionType)directionIndex);
+                        if (directionMax < 0f || current + added <= directionMax) continue;
 
                         results.Add(new LimitCheckResult
                         {
@@ -303,7 +304,7 @@ namespace ShipCoreFramework
                             Limit = limit,
                             Current = current,
                             Added = added,
-                            Max = limit.MaxCountPerDirection,
+                            Max = directionMax,
                             Pass = false,
                             Facing = (DirectionType)directionIndex
                         });

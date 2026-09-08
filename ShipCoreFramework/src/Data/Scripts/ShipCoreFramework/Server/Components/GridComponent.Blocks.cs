@@ -184,7 +184,7 @@ namespace ShipCoreFramework
 
                         var directionIndex = -1;
                         DirectionType facing;
-                        if (limit.MaxCountPerDirection >= 0f &&
+                        if (limit.HasDirectionalBudget &&
                             GroupComponent.TryResolveBlockFacing(directionReference, block,
                                 matchedBlockType.PrimaryDirection, out facing))
                             directionIndex = (int)facing;
@@ -292,7 +292,7 @@ namespace ShipCoreFramework
                 LimitBucket groupBucket;
                 if (!groupComponent.Limits.TryGetValue(limit, out groupBucket)) continue;
 
-                if (limit.MaxCountPerDirection >= 0f)
+                if (limit.HasDirectionalBudget)
                 {
                     var matchedBlockType = limit.GetMatchingBlockType(KeyOf(obj.SlimBlock));
                     DirectionType facing;
@@ -303,7 +303,8 @@ namespace ShipCoreFramework
                         double directionalTotal;
                         lock (groupBucket.BucketLock)
                             directionalTotal = groupBucket.DirectionWeights[(int)facing];
-                        if (directionalTotal > limit.MaxCountPerDirection)
+                        var directionMax = limit.GetMaxCountForDirection(facing);
+                        if (directionMax >= 0f && directionalTotal > directionMax)
                         {
                             obj.SlimBlock.WhackABlock(PunishmentType.ShutOff);
                             return;
